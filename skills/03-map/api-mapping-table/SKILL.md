@@ -6,7 +6,7 @@ execution: human
 status: specified
 reads: ["units[].target.capabilities", "capability_gaps"]
 writes: ["capability_gaps[]"]
-depends_on: ["extract-behavior-contract"]
+depends_on: ["extract-behavior-contract", "build-hook-mapping"]
 acceptance: ["每个引用的 capability id 存在于 vocabulary", "语义等价项必须人工确认", "未绑定能力全部进入 capability_gaps"]
 ---
 
@@ -16,9 +16,12 @@ acceptance: ["每个引用的 capability id 存在于 vocabulary", "语义等价
 
 维护「能力需求 → Horizon 实现」的映射，并把未绑定的能力变成**可度量的缺口清单**。这是 Horizon 架构不确定性唯一被允许落地的地方。
 
-## 唯一入口
+## 两个数据源
 
-`target/horizon.capabilities.json`。v0.1 中所有条目为 `unbound`，因为 Horizon 的运行时架构尚未明确（`docs/adr/0001`）。架构明确后只填这张表 + 实现下游绑定，上游规则与 schema 不需要改动。
+1. `target/horizon.capabilities.json` —— 能力是否可用。v0.3 已按真实 Horizon 快照绑定：17 implemented / 8 declared / **1 unbound（`animation_driver`）**。
+2. `mappings/forge-to-horizon.json` —— Java/NeoForge 事件 → Horizon 命名 hook 的 162 条映射，由 `build-hook-mapping` 从官方 `native-hooks.json` 生成，不要手改。配合 `mappings/disposition-to-tier.json` 做 C1–C6 → API tier 路由。
+
+事件语义等价仍由人确认；**查不到映射即记为能力缺口，不得猜测**。
 
 `binding_guide` 三态：
 

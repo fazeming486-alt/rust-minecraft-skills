@@ -16,7 +16,18 @@
         "loader_profile": {"type": "string"},
         "mc_version": {"type": ["string", "null"]},
         "mapping_id": {"type": ["string", "null"]},
-        "checksum_sha256": {"type": ["string", "null"]}
+        "checksum_sha256": {"type": ["string", "null"]},
+        "policy": {
+          "type": "object",
+          "required": ["mode"],
+          "properties": {
+            "mode": {"type": "string", "enum": ["full-inspection", "metadata-only", "oracle-only"]},
+            "decided_by": {"type": "string"},
+            "redistribution": {"type": "boolean"},
+            "review_required": {"type": "boolean"},
+            "ruleset": {"type": "string"}
+          }
+        }
       },
       "additionalProperties": false
     },

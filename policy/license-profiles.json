@@ -1,0 +1,98 @@
+{
+  "schema_version": "0.1.0",
+  "version": "0.1.0",
+  "note": "方案 C 的唯一规则源。任何解析失败、冲突或未知，一律落 default_mode 并置 review_required。许可证是自然语言串，本表只做保守匹配，不替代法律判断。",
+  "default_mode": "oracle-only",
+  "default_redistribution": false,
+  "severity": {"full-inspection": 0, "metadata-only": 1, "oracle-only": 2},
+  "scopes": ["code", "assets"],
+  "split_tokens": ["/", ";", "|", " and ", " & ", ","],
+  "modes": {
+    "full-inspection": {
+      "summary": "完整双轨：源码正文 + class 常量池",
+      "allowed_actions": ["read_source_text", "read_class_constant_pool", "extract_string_literals", "extract_annotation_values", "extract_method_names", "extract_type_signatures"],
+      "forbidden_actions": [],
+      "output_fields": ["annotations", "superclasses", "interfaces", "import_prefixes", "referenced_types", "constant_strings", "methods", "declared_kind"]
+    },
+    "metadata-only": {
+      "summary": "签名级：类 FQN / 注解类型名 / 父类 / 接口 / 声明类型",
+      "allowed_actions": ["read_jar_metadata", "list_resource_entries", "extract_type_signatures", "extract_annotation_type_names", "extract_declared_kind"],
+      "forbidden_actions": ["read_source_text", "read_method_bodies", "extract_string_literals", "extract_annotation_values", "extract_method_names"],
+      "output_fields": ["annotations", "superclasses", "interfaces", "import_prefixes", "referenced_types", "declared_kind"]
+    },
+    "oracle-only": {
+      "summary": "仅行为观测、公开文档与自有数据文件；不读内容",
+      "allowed_actions": ["observe_behaviour", "read_public_docs", "read_own_data_files", "list_resource_entries"],
+      "forbidden_actions": ["read_source_text", "read_class_constant_pool", "extract_type_signatures", "extract_annotation_type_names", "extract_string_literals", "extract_annotation_values", "extract_method_names"],
+      "output_fields": []
+    }
+  },
+  "license_patterns": [
+    {
+      "id": "permissive-code",
+      "priority": 10,
+      "match_any": ["mit", "apache-2", "apache 2", "apache", "bsd", "cc0", "cc-by", "unlicense", "isc", "zlib", "public domain", "mpl-2"],
+      "exclude_any": ["nc", "nd", "non-commercial", "no derivatives", "no-deriv"],
+      "scope": "code",
+      "mode": "full-inspection",
+      "redistribution": true,
+      "note": "宽松许可：可完整分析，发布衍生需保留版权声明"
+    },
+    {
+      "id": "copyleft-code",
+      "priority": 20,
+      "match_any": ["gpl", "lgpl", "agpl", "mpl", "epl", "cddl", "copyleft"],
+      "exclude_any": [],
+      "scope": "code",
+      "mode": "full-inspection",
+      "redistribution": false,
+      "note": "本地研究可行；发布衍生需同协议开源并公布源码"
+    },
+    {
+      "id": "no-derivatives-assets",
+      "priority": 5,
+      "match_any": ["cc by-nc-nd", "cc-by-nc-nd", "cc by nc nd", "no derivatives", "no-derivatives", "no-deriv", "all rights reserved", "arr", "proprietary"],
+      "exclude_any": [],
+      "scope": "assets",
+      "mode": "oracle-only",
+      "redistribution": false,
+      "note": "禁止演绎：不可产出可发布的格式转换产物；美术链改为行为观测与差异分析"
+    },
+    {
+      "id": "noncommercial-assets",
+      "priority": 15,
+      "match_any": ["non-commercial", "noncommercial", "cc by-nc", "cc-by-nc", " by-nc", "-nc "],
+      "exclude_any": ["nd"],
+      "scope": "assets",
+      "mode": "metadata-only",
+      "redistribution": false,
+      "note": "非商业：仅本地签名级清单"
+    },
+    {
+      "id": "unknown-or-custom",
+      "priority": 90,
+      "match_any": ["unknown", "unspecified", "unlicensed", "custom", "see ", "contact", "ask ", "none"],
+      "exclude_any": [],
+      "scope": "code",
+      "mode": "oracle-only",
+      "redistribution": false,
+      "note": "无法判定，强制人工复核"
+    }
+  ],
+  "scope_hints": {
+    "code": [".java", ".class", "src/", "com/", "net/", "org/"],
+    "assets": ["assets/", "textures", "models", "sounds", "lang/", ".png", ".ogg", ".wav", ".bbmodel", ".gltf", ".obj", ".fbx"]
+  },
+  "decision_precedence": [
+    "explicit_user_override",
+    "license_pattern_by_priority",
+    "scope_specific_combination",
+    "default_deny"
+  ],
+  "review_triggers": [
+    "任何许可证段未匹配规则",
+    "同一 scope 出现互斥判定",
+    "license_raw 缺失或为空",
+    "用户覆盖规则时"
+  ]
+}

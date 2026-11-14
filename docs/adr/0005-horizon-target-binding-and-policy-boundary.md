@@ -1,6 +1,6 @@
 # ADR 0005 · Horizon 目标侧已明确：绑定表、tier 路由与政策边界
 
-- **状态**：Accepted（v0.3，2026-11-15）；其中 §4 的仓库定位为**待用户拍板项**
+- **状态**：Accepted（v0.3，2026-11-15）；§4 已由用户拍板 **方案 C**，正式决策见 ADR 0006，执行见 `docs/04-roadmap.md`
 - **决策者**：本仓库（用户授权「下一步你自己制定」，并开放工作区除 `亡灵战争_整合包` 外的全部资产）
 - **相关**：`target/horizon.capabilities.json`、`docs/adr/0001-target-agnostic-contract.md`、`docs/03-empirical-calibration.md`
 
@@ -49,7 +49,7 @@ ADR 0001 把 Horizon 架构当作未知量，用「能力契约层」把不确�
 
 Horizon 官方的「每个 mod 一个 harness：dev-only Java oracle vs port」与我们 `diff-test-harness` 的「Java 侧录制状态序列 → Rust 侧重放比对」是同一件事。下一步把 `horizon-ctl`（控制套接字、截图/状态/操控）接入验收 skill，用官方 oracle 做录制端。
 
-## 决策 4（**待用户拍板**）：与 Horizon cleanroom 政策的边界
+## 决策 4（**已拍板：方案 C**）：与 Horizon cleanroom 政策的边界
 
 **发现一个真实冲突。** `docs/modpacks.md` §Licences 第 4 条是 Horizon 的工程政策：
 
@@ -57,7 +57,7 @@ Horizon 官方的「每个 mod 一个 harness：dev-only Java oracle vs port」�
 
 而 rustmc-skills v0.2 的方法核心正是**反编译 TaCZ jar + 解析 class 常量池 + 解析源码注解/字符串**来做分类。我们虽未复制或复述任何实现、报告只含统计与 unit_id，但「读代码结构」这一层与官方政策不一致。若目标是让成果被 Horizon 生态采用、或日后进入其仓库/发布链，这会是硬障碍。
 
-三条路，我建议 **C**：
+三条路，**用户已选 C**：
 
 | 方案 | 做法 | 代价 |
 |---|---|---|
@@ -67,7 +67,7 @@ Horizon 官方的「每个 mod 一个 harness：dev-only Java oracle vs port」�
 
 注意 TaCZ 本身：代码 GPL-3.0、**资产 CC BY-NC-ND 4.0（禁止演绎）**，本地研究可行，发布需授权。当前仓库只存统计，未越界；但需要把这个判断写进流程，而不是靠人记着。
 
-**本 ADR 不擅自改变仓库定位**：在用户拍板前，v0.2 成果保持现状（本地研究），新增能力绑定表不受影响。
+**落地状态**：C 已由 ADR 0006 正式化，`policy-gate`、三档降级提取、`default_deny` 与 `review_required` 在 v0.4 实现；执行顺序见 `docs/04-roadmap.md` M0。v0.2 的代码侧双轨实验在授权范围内保留，资产侧按 ND 降级为 `oracle-only`。
 
 ## 后果
 
@@ -77,6 +77,6 @@ Horizon 官方的「每个 mod 一个 harness：dev-only Java oracle vs port」�
 
 ## 复核条件
 
-1. 用户就 §4 拍板（A / B / C）；
+1. ~~用户就 §4 拍板~~ 已完成：C，见 ADR 0006；
 2. Horizon `native-hooks.json` 的 `NATIVE_HOOKS_API` 或 0.5 animated models 状态变化；
 3. 决定把成果贡献给 Horizon 上游时（届时 cleanroom 合规是前置条件）。

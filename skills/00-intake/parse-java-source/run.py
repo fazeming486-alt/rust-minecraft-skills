@@ -16,9 +16,26 @@ def main(argv=None) -> int:
     ap.add_argument("--source-root", default="src/main/java")
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--loader-profile", default="forge/1.20.1")
+    ap.add_argument("--policy-mode", choices=list(L.POLICY_MODES), default=None)
+    ap.add_argument("--policy-decision", type=Path, help="policy-gate 输出的 JSON")
     a = ap.parse_args(argv)
 
-    index = L.index_from_source_tree(a.root, a.source_root)
+    policy = None
+    if a.policy_decision:
+        policy = json.loads(a.policy_decision.read_text(encoding="utf-8"))
+    if a.policy_mode:
+        mode = a.policy_mode
+    elif policy:
+        mode = policy.get("scope_decisions", {}).get("code", {}).get("mode", "full-inspection")
+    else:
+        mode = "full-inspection"
+    if policy:
+        gate_mode = policy.get("mode")
+        policy = dict(policy)
+        policy["gate_overall_mode"] = gate_mode
+        policy["effective_mode"] = mode
+        policy["mode"] = mode
+    index = L.index_from_source_tree(a.root, a.source_root, mode, policy)
     index["source"]["loader_profile"] = a.loader_profile
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(json.dumps(index, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

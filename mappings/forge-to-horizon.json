@@ -1,0 +1,1492 @@
+{
+  "schema_version": "0.1.0",
+  "mapping_version": "0.1.0",
+  "source": {
+    "horizon_root": "D:\\RUST重写mc项目\\third_party\\horizon",
+    "catalog": "native-hooks.json",
+    "license": "Horizon MIT；本表只含名称与契约元数据，不含源码",
+    "note": "由 tools/build_hook_mapping.py 生成，不要手改；升级 Horizon 快照后重跑即可"
+  },
+  "stats": {
+    "hooks_total": 434,
+    "hooks_with_neoforge_field": 318,
+    "hooks_with_event_mapping": 157,
+    "hooks_without_neoforge_counterpart": 161,
+    "hooks_without_neoforge_field": 116,
+    "mapping_entries": 162,
+    "distinct_events": 156,
+    "by_side": {
+      "None": 12,
+      "both": 10,
+      "client": 48,
+      "server": 92
+    },
+    "by_contract": {
+      "cancel": 58,
+      "collect": 17,
+      "listen": 79,
+      "replace": 8
+    }
+  },
+  "usage": "api-mapping-table 与 classify 的 behavior_delta → event_hook 路由查此表；未命中即记为能力缺口，不得猜测",
+  "entries": [
+    {
+      "neoforge_event": "AddServerReloadListenersEvent",
+      "horizon_hook": "add_server_reload_listeners",
+      "side": "server",
+      "contract": "collect",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_add_server_reload_listeners"
+    },
+    {
+      "neoforge_event": "AdvancementEvent.AdvancementEarnEvent",
+      "horizon_hook": "player_advancement_done",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_advancement_done"
+    },
+    {
+      "neoforge_event": "AdvancementEvent.AdvancementProgressEvent",
+      "horizon_hook": "player_advancement_progress",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_advancement_progress"
+    },
+    {
+      "neoforge_event": "AnvilCraftEvent.Post",
+      "horizon_hook": "anvil_craft_post",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_anvil_craft_post"
+    },
+    {
+      "neoforge_event": "AnvilCraftEvent.Pre",
+      "horizon_hook": "anvil_craft_pre",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_anvil_craft_pre"
+    },
+    {
+      "neoforge_event": "ArrowLooseEvent",
+      "horizon_hook": "arrow_loose",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_arrow_loose"
+    },
+    {
+      "neoforge_event": "AttackEntityEvent",
+      "horizon_hook": "attack_entity",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_attack_entity"
+    },
+    {
+      "neoforge_event": "BabyEntitySpawnEvent",
+      "horizon_hook": "baby_entity_spawn",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_baby_entity_spawn"
+    },
+    {
+      "neoforge_event": "BlockDropsEvent",
+      "horizon_hook": "loot_drops",
+      "side": "server",
+      "contract": "collect",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_loot_drops"
+    },
+    {
+      "neoforge_event": "BlockEvent.BreakEvent",
+      "horizon_hook": "destroy_block",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_destroy_block"
+    },
+    {
+      "neoforge_event": "BlockEvent.EntityPlaceEvent",
+      "horizon_hook": "place_block",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_place_block"
+    },
+    {
+      "neoforge_event": "CalculateDetachedCameraDistanceEvent",
+      "horizon_hook": "camera_distance",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_camera_distance"
+    },
+    {
+      "neoforge_event": "CanPlayerSleepEvent",
+      "horizon_hook": "can_player_sleep",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_can_player_sleep"
+    },
+    {
+      "neoforge_event": "Capabilities.Energy.BLOCK",
+      "horizon_hook": "block_entity_energy",
+      "side": "server",
+      "contract": "replace",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_block_entity_energy"
+    },
+    {
+      "neoforge_event": "Capabilities.Energy.ITEM",
+      "horizon_hook": "item_energy_buffer",
+      "side": null,
+      "contract": "replace",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_item_energy_buffer"
+    },
+    {
+      "neoforge_event": "Capabilities.FluidHandler.BLOCK",
+      "horizon_hook": "block_entity_fluids",
+      "side": null,
+      "contract": "replace",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_block_entity_fluids"
+    },
+    {
+      "neoforge_event": "Capabilities.FluidHandler.ITEM",
+      "horizon_hook": "item_fluid_tank",
+      "side": null,
+      "contract": "replace",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_item_fluid_tank"
+    },
+    {
+      "neoforge_event": "Capabilities.Item.BLOCK",
+      "horizon_hook": "block_entity_container",
+      "side": null,
+      "contract": "replace",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_block_entity_container"
+    },
+    {
+      "neoforge_event": "Capabilities.Item.ITEM",
+      "horizon_hook": "item_container",
+      "side": null,
+      "contract": "replace",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_item_container"
+    },
+    {
+      "neoforge_event": "ChunkEvent.Load",
+      "horizon_hook": "chunk_load",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_chunk_load"
+    },
+    {
+      "neoforge_event": "ChunkEvent.Unload",
+      "horizon_hook": "chunk_unload",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_chunk_unload"
+    },
+    {
+      "neoforge_event": "ClientChatReceivedEvent",
+      "horizon_hook": "client_chat_received",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_client_chat_received"
+    },
+    {
+      "neoforge_event": "ClientPlayerNetworkEvent.LoggingOut",
+      "horizon_hook": "client_disconnecting",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_client_disconnecting"
+    },
+    {
+      "neoforge_event": "CommandEvent",
+      "horizon_hook": "player_command",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_command"
+    },
+    {
+      "neoforge_event": "ComputeFovModifierEvent",
+      "horizon_hook": "compute_fov_modifier",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_compute_fov_modifier"
+    },
+    {
+      "neoforge_event": "CriticalHitEvent",
+      "horizon_hook": "critical_hit",
+      "side": "both",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_critical_hit"
+    },
+    {
+      "neoforge_event": "DifficultyChangeEvent",
+      "horizon_hook": "difficulty_changed",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_difficulty_changed"
+    },
+    {
+      "neoforge_event": "EntityJoinLevelEvent",
+      "horizon_hook": "entity_join_level",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_entity_join_level"
+    },
+    {
+      "neoforge_event": "EntityLeaveLevelEvent",
+      "horizon_hook": "entity_leave_level",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_entity_leave_level"
+    },
+    {
+      "neoforge_event": "EntityMountEvent",
+      "horizon_hook": "entity_mount",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_entity_mount"
+    },
+    {
+      "neoforge_event": "EntityRenderersEvent.AddLayers",
+      "horizon_hook": "mob_layer",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_mob_layer"
+    },
+    {
+      "neoforge_event": "EntityTeleportEvent.ChorusFruit",
+      "horizon_hook": "chorus_fruit_teleport",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_chorus_fruit_teleport"
+    },
+    {
+      "neoforge_event": "EntityTeleportEvent.EnderPearl",
+      "horizon_hook": "ender_pearl_teleport",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_ender_pearl_teleport"
+    },
+    {
+      "neoforge_event": "EntityTickEvent.Post",
+      "horizon_hook": "entity_tick_post",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_entity_tick_post"
+    },
+    {
+      "neoforge_event": "EntityTickEvent.Pre",
+      "horizon_hook": "entity_tick_pre",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_entity_tick_pre"
+    },
+    {
+      "neoforge_event": "EntityTravelToDimensionEvent",
+      "horizon_hook": "player_portal",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_portal"
+    },
+    {
+      "neoforge_event": "ExplosionEvent.Detonate",
+      "horizon_hook": "explosion_detonate",
+      "side": "server",
+      "contract": "collect",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_explosion_detonate"
+    },
+    {
+      "neoforge_event": "ExplosionKnockbackEvent",
+      "horizon_hook": "explosion_knockback",
+      "side": "server",
+      "contract": "collect",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_explosion_knockback"
+    },
+    {
+      "neoforge_event": "IPlayerExtension.openMenu",
+      "horizon_hook": "menu_extra_data",
+      "side": "server",
+      "contract": "replace",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_menu_extra_data"
+    },
+    {
+      "neoforge_event": "InputEvent.InteractionKeyMappingTriggered",
+      "horizon_hook": "interaction_key",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_interaction_key"
+    },
+    {
+      "neoforge_event": "InputEvent.Key",
+      "horizon_hook": "input_key",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_input_key"
+    },
+    {
+      "neoforge_event": "InputEvent.MouseButton.Post",
+      "horizon_hook": "mouse_button_post",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_mouse_button_post"
+    },
+    {
+      "neoforge_event": "InputEvent.MouseButton.Pre",
+      "horizon_hook": "mouse_button_pre",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_mouse_button_pre"
+    },
+    {
+      "neoforge_event": "InputEvent.MouseScrollingEvent",
+      "horizon_hook": "mouse_scrolling",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_mouse_scrolling"
+    },
+    {
+      "neoforge_event": "ItemEntityPickupEvent.Pre; no forced pickup)",
+      "horizon_hook": "item_picked_up",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_item_picked_up"
+    },
+    {
+      "neoforge_event": "ItemExpireEvent",
+      "horizon_hook": "item_expire",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_item_expire"
+    },
+    {
+      "neoforge_event": "ItemTooltipEvent",
+      "horizon_hook": "tooltip",
+      "side": null,
+      "contract": "collect",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_tooltip"
+    },
+    {
+      "neoforge_event": "ItemTossEvent",
+      "horizon_hook": "item_dropped",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_item_dropped"
+    },
+    {
+      "neoforge_event": "LevelEvent.Load",
+      "horizon_hook": "client_level_load",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_client_level_load"
+    },
+    {
+      "neoforge_event": "LevelEvent.Load",
+      "horizon_hook": "level_load",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_level_load"
+    },
+    {
+      "neoforge_event": "LevelEvent.PotentialSpawns",
+      "horizon_hook": "potential_spawns",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_potential_spawns"
+    },
+    {
+      "neoforge_event": "LevelEvent.Unload",
+      "horizon_hook": "client_level_unload",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_client_level_unload"
+    },
+    {
+      "neoforge_event": "LevelEvent.Unload",
+      "horizon_hook": "level_unload",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_level_unload"
+    },
+    {
+      "neoforge_event": "LevelTickEvent.Post",
+      "horizon_hook": "level_tick_post",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_level_tick_post"
+    },
+    {
+      "neoforge_event": "LevelTickEvent.Pre",
+      "horizon_hook": "level_tick_pre",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_level_tick_pre"
+    },
+    {
+      "neoforge_event": "LivingBreatheEvent",
+      "horizon_hook": "living_breathe",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client_lib::breathing::native_living_breathe"
+    },
+    {
+      "neoforge_event": "LivingConversionEvent.Post",
+      "horizon_hook": "living_conversion_post",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_conversion_post"
+    },
+    {
+      "neoforge_event": "LivingConversionEvent.Pre",
+      "horizon_hook": "living_conversion_pre",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_conversion_pre"
+    },
+    {
+      "neoforge_event": "LivingDeathEvent",
+      "horizon_hook": "living_death",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_death"
+    },
+    {
+      "neoforge_event": "LivingDropsEvent",
+      "horizon_hook": "loot_drops",
+      "side": "server",
+      "contract": "collect",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_loot_drops"
+    },
+    {
+      "neoforge_event": "LivingDrownEvent",
+      "horizon_hook": "living_drown",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client_lib::breathing::native_living_drown"
+    },
+    {
+      "neoforge_event": "LivingEntityUseItemEvent.Finish",
+      "horizon_hook": "living_entity_use_item_finish",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_entity_use_item_finish"
+    },
+    {
+      "neoforge_event": "LivingEntityUseItemEvent.Start",
+      "horizon_hook": "living_entity_use_item_start",
+      "side": null,
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_entity_use_item_start"
+    },
+    {
+      "neoforge_event": "LivingEntityUseItemEvent.Stop",
+      "horizon_hook": "living_entity_use_item_stop",
+      "side": null,
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_entity_use_item_stop"
+    },
+    {
+      "neoforge_event": "LivingEntityUseItemEvent.Tick",
+      "horizon_hook": "living_entity_use_item_tick",
+      "side": null,
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_entity_use_item_tick"
+    },
+    {
+      "neoforge_event": "LivingEquipmentChangeEvent",
+      "horizon_hook": "living_equipment_change",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_equipment_change"
+    },
+    {
+      "neoforge_event": "LivingEvent.LivingJumpEvent",
+      "horizon_hook": "living_jump",
+      "side": "both",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client_lib::motion::native_living_jump"
+    },
+    {
+      "neoforge_event": "LivingFallEvent",
+      "horizon_hook": "living_fall",
+      "side": "both",
+      "contract": "cancel",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client_lib::landing::native_living_fall"
+    },
+    {
+      "neoforge_event": "LivingHealEvent",
+      "horizon_hook": "living_heal",
+      "side": "both",
+      "contract": "cancel",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client_lib::hunger::native_living_heal"
+    },
+    {
+      "neoforge_event": "LivingIncomingDamageEvent",
+      "horizon_hook": "living_incoming_damage",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_incoming_damage"
+    },
+    {
+      "neoforge_event": "LivingIncomingDamageEvent",
+      "horizon_hook": "living_incoming_damage_v2",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_incoming_damage_v2"
+    },
+    {
+      "neoforge_event": "LivingKnockBackEvent",
+      "horizon_hook": "living_knockback",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_knockback"
+    },
+    {
+      "neoforge_event": "LivingKnockBackEvent",
+      "horizon_hook": "living_knockback_v2",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_knockback_v2"
+    },
+    {
+      "neoforge_event": "LivingSwapItemsEvent.Hands",
+      "horizon_hook": "player_swap_hands",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_swap_hands"
+    },
+    {
+      "neoforge_event": "LootTableLoadEvent",
+      "horizon_hook": "loot_table_load",
+      "side": null,
+      "contract": "collect",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_world::loot::native_loot_table_load"
+    },
+    {
+      "neoforge_event": "MapDecorationType",
+      "horizon_hook": "map_decorations",
+      "side": "client",
+      "contract": "collect",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_map_decorations"
+    },
+    {
+      "neoforge_event": "MobEffectEvent.Added",
+      "horizon_hook": "mob_effect_added",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_mob_effect_added"
+    },
+    {
+      "neoforge_event": "MobSplitEvent",
+      "horizon_hook": "mob_split",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_mob_split"
+    },
+    {
+      "neoforge_event": "ModConfigEvent.Loading",
+      "horizon_hook": "config_loading",
+      "side": "both",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_config_loading"
+    },
+    {
+      "neoforge_event": "ModConfigEvent.Reloading",
+      "horizon_hook": "config_reloading",
+      "side": "both",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_config_reloading"
+    },
+    {
+      "neoforge_event": "ModConfigEvent.Unloading",
+      "horizon_hook": "config_unloading",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_config_unloading"
+    },
+    {
+      "neoforge_event": "ModContainer.registerConfig",
+      "horizon_hook": "register_configs",
+      "side": "both",
+      "contract": "collect",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_register_configs"
+    },
+    {
+      "neoforge_event": "ModelEvent.RegisterStandalone",
+      "horizon_hook": "standalone_models",
+      "side": "client",
+      "contract": "collect",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_standalone_models"
+    },
+    {
+      "neoforge_event": "ModifyDefaultComponentsEvent",
+      "horizon_hook": "modify_default_components",
+      "side": "both",
+      "contract": "collect",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_world::item_defaults::native_modify_default_components"
+    },
+    {
+      "neoforge_event": "MovementInputUpdateEvent",
+      "horizon_hook": "movement_input",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_movement_input"
+    },
+    {
+      "neoforge_event": "NoteBlockEvent.Change",
+      "horizon_hook": "note_block_change",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::GameLevel<'_>::native_note_block_change"
+    },
+    {
+      "neoforge_event": "OnDatapackSyncEvent",
+      "horizon_hook": "datapack_sync",
+      "side": "server",
+      "contract": "collect",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_datapack_sync"
+    },
+    {
+      "neoforge_event": "PlayerContainerEvent.Close",
+      "horizon_hook": "player_container_close",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_container_close"
+    },
+    {
+      "neoforge_event": "PlayerContainerEvent.Open",
+      "horizon_hook": "player_container_open",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_container_open"
+    },
+    {
+      "neoforge_event": "PlayerEvent.Clone",
+      "horizon_hook": "player_clone",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_clone"
+    },
+    {
+      "neoforge_event": "PlayerEvent.ItemCraftedEvent",
+      "horizon_hook": "item_crafted",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_item_crafted"
+    },
+    {
+      "neoforge_event": "PlayerEvent.LoadFromFile",
+      "horizon_hook": "player_load_from_file",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_load_from_file"
+    },
+    {
+      "neoforge_event": "PlayerEvent.PlayerChangeGameModeEvent",
+      "horizon_hook": "player_game_mode_changed",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_game_mode_changed"
+    },
+    {
+      "neoforge_event": "PlayerEvent.PlayerChangedDimensionEvent",
+      "horizon_hook": "player_changed_dimension",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_changed_dimension"
+    },
+    {
+      "neoforge_event": "PlayerEvent.PlayerLoggedInEvent",
+      "horizon_hook": "player_logged_in",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_logged_in"
+    },
+    {
+      "neoforge_event": "PlayerEvent.PlayerLoggedOutEvent",
+      "horizon_hook": "player_logged_out",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_logged_out"
+    },
+    {
+      "neoforge_event": "PlayerEvent.PlayerRespawnEvent",
+      "horizon_hook": "player_respawned",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_respawned"
+    },
+    {
+      "neoforge_event": "PlayerEvent.SaveToFile",
+      "horizon_hook": "player_save_to_file",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_save_to_file"
+    },
+    {
+      "neoforge_event": "PlayerEvent.StartTracking",
+      "horizon_hook": "player_start_tracking",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_start_tracking"
+    },
+    {
+      "neoforge_event": "PlayerEvent.StopTracking",
+      "horizon_hook": "player_stop_tracking",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_stop_tracking"
+    },
+    {
+      "neoforge_event": "PlayerInteractEvent.EntityInteract",
+      "horizon_hook": "interact_entity",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_interact_entity"
+    },
+    {
+      "neoforge_event": "PlayerInteractEvent.LeftClickBlock",
+      "horizon_hook": "left_click_block",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_left_click_block"
+    },
+    {
+      "neoforge_event": "PlayerInteractEvent.RightClickBlock",
+      "horizon_hook": "right_click_block",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_right_click_block"
+    },
+    {
+      "neoforge_event": "PlayerInteractEvent.RightClickItem",
+      "horizon_hook": "use_item",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_use_item"
+    },
+    {
+      "neoforge_event": "PlayerTickEvent.Post",
+      "horizon_hook": "player_tick",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_tick"
+    },
+    {
+      "neoforge_event": "PlayerWakeUpEvent",
+      "horizon_hook": "player_bed_leave",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_bed_leave"
+    },
+    {
+      "neoforge_event": "PlayerXpEvent.PickupXp",
+      "horizon_hook": "experience_orb_pickup",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_experience_orb_pickup"
+    },
+    {
+      "neoforge_event": "PlayerXpEvent.XpChange",
+      "horizon_hook": "player_xp_change",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_xp_change"
+    },
+    {
+      "neoforge_event": "ProjectileImpactEvent",
+      "horizon_hook": "projectile_impact",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_projectile_impact"
+    },
+    {
+      "neoforge_event": "RecipesReceivedEvent",
+      "horizon_hook": "recipes_received",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_recipes_received"
+    },
+    {
+      "neoforge_event": "RegisterCommandsEvent",
+      "horizon_hook": "register_commands",
+      "side": "server",
+      "contract": "collect",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_register_commands"
+    },
+    {
+      "neoforge_event": "RegisterDataMapTypesEvent",
+      "horizon_hook": "data_map_types",
+      "side": "server",
+      "contract": "collect",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_data_map_types"
+    },
+    {
+      "neoforge_event": "RegisterEvent",
+      "horizon_hook": "blocks",
+      "side": null,
+      "contract": "collect",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_blocks"
+    },
+    {
+      "neoforge_event": "RegisterEvent",
+      "horizon_hook": "items",
+      "side": null,
+      "contract": "collect",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_items"
+    },
+    {
+      "neoforge_event": "RegisterItemDecorationsEvent",
+      "horizon_hook": "item_decorations",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_item_decorations"
+    },
+    {
+      "neoforge_event": "RenderArmEvent",
+      "horizon_hook": "render_hand_pose",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_render_hand_pose"
+    },
+    {
+      "neoforge_event": "RenderFrameEvent.Pre",
+      "horizon_hook": "frame",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_frame"
+    },
+    {
+      "neoforge_event": "RenderGuiEvent.Post",
+      "horizon_hook": "gui_render_post",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_gui_render_post"
+    },
+    {
+      "neoforge_event": "RenderGuiLayerEvent.Post",
+      "horizon_hook": "gui_layer_post",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_gui_layer_post"
+    },
+    {
+      "neoforge_event": "RenderGuiLayerEvent.Pre",
+      "horizon_hook": "gui_layer_pre",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_gui_layer_pre"
+    },
+    {
+      "neoforge_event": "RenderHandEvent",
+      "horizon_hook": "render_hand",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_render_hand"
+    },
+    {
+      "neoforge_event": "RenderHandEvent",
+      "horizon_hook": "render_hand_pose",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_render_hand_pose"
+    },
+    {
+      "neoforge_event": "RenderHighlightEvent.Block",
+      "horizon_hook": "block_highlight",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_block_highlight"
+    },
+    {
+      "neoforge_event": "RenderItemInFrameEvent",
+      "horizon_hook": "render_item_in_frame",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_render_item_in_frame"
+    },
+    {
+      "neoforge_event": "RenderLevelStageEvent",
+      "horizon_hook": "world_drawn",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client_render::gfx::native_render::native_world_drawn"
+    },
+    {
+      "neoforge_event": "RenderLivingEvent.Pre",
+      "horizon_hook": "mob_submit",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_mob_submit"
+    },
+    {
+      "neoforge_event": "RenderNameTagEvent",
+      "horizon_hook": "render_name_tag",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_render_name_tag"
+    },
+    {
+      "neoforge_event": "RenderPlayerEvent.Pre",
+      "horizon_hook": "player_submit",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_submit"
+    },
+    {
+      "neoforge_event": "RenderTooltipEvent.GatherComponents",
+      "horizon_hook": "tooltip_component",
+      "side": "client",
+      "contract": "replace",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_tooltip_component"
+    },
+    {
+      "neoforge_event": "RenderTooltipEvent.Texture",
+      "horizon_hook": "tooltip_color",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_tooltip_color"
+    },
+    {
+      "neoforge_event": "ScreenEvent.CharacterTyped.Pre",
+      "horizon_hook": "screen_char_typed_pre",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_screen_char_typed_pre"
+    },
+    {
+      "neoforge_event": "ScreenEvent.Closing",
+      "horizon_hook": "screen_closing",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_screen_closing"
+    },
+    {
+      "neoforge_event": "ScreenEvent.Init.Post",
+      "horizon_hook": "screen_init_post",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_screen_init_post"
+    },
+    {
+      "neoforge_event": "ScreenEvent.KeyPressed.Pre",
+      "horizon_hook": "screen_key_pressed_pre",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_screen_key_pressed_pre"
+    },
+    {
+      "neoforge_event": "ScreenEvent.KeyReleased.Pre",
+      "horizon_hook": "screen_key_released_pre",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_screen_key_released_pre"
+    },
+    {
+      "neoforge_event": "ScreenEvent.MouseButtonPressed.Pre",
+      "horizon_hook": "screen_mouse_button_pressed_pre",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_screen_mouse_button_pressed_pre"
+    },
+    {
+      "neoforge_event": "ScreenEvent.MouseButtonReleased.Pre",
+      "horizon_hook": "screen_mouse_button_released_pre",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_screen_mouse_button_released_pre"
+    },
+    {
+      "neoforge_event": "ScreenEvent.MouseDragged.Pre",
+      "horizon_hook": "screen_mouse_dragged_pre",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_screen_mouse_dragged_pre"
+    },
+    {
+      "neoforge_event": "ScreenEvent.MouseScrolled.Pre",
+      "horizon_hook": "screen_mouse_scrolled_pre",
+      "side": "client",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_screen_mouse_scrolled_pre"
+    },
+    {
+      "neoforge_event": "ScreenEvent.Opening",
+      "horizon_hook": "screen_opening",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_screen_opening"
+    },
+    {
+      "neoforge_event": "ScreenEvent.Render.Post",
+      "horizon_hook": "screen_render_post",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_screen_render_post"
+    },
+    {
+      "neoforge_event": "SelectMusicEvent",
+      "horizon_hook": "music",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_music"
+    },
+    {
+      "neoforge_event": "ServerAboutToStartEvent",
+      "horizon_hook": "server_about_to_start",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_server_about_to_start"
+    },
+    {
+      "neoforge_event": "ServerStartedEvent",
+      "horizon_hook": "world_lifecycle",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_world_lifecycle"
+    },
+    {
+      "neoforge_event": "ServerStartingEvent",
+      "horizon_hook": "world_lifecycle",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_world_lifecycle"
+    },
+    {
+      "neoforge_event": "ServerStoppedEvent",
+      "horizon_hook": "world_lifecycle",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_world_lifecycle"
+    },
+    {
+      "neoforge_event": "ServerStoppingEvent",
+      "horizon_hook": "server_stopping",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_server_stopping"
+    },
+    {
+      "neoforge_event": "ServerTickEvent.Post",
+      "horizon_hook": "server_tick",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_server_tick"
+    },
+    {
+      "neoforge_event": "ServerTickEvent.Pre",
+      "horizon_hook": "server_tick",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_server_tick"
+    },
+    {
+      "neoforge_event": "SimpleJsonResourceReloadListener.apply",
+      "horizon_hook": "server_reload_listener_apply",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_server_reload_listener_apply"
+    },
+    {
+      "neoforge_event": "SleepFinishedTimeEvent",
+      "horizon_hook": "sleep_finished_time",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_sleep_finished_time"
+    },
+    {
+      "neoforge_event": "StatAwardEvent",
+      "horizon_hook": "player_stat_award",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_player_stat_award"
+    },
+    {
+      "neoforge_event": "TagsUpdatedEvent",
+      "horizon_hook": "server_data_loaded",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_server_data_loaded"
+    },
+    {
+      "neoforge_event": "TradeWithVillagerEvent",
+      "horizon_hook": "trade_with_villager",
+      "side": "server",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_trade_with_villager"
+    },
+    {
+      "neoforge_event": "ViewportEvent.ComputeCameraAngles",
+      "horizon_hook": "camera_pose",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": false,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_camera_pose"
+    },
+    {
+      "neoforge_event": "ViewportEvent.ComputeFogColor",
+      "horizon_hook": "compute_fog_color",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_compute_fog_color"
+    },
+    {
+      "neoforge_event": "ViewportEvent.ComputeFov",
+      "horizon_hook": "compute_fov",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_compute_fov"
+    },
+    {
+      "neoforge_event": "ViewportEvent.RenderFog",
+      "horizon_hook": "render_fog",
+      "side": "client",
+      "contract": "listen",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_render_fog"
+    },
+    {
+      "neoforge_event": "VillageSiegeEvent",
+      "horizon_hook": "village_siege",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_village_siege"
+    },
+    {
+      "neoforge_event": "net.neoforged.neoforge.event.ServerChatEvent",
+      "horizon_hook": "player_chat",
+      "side": "server",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client_lib::lan::hub::chat::native_player_chat"
+    },
+    {
+      "neoforge_event": "net.neoforged.neoforge.event.entity.living.LivingGetProjectileEvent",
+      "horizon_hook": "living_get_projectile",
+      "side": "both",
+      "contract": "collect",
+      "cancellable": null,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_living_get_projectile"
+    },
+    {
+      "neoforge_event": "net.neoforged.neoforge.event.entity.player.ArrowNockEvent",
+      "horizon_hook": "arrow_nock",
+      "side": "both",
+      "contract": "cancel",
+      "cancellable": true,
+      "hook_version": 1,
+      "target_symbol": "horizon_client::game::native_hooks::Game<'_>::native_arrow_nock"
+    }
+  ]
+}

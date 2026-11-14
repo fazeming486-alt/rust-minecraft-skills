@@ -79,7 +79,7 @@
       "status": "specified",
       "reads": ["units[].target.capabilities", "capability_gaps"],
       "writes": ["capability_gaps[]"],
-      "depends_on": ["extract-behavior-contract"],
+      "depends_on": ["extract-behavior-contract", "build-hook-mapping"],
       "acceptance": [
         "每个引用的 capability id 存在于 vocabulary",
         "语义等价项必须人工确认",
@@ -198,6 +198,32 @@
       "depends_on": ["compare-tracks", "classify-java-decompiled"],
       "acceptance": ["输出校准前后 C6 占比与兜底单元数", "报告只含统计与 unit_id，不含第三方源码", "每条新增规则都有 golden 用例覆盖", "规则升级后 validate.py 全绿"],
       "summary": "三轨实验 + 规则命中统计 + 脱敏校准报告，用数据驱动规则升级"
+    },
+    {
+      "id": "policy-gate",
+      "version": "0.1.0",
+      "stage": "00-intake",
+      "path": "skills/00-intake/policy-gate",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [],
+      "writes": ["source.policy"],
+      "depends_on": ["fetch-mod-artifact"],
+      "acceptance": ["非标准 license 串按 scope 拆分", "解析失败强制 oracle-only + review_required", "下游解析器按 policy_mode 降级"],
+      "summary": "S0 第一道合规门禁：按 (scope × license) 判定提取深度，default_deny"
+    },
+    {
+      "id": "build-hook-mapping",
+      "version": "0.1.0",
+      "stage": "03-map",
+      "path": "skills/03-map/build-hook-mapping",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [],
+      "writes": [],
+      "depends_on": [],
+      "acceptance": ["映射条目可回溯到 hook 名 / side / contract", "none (无对应事件) 与真实映射分开统计", "生成物不含任何 Horizon 源码"],
+      "summary": "从 Horizon native-hooks.json 生成 NeoForge 事件 → 命名 hook 映射表"
     }
   ]
 }

@@ -102,6 +102,9 @@ def main() -> int:
         "tests/golden/classification.delta.json",
         "docs/03-empirical-calibration.md", "docs/adr/0004-empirical-rule-calibration.md",
         "docs/adr/0005-horizon-target-binding-and-policy-boundary.md",
+        "docs/04-roadmap.md", "docs/adr/0006-policy-tiered-inspection.md",
+        "policy/license-profiles.json", "mappings/forge-to-horizon.json",
+        "mappings/disposition-to-tier.json", "tools/build_hook_mapping.py",
         "profiles/forge/1.20.1.json", "reports/calibration-before.json",
         "reports/calibration-1.20.1.json", "tools/lib_facts.py", "tools/experiment.py",
     ]
@@ -256,6 +259,58 @@ def main() -> int:
     # 13. delta 结构符合 schema 的 required
     check("delta 结构字段齐全",
           all(k in delta for k in ("delta_id", "skill_id", "skill_version", "input_hash", "unit_patches")))
+
+    # 14. 方案 C：许可证分档与降级提取
+    import importlib.util
+    sys.path.insert(0, str(ROOT / "tools"))
+    import lib_facts as L  # noqa: E402
+
+    profiles = load("policy/license-profiles.json")
+    check("policy 规则三档齐全且 default_deny 最严格",
+          set(profiles["modes"]) == {"full-inspection", "metadata-only", "oracle-only"}
+          and profiles["severity"][profiles["default_mode"]]
+          == max(profiles["severity"].values()))
+    check("policy 规则的 mode/scope 取值合法",
+          all(p["mode"] in profiles["modes"] and p["scope"] in profiles["scopes"]
+              for p in profiles["license_patterns"]))
+
+    spec = importlib.util.spec_from_file_location(
+        "policy_gate", ROOT / "skills/00-intake/policy-gate/run.py")
+    pg = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pg)
+    tacz = pg.decide("GPL3 / CC BY-NC-ND 4.0", profiles, "tacz")
+    check("方案 C：非标准 license 串按 scope 拆分",
+          tacz["scope_decisions"]["code"]["mode"] == "full-inspection"
+          and tacz["scope_decisions"]["assets"]["mode"] == "oracle-only"
+          and tacz["redistribution"] is False)
+    unknown = pg.decide("SomeWeirdLicense 9.9", profiles, "unknown")
+    check("default_deny：未知许可证强制 oracle-only + review_required",
+          unknown["policy_mode"] == "oracle-only" and unknown["review_required"] is True)
+
+    sample = ('package com.tacz.demo;\nimport net.minecraft.world.item.Item;\n'
+              'public class Gun {\n  public void shoot() { String s = "tacz:ak47"; }\n}\n')
+    full = L.parse_java_source(sample, "com/tacz/demo/Gun.java", "full-inspection")
+    meta = L.parse_java_source(sample, "com/tacz/demo/Gun.java", "metadata-only")
+    oracle = L.parse_java_source(sample, "com/tacz/demo/Gun.java", "oracle-only")
+    check("metadata-only 降级：方法名与字符串字面量被清除，签名保留",
+          meta["symbols"]["methods"] == [] and meta["symbols"]["constant_strings"] == []
+          and meta["symbols"]["annotations"] == full["symbols"]["annotations"]
+          and meta["symbols"]["declared_kind"] == full["symbols"]["declared_kind"])
+    check("oracle-only 降级：不读取任何内容",
+          all(not v for v in oracle["symbols"].values() if isinstance(v, list)))
+    check("full-inspection 保留完整事实",
+          len(full["symbols"]["methods"]) >= 1 and bool(full["symbols"]["constant_strings"]))
+
+    # 15. M1 映射表自洽
+    mapping = load("mappings/forge-to-horizon.json")
+    ms = mapping["stats"]
+    check("NeoForge → hook 映射表条目自洽",
+          ms["mapping_entries"] == len(mapping["entries"])
+          and ms["hooks_with_event_mapping"] + ms["hooks_without_neoforge_counterpart"]
+          == ms["hooks_with_neoforge_field"])
+    routes = load("mappings/disposition-to-tier.json")
+    check("C1–C6 → API tier 路由覆盖六种处置",
+          set(routes["routes"]) == {"C1", "C2", "C3", "C4", "C5", "C6"})
 
     print("=" * 68)
     for name in PASSED:

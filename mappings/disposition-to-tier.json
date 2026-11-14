@@ -1,0 +1,61 @@
+{
+  "schema_version": "0.1.0",
+  "version": "0.1.0",
+  "note": "C1–C6 处置标签 → Horizon API tier 与落地形态。由 ADR 0005 决策 2 定义；本表是路由数据，不改五维分类本身。",
+  "tiers": {
+    "data": {"api": "0.2", "shape": "content mod .hmod", "status": "implemented"},
+    "logic": {"api": "0.3", "shape": "native mod .hnmod + hooks", "status": "implemented"},
+    "machines": {"api": "0.4", "shape": "native mod + net / storage / capabilities", "status": "partly-declared"},
+    "deep": {"api": "0.5", "shape": "native mod + entity interface / new named hooks", "status": "declared"},
+    "client": {"api": "native hooks", "shape": "client-side hooks + budgeted draw-list", "status": "implemented"},
+    "none": {"api": null, "shape": "Horizon 内置替代，整体舍弃", "status": "implemented"}
+  },
+  "routes": {
+    "C1": {
+      "primary_tier": "logic",
+      "secondary_tiers": ["deep"],
+      "artifact": "Rust 库 + native mod",
+      "typical_hooks": ["server_tick", "level_tick_pre", "tick"],
+      "typical_helpers": ["raycast"],
+      "note": "纯算法/状态枚举可直译；进差分测试"
+    },
+    "C2": {
+      "primary_tier": "deep",
+      "secondary_tiers": ["logic"],
+      "artifact": "portable contract + native mod trait",
+      "typical_hooks": [],
+      "note": "Java 接口是平台无关契约边界；缺钩子时按 docs/native-hooks-neoforge.md 申请命名 hook"
+    },
+    "C3": {
+      "primary_tier": "logic",
+      "secondary_tiers": ["machines", "client"],
+      "artifact": "native mod",
+      "typical_hooks": ["input_key", "mouse_button_pre", "projectile_launch", "projectile_impact", "living_incoming_damage", "client_packet", "register_configs"],
+      "note": "查 mappings/forge-to-horizon.json 做事件 → hook 映射；0.4 net/storage 属 declared"
+    },
+    "C4": {
+      "primary_tier": "data",
+      "secondary_tiers": [],
+      "artifact": ".hmod content mod",
+      "typical_hooks": ["data_pack_files", "client_resources_reloaded"],
+      "note": "assets/ + data/、registries JSON 从 vanilla 模板复制；机械转换，无需 agent"
+    },
+    "C5": {
+      "primary_tier": "none",
+      "secondary_tiers": ["client", "deep"],
+      "artifact": "hook 映射或整体舍弃",
+      "typical_hooks": ["camera_pose", "render_hand", "render_hand_pose", "hand_drawn", "mouse_button_pre", "gui_render_post"],
+      "note": "Mixin / @SubscribeEvent 不翻译；用 behavior_delta 查 neoforge 映射到命名 hook。GeckoLib → animated models（0.5 未落地）"
+    },
+    "C6": {
+      "primary_tier": null,
+      "secondary_tiers": [],
+      "artifact": "人工复核 + Java oracle 行为观测",
+      "typical_hooks": [],
+      "note": "反编译失败、混淆、信息不足；禁止静默猜测"
+    }
+  },
+  "known_gaps": [
+    {"capability": "animation_driver", "affects": ["C4", "C5"], "status": "unbound", "plan": "docs/04-roadmap.md M2"}
+  ]
+}

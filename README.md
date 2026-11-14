@@ -106,15 +106,24 @@ python tools/experiment.py --profile profiles/forge/1.20.1.json \
 
 **一处必须知道的边界**：Horizon 官方 `docs/modpacks.md` 的 cleanroom 政策是「第三方 mod 代码不反编译、不阅读，只从行为 oracle / 公开文档 / 自有数据文件移植」。本仓库 v0.2 的双轨事实提取与之不一致。ADR 0005 §4 给出 A/B/C 三个处理方向（推荐按许可证分档的混合模式），**待用户拍板前不改变仓库定位**。
 
+## v0.4 · 方案 C 落地与 M0/M1 交付
+
+- **方案 C 已拍板并工程化**（[ADR 0006](docs/adr/0006-policy-tiered-inspection.md)）：`policy-gate` 是 S0 第一道门禁；三档 `full-inspection / metadata-only / oracle-only`；`(scope × license)` 双维度分档；`default_deny`。实测 TaCZ 的 `GPL3 / CC BY-NC-ND 4.0` → 代码 `full-inspection`、资产 `oracle-only`、`redistribution: false`。
+- **M0**：`policy/license-profiles.json`、`policy-gate` skill、两个解析器的 `--policy-mode`、schema 的 `source.policy`。
+- **M1**：`mappings/forge-to-horizon.json`（从 Horizon `native-hooks.json` 生成 **162 条事件映射**）、`mappings/disposition-to-tier.json`（C1–C6 → API tier）、`build-hook-mapping` skill。
+- **路线图**：[docs/04-roadmap.md](docs/04-roadmap.md)（M0–M4，含验收、依赖、风险与度量）。
+- **合规保证**：`metadata-only` 产物不含方法名/字符串字面量，`oracle-only` 完全不读内容；`validate.py` 检查越界。
+- **合规成本实测**（TaCZ 799 单元）：`full-inspection` C6 = 0；`metadata-only` C6 = 0.0013、C1 从 21 降到 17、warnings 4 → 660。签名级元数据仍够用，代价在证据强度而非覆盖率；详见 `docs/04-roadmap.md` §4。
+- **双维度生效**：门禁整体档为 `oracle-only`（资产 ND 拉严），但代码侧自动取 `scope_decisions.code = full-inspection`，v0.2 的 4156 个方法 / 3184 个字符串事实得以保留，不会被资产许可证误伤。
+
 ## 状态与下一步
 
-**v0.3 — 方法已被真实样本验证，目标侧已绑定**：三轨事实提取、20 条实证校准规则、12 个 skill、31 项自检全绿、SSH 推送已通。
+**v0.4 — 合规门禁与 API 映射已就位**：14 个 skill、33+ 项自检、完整路线图、SSH 持续推送。
 
-C6 归零是在**未混淆、带调试信息的单一 mod** 上取得的，不可外推。下一步（我制定的顺序）：
+按 `docs/04-roadmap.md` 推进：
 
-1. **建 API 映射表 skill**：直接消费 `native-hooks.json` 的 `neoforge` 字段，把 `@SubscribeEvent` / Mixin 映射到命名 hook，替代自建映射表；同时把 `C1–C6 → Horizon API tier (data/logic/machines/deep/client/none)` 路由写进 registry。
-2. **补美术资产链缺口**：`animation_driver` 是当前唯一 unbound 能力。用 TaCZ 的 Bedrock geometry / glTF 动画资产做格式差异分析，产出「0.5 落地前可用的临时 draw-list 方案」与契约对齐用例。
-3. **接官方 harness**：把 `horizon-ctl` 接入 `diff-test-harness`，用 dev-only Java oracle 作为录制端。
-4. **换第二个真实 mod**（优先混淆或跨版本差异大的）验证规则是否过拟合 TaCZ；归因剩余 0.1266 双轨差异。
+- **M2 美术链与 `animation_driver` 缺口**（全项目最大技术风险）
+- **M3 接 `horizon-ctl` 官方 harness**
+- **M4 第二个真实 mod 验证泛化**
 
-> 待用户拍板：ADR 0005 §4 的 cleanroom 政策定位（A 独立研究 / B 完全对齐 / **C 按许可证分档（推荐）**）。
+C6 归零仍只是单一样本结果，不可外推；`metadata-only` 档下分类精度下降是**合规成本，不是缺陷**，必须如实记录。

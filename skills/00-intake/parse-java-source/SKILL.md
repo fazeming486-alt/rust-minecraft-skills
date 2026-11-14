@@ -39,5 +39,8 @@ acceptance: ["每个 .java 生成一个 unit", "注解简单名必须解析成 F
 ```bash
 python skills/00-intake/parse-java-source/run.py \
   --root work/TACZ-1.20.1 --source-root src/main/java \
+  --policy-decision work/policy-decision.json \
   --out work/index.source.json
 ```
+
+**合规降级（ADR 0006）**：`--policy-decision` 传入 `policy-gate` 产物后，本 skill 自动取 `scope_decisions.code.mode` 作为实际提取深度（代码侧不受资产许可证拉严影响）。也可用 `--policy-mode metadata-only|oracle-only` 显式覆盖；`metadata-only` 清空 methods / constant_strings，`oracle-only` 完全不读内容。决策写入 `artifact-index.source.policy`（含 `gate_overall_mode` 与 `effective_mode`）。

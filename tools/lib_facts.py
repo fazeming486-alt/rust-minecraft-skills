@@ -78,7 +78,51 @@ def default_flags() -> Dict[str, Any]:
             "native": False, "obfuscated": False, "registration_id_count": 0}
 
 
-def parse_java_source(text: str, rel_path: str) -> Dict[str, Any]:
+POLICY_MODES = ("full-inspection", "metadata-only", "oracle-only")
+
+
+def policy_block(mode: str, decided_by: str = "caller") -> Dict[str, Any]:
+    if mode not in POLICY_MODES:
+        raise ValueError("未知 policy_mode: %r" % mode)
+    return {"mode": mode, "decided_by": decided_by, "redistribution": False,
+            "review_required": False, "ruleset": "policy/license-profiles.json"}
+
+
+def unit_from_path(rel_path: str) -> Dict[str, Any]:
+    """oracle-only：只从路径生成 unit，绝不读取内容。"""
+    path = Path(rel_path)
+    parent = path.parent.as_posix()
+    package = parent.replace("/", ".") if parent != "." else ""
+    return {
+        "unit_id": "cls:" + (package.replace(".", "/") + "/" if package else "") + path.stem,
+        "path": rel_path,
+        "kind": "class",
+        "symbols": empty_symbols(),
+        "flags": default_flags(),
+    }
+
+
+def apply_policy(symbols: Dict[str, Any], flags: Dict[str, Any],
+                 mode: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """按 ADR 0006 降级：metadata-only 去掉方法与字符串，oracle-only 清空全部。"""
+    if mode not in POLICY_MODES:
+        raise ValueError("未知 policy_mode: %r" % mode)
+    if mode == "oracle-only":
+        return empty_symbols(), default_flags()
+    if mode == "metadata-only":
+        symbols["constant_strings"] = []
+        symbols["methods"] = []
+        flags["registration_id_count"] = 0
+    return symbols, flags
+
+
+def parse_java_source(text: str, rel_path: str,
+                      policy_mode: str = "full-inspection") -> Dict[str, Any]:
+    if policy_mode not in POLICY_MODES:
+        raise ValueError("未知 policy_mode: %r" % policy_mode)
+    if policy_mode == "oracle-only":
+        return unit_from_path(rel_path)
+
     text = text.lstrip("\ufeff")
     clean = strip_comments(text)
     imports = RE_IMPORT.findall(clean)
@@ -129,6 +173,7 @@ def parse_java_source(text: str, rel_path: str) -> Dict[str, Any]:
     })
     flags = default_flags()
     flags["registration_id_count"] = len(RE_REGISTER_CALL.findall(clean))
+    symbols, flags = apply_policy(symbols, flags, policy_mode)
     return {
         "unit_id": "cls:" + (package.replace(".", "/") + "/" if package else "") + class_name,
         "path": rel_path,
@@ -138,19 +183,26 @@ def parse_java_source(text: str, rel_path: str) -> Dict[str, Any]:
     }
 
 
-def index_from_source_tree(root: Path, source_root: str = "src/main/java") -> Dict[str, Any]:
+def index_from_source_tree(root: Path, source_root: str = "src/main/java",
+                           policy_mode: str = "full-inspection",
+                           policy: Dict[str, Any] | None = None) -> Dict[str, Any]:
     base = root / source_root
     units = []
     for path in sorted(base.rglob("*.java")):
         rel = path.relative_to(base).as_posix()
         try:
-            units.append(parse_java_source(path.read_text(encoding="utf-8", errors="replace"), rel))
+            if policy_mode == "oracle-only":
+                units.append(unit_from_path(rel))
+            else:
+                units.append(parse_java_source(
+                    path.read_text(encoding="utf-8", errors="replace"), rel, policy_mode))
         except OSError:
             continue
     return {"schema_version": "0.1.0",
             "source": {"artifact_id": root.name, "loader": "forge",
                        "loader_profile": "forge/1.20.1", "mc_version": "1.20.1",
-                       "mapping_id": "mojmap+parchment", "checksum_sha256": None},
+                       "mapping_id": "mojmap+parchment", "checksum_sha256": None,
+                       "policy": policy or policy_block(policy_mode)},
             "units": units}
 
 
@@ -338,7 +390,8 @@ class ClassFile:
         return p
 
 
-def parse_class_bytes(data: bytes) -> Dict[str, Any]:
+def parse_class_bytes(data: bytes,
+                      policy_mode: str = "full-inspection") -> Dict[str, Any]:
     cf = ClassFile(data)
     name = cf.this_class or "unknown"
     path = name.replace(".", "/") + ".class"
@@ -371,21 +424,29 @@ def parse_class_bytes(data: bytes) -> Dict[str, Any]:
     flags["anonymous"] = bool(re.search(r"\$\d+$", short))
     flags["registration_id_count"] = len([s for s in cf.strings
                                           if re.fullmatch(r"[a-z0-9_]+:[a-z0-9_/]+", s)])
+    symbols, flags = apply_policy(symbols, flags, policy_mode)
     return {"unit_id": "cls:" + name.replace(".", "/"), "path": path,
             "kind": "class", "symbols": symbols, "flags": flags}
 
 
-def index_from_jar(jar_path: Path, artifact_id: str = "") -> Dict[str, Any]:
+def index_from_jar(jar_path: Path, artifact_id: str = "",
+                   policy_mode: str = "full-inspection",
+                   policy: Dict[str, Any] | None = None) -> Dict[str, Any]:
     units = []
     with zipfile.ZipFile(jar_path) as zf:
-        names = sorted(n for n in zf.namelist() if n.endswith(".class") and not n.startswith("META-INF/versions/"))
+        names = sorted(n for n in zf.namelist()
+                       if n.endswith(".class") and not n.startswith("META-INF/versions/"))
         for name in names:
+            if policy_mode == "oracle-only":
+                units.append(unit_from_path(name))
+                continue
             try:
-                units.append(parse_class_bytes(zf.read(name)))
+                units.append(parse_class_bytes(zf.read(name), policy_mode))
             except (ValueError, struct.error, IndexError, KeyError):
                 continue
     return {"schema_version": "0.1.0",
             "source": {"artifact_id": artifact_id or jar_path.name, "loader": "forge",
                        "loader_profile": "forge/1.20.1", "mc_version": "1.20.1",
-                       "mapping_id": "mojmap+parchment", "checksum_sha256": None},
+                       "mapping_id": "mojmap+parchment", "checksum_sha256": None,
+                       "policy": policy or policy_block(policy_mode)},
             "units": units}
