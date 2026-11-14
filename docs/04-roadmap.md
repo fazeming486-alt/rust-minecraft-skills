@@ -88,12 +88,14 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 
 ### M2 · 美术链与 `animation_driver` 缺口
 
+> **v0.5 状态：规划完成**，详见 `docs/05-m2-plan.md`。12 个任务包已生成，2 个调研任务已完成、10 个待派发；分工机制见 ADR 0007。
+
 | 项 | 内容 |
 |---|---|
 | 交付 | TaCZ 资产清单与格式差异报告（Bedrock geometry / glTF 动画 / 贴图通道 / 音效）；`art-asset-classify` 执行层；0.5 落地前的两阶段渲染方案；跨层契约 `shared_states` 用例 |
 | 验收 | 资产完整性清单闭合；逻辑状态机与动画状态机状态枚举一致；产出「不依赖 0.5」的最小可玩表现路径 |
 | 依赖 | M0（资产是 CC BY-NC-ND，强制 `oracle-only` + 本地不发布）、M1 |
-| 风险 | **全项目最大技术风险**：当前 Horizon 无任何骨骼动画 hook/helper，0.5 规划且 modpacks 目标已 set aside（ATM10 42/496）。不赌排期，先做 `item_model_property` + `standalone_models` 压缩姿态，再用 `render_hand`/`render_hand_pose`/draw-list 自建插值 |
+| 风险 | **全项目最大技术风险**：当前 Horizon 无任何骨骼动画 hook/helper；0.5 为 Planned 未实现（`docs/modpacks.md:183`），`roadmap.json:712` 的 set aside 只针对整包移植总目标，不可据此判定 0.5 状态（M2 子 agent 复核纠正，见 ADR 0007）。不赌排期，先做 `item_model_property` + `standalone_models` 压缩姿态，再用 `render_hand`/`render_hand_pose`/draw-list 自建插值 |
 
 ### M3 · 对接官方 harness
 
@@ -115,15 +117,15 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 
 ## 4. 度量（每次里程碑后记录）
 
-| 指标 | v0.3 基线 | 目标 |
+| 指标 | 当前值（v0.5） | 目标 |
 |---|---|---|
 | C6 占比（源码/字节码） | 0 / 0（单一样本） | 第二样本上仍 < 0.05 |
 | 双轨一致率 | 0.8734 | 逐条归因后 ≥ 0.90 |
 | Horizon 能力缺口 | 1（`animation_driver`） | 明确临时方案，不假装已解决 |
-| policy 覆盖率 | 0（未实现） | 100% 样本过门禁，解析失败强制 review |
-| NeoForge → hook 映射覆盖 | 0 | ≥ 318 条可查 |
-| `validate.py` 检查数 | 42 | 随里程碑递增，始终全绿 |
+| policy 覆盖率 | 100% 样本过门禁 | 解析失败强制 review |
 | NeoForge → hook 映射 | 162 条 / 156 事件 | 随 Horizon 快照重生成 |
+| 子 agent 任务包 | 12（4 wave / 4 worker，2 已完成） | M2 全部 result 闭合 |
+| `validate.py` 检查数 | 49 | 随里程碑递增，始终全绿 |
 
 **合规成本实测（M0，TaCZ 799 单元，同一套 20 条规则）**：
 

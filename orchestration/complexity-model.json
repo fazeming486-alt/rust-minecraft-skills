@@ -1,0 +1,38 @@
+{
+  "schema_version": "0.1.0",
+  "version": "0.1.0",
+  "note": "确定性复杂度模型。所有信号由脚本从真实输入计算，模型不得自评；人工可覆盖但必须记录理由。score = sum(weight * min(value / scale, cap))，归一化到 [0,1]。",
+  "signals": {
+    "unit_count": {"weight": 0.10, "scale": 1000, "cap": 1.0, "source": "artifact-index units"},
+    "asset_count": {"weight": 0.15, "scale": 1000, "cap": 1.0, "source": "jar 内 assets 条目数"},
+    "format_diversity": {"weight": 0.08, "scale": 10, "cap": 1.0, "source": "assets 扩展名种类数"},
+    "content_pack_ratio": {"weight": 0.05, "scale": 1.0, "cap": 1.0, "source": "内容包资产 / 全部资产"},
+    "unsupported_format_ratio": {"weight": 0.20, "scale": 1.0, "cap": 1.0, "source": "目标侧 .hmod 不接受的资产占比"},
+    "capability_gap_count": {"weight": 0.15, "scale": 3, "cap": 1.0, "source": "target 绑定表中 unbound 能力数"},
+    "policy_strictness": {"weight": 0.10, "scale": 1.0, "cap": 1.0, "source": "full=0 / metadata=0.5 / oracle=1"},
+    "c6_ratio": {"weight": 0.07, "scale": 0.2, "cap": 1.0, "source": "分类结果中 C6 占比"},
+    "cross_layer_contracts": {"weight": 0.10, "scale": 10, "cap": 1.0, "source": "跨层契约条目数"}
+  },
+  "unsupported_patterns": [
+    "**/geo_models/**",
+    "**/*.animation.json",
+    "**/display/**",
+    "**/data/*/index/**",
+    "**/*.lua",
+    "**/*.bbmodel",
+    "**/models/bedrock/**"
+  ],
+  "policy_strictness_map": {"full-inspection": 0.0, "metadata-only": 0.5, "oracle-only": 1.0},
+  "bands": [
+    {"id": "S", "min": 0.0, "max": 0.25, "workers": 1, "split": false, "human_gate": false, "note": "单 agent 顺序执行"},
+    {"id": "M", "min": 0.25, "max": 0.50, "workers": 2, "split": true, "human_gate": false, "note": "按层拆两组"},
+    {"id": "L", "min": 0.50, "max": 0.75, "workers": 4, "split": true, "human_gate": true, "note": "按资产族拆四组，主 agent 裁决"},
+    {"id": "XL", "min": 0.75, "max": 1.01, "workers": 7, "split": true, "human_gate": true, "note": "全量并行 + 合规监督 + 人工关卡"}
+  ],
+  "hard_gate_triggers": [
+    "capability_gap_count > 0",
+    "policy_mode == oracle-only",
+    "unsupported_format_ratio > 0.30"
+  ],
+  "human_override": {"enabled": true, "requires_reason": true, "recorded_in": "dispatch/index.json"}
+}

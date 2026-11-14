@@ -116,14 +116,22 @@ python tools/experiment.py --profile profiles/forge/1.20.1.json \
 - **合规成本实测**（TaCZ 799 单元）：`full-inspection` C6 = 0；`metadata-only` C6 = 0.0013、C1 从 21 降到 17、warnings 4 → 660。签名级元数据仍够用，代价在证据强度而非覆盖率；详见 `docs/04-roadmap.md` §4。
 - **双维度生效**：门禁整体档为 `oracle-only`（资产 ND 拉严），但代码侧自动取 `scope_decisions.code = full-inspection`，v0.2 的 4156 个方法 / 3184 个字符串事实得以保留，不会被资产许可证误伤。
 
+## v0.5 · 子 agent 分工与 M2 规划
+
+- **开箱即用的分工能力**（[ADR 0007](docs/adr/0007-subagent-dispatch.md)）：`estimate-complexity → plan-dispatch → collect-results` 三个 skill；复杂度由**九信号确定性评估器**给出，禁止模型自评；角色与模板由主 agent 维护，子 agent 只收自包含任务包。
+- 任务包含 `policy_mode` / `allowed_actions` / `forbidden_actions` / `input_hash` / `acceptance`；子 agent 禁止互相通信，结果由唯一入口汇总并做越界扫描。
+- **M2 规划完成**（[docs/05-m2-plan.md](docs/05-m2-plan.md)）：真实输入 4436 资产（94.5% 在内置枪包）；实测 **score 0.5255 → L 档 → 4 workers → 12 任务包 / 4 wave → human_gate**。
+- 实际派出 2 个调研子 agent 并行复核，并**纠正了一处推断偏差**：`roadmap.json:712` 的 set aside 只针对整包移植总目标，0.5 动画仍是 Planned 未实现。
+- 硬缺口 `animation_driver` 不变；不依赖 0.5 的两阶段路径：**A** 布尔条件模型 + 静态注册保证逻辑闭环，**B** `render_hand`(cancel) + `render_hand_pose` + `draw_*` + `camera_pose` 做逐块姿态近似。
+
 ## 状态与下一步
 
-**v0.4 — 合规门禁与 API 映射已就位**：14 个 skill、33+ 项自检、完整路线图、SSH 持续推送。
+**v0.5 — 分工机制与 M2 规划已就位**：17 个 skill、49 项自检全绿、SSH 持续推送。
 
 按 `docs/04-roadmap.md` 推进：
 
-- **M2 美术链与 `animation_driver` 缺口**（全项目最大技术风险）
+- **执行 M2 剩余 10 个任务包**（wave 2 七个资产族可并行，随后契约对齐与汇总验收）
 - **M3 接 `horizon-ctl` 官方 harness**
 - **M4 第二个真实 mod 验证泛化**
 
-C6 归零仍只是单一样本结果，不可外推；`metadata-only` 档下分类精度下降是**合规成本，不是缺陷**，必须如实记录。
+C6 归零仍只是单一样本结果，不可外推；`metadata-only` 精度下降与 `animation_driver` 缺口都必须如实记录，不用 workaround 冒充已解决。

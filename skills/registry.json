@@ -12,7 +12,8 @@
     {"id": "02-contract", "summary": "行为契约抽取"},
     {"id": "03-map", "summary": "能力映射与目标绑定"},
     {"id": "04-art", "summary": "美术资产分类与转换"},
-    {"id": "09-verify", "summary": "验收与回归"}
+    {"id": "09-verify", "summary": "验收与回归"},
+    {"id": "98-orchestrate", "summary": "复杂度评估、子 agent 任务派发与结果汇总"}
   ],
   "skills": [
     {
@@ -224,6 +225,45 @@
       "depends_on": [],
       "acceptance": ["映射条目可回溯到 hook 名 / side / contract", "none (无对应事件) 与真实映射分开统计", "生成物不含任何 Horizon 源码"],
       "summary": "从 Horizon native-hooks.json 生成 NeoForge 事件 → 命名 hook 映射表"
+    },
+    {
+      "id": "estimate-complexity",
+      "version": "0.1.0",
+      "stage": "98-orchestrate",
+      "path": "skills/98-orchestrate/estimate-complexity",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [],
+      "writes": [],
+      "depends_on": ["policy-gate", "classify-java-decompiled"],
+      "acceptance": ["复杂度由真实输入计算而非模型自评", "只读 jar 条目名不读资产内容", "硬门槛触发时强制 human_gate"],
+      "summary": "九信号确定性复杂度评估，决定拆分粒度、并行度与人工关卡"
+    },
+    {
+      "id": "plan-dispatch",
+      "version": "0.1.0",
+      "stage": "98-orchestrate",
+      "path": "skills/98-orchestrate/plan-dispatch",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [],
+      "writes": [],
+      "depends_on": ["estimate-complexity"],
+      "acceptance": ["每个任务包自包含且带 policy_mode 与 forbidden_actions", "任务按 depends_on 拓扑分批", "并行任务按 band 的 workers 数分配"],
+      "summary": "把里程碑模板切成自包含子 agent 任务包并按依赖分 wave"
+    },
+    {
+      "id": "collect-results",
+      "version": "0.1.0",
+      "stage": "98-orchestrate",
+      "path": "skills/98-orchestrate/collect-results",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [],
+      "writes": [],
+      "depends_on": ["plan-dispatch"],
+      "acceptance": ["每个 result 校验 task_id 与 input_hash", "oracle-only 结果不得含资产内容字段", "缺失或越界整体判为 BLOCKED 或 PARTIAL"],
+      "summary": "唯一汇总入口：校验契约、policy 越界并给出全局 verdict"
     }
   ]
 }

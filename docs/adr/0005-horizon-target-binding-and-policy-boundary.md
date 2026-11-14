@@ -18,7 +18,7 @@ ADR 0001 把 Horizon 架构当作未知量，用「能力契约层」把不确�
 | 原生钩子 | `native-hooks.json`：**434 hooks / 177 helpers**，318 个 hook 带 `neoforge` 事件映射；contract 分 listen / collect / cancel / replace |
 | API tier | `data`(0.2) → `logic`(0.3) → `machines`(0.4) → `deep`(0.5) → `client`，另有 `none` |
 | 官方流水线 | import → inventory → classify → tier → dependency order → carry-over / agent port → **harness（Java oracle vs port）** → coverage report |
-| 现状 | roadmap 明示 modpacks 目标「set aside in favour of compatibility through the browser」；ATM10 仅 **42/496** mod 部分搬运 |
+| 现状 | roadmap 明示 **whole-modpacks 总目标**「set aside in favour of compatibility through the browser」；ATM10 仅 **42/496** mod 部分搬运。此条**不可**外推为 0.5 动画能力搁置（M2 子 agent 复核纠正，见 ADR 0007） |
 
 ## 决策 1：把「全 unbound」占位表换成真实绑定
 
@@ -26,7 +26,7 @@ ADR 0001 把 Horizon 架构当作未知量，用「能力契约层」把不确�
 
 - **implemented 17 项**：`event_hook`（434 hooks）、`input_event`、`tick`、`raycast`、`damage_apply`、`asset_handle`、`resource_reload`、`localization`、`content_pack`、`render_handle`、`audio_play`、`gui_surface`、`registry_entry`、`tag_lookup`、`config_read` 等。
 - **declared 8 项**：由通用 hook 组合或 0.4/0.5 roadmap 提供，无专用稳定 API（`network_sync`、`persistent_data`、`entity_state`、`random_source`、`scheduled_task`、`cooldown`、`entity_query`、`block_query`、`collision_query`、`particle_emit` 中的保守项）。
-- **unbound 1 项**：**`animation_driver`**。当前快照没有任何骨骼动画 hook/helper；0.5 规划「Bedrock geometry + animations」数据模型，但尚未落地且 modpacks 目标已搁置。
+- **unbound 1 项**：**`animation_driver`**。当前快照没有任何骨骼动画 hook/helper；0.5「Bedrock geometry + animations」在 `docs/modpacks.md:183` 为 **Planned / 今日状态「—」（未实现）**，`docs/resource-packs.md:41` 明确 CEM「no animations yet」。roadmap 的 set aside 只针对整包移植总目标，不构成 0.5 搁置证据。
 
 **这一项就是 TaCZ 类 mod 的命门**：枪械的第一人称动作、换弹/拉栓/瞄准动画全部依赖它。ADR 0001 的假设在此得到验证——上游 skill 一行未改，只填了这张表，就得到了可度量的缺口清单。
 

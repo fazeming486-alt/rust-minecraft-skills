@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "version": "0.1.0",
+  "note": "子 agent 角色定义。角色只规定「能做什么、不能做什么、交什么」，不规定实现；具体任务由 plan-dispatch 按角色生成。",
+  "invariants": [
+    "子 agent 之间禁止直接通信，只通过 dispatch pack 输入与 result 输出交互",
+    "每个任务包必须携带 policy_mode 与 forbidden_actions，子 agent 不得越界",
+    "复杂度由确定性评估器给出，禁止子 agent 自评",
+    "主 agent 负责规划、冲突裁决与人工关卡；子 agent 只执行并回传证据",
+    "所有 result 必须可追溯到 task_id + input_hash"
+  ],
+  "output_kinds": {
+    "report": "结构化统计/差异报告，不写 manifest",
+    "delta": "manifest 补丁，必须符合 schemas/delta.schema.json",
+    "mapping": "映射表或路由表",
+    "review": "人工复核清单"
+  },
+  "roles": [
+    {
+      "id": "art-inventory",
+      "summary": "资产路径级清单与规模统计（不读内容）",
+      "allowed_skills": ["fetch-mod-artifact", "policy-gate", "art-asset-classify"],
+      "allowed_actions": ["list_resource_entries", "read_own_data_files"],
+      "input_globs": ["assets/**"],
+      "output_kind": "report",
+      "can_parallel": true,
+      "acceptance": ["按扩展名与目录给出精确计数", "不复制任何资产内容", "清单闭合可复核"]
+    },
+    {
+      "id": "geometry-asset",
+      "summary": "Bedrock geometry 模型格式差异分析",
+      "allowed_skills": ["art-asset-classify", "api-mapping-table"],
+      "allowed_actions": ["list_resource_entries", "read_public_docs"],
+      "input_globs": ["**/geo_models/**", "**/models/bedrock/**"],
+      "output_kind": "mapping",
+      "can_parallel": true,
+      "acceptance": ["列出目标侧不接受的格式", "给出可迁移/需转译分类", "不含模型内容"]
+    },
+    {
+      "id": "animation-asset",
+      "summary": "*.animation.json 与动画状态枚举对齐",
+      "allowed_skills": ["art-asset-classify", "calibrate-classification"],
+      "allowed_actions": ["list_resource_entries", "read_public_docs"],
+      "input_globs": ["**/animations/**"],
+      "output_kind": "report",
+      "can_parallel": true,
+      "acceptance": ["动画 id 与模型 id 对齐率统计", "状态枚举候选来自公开文档而非内容解析"]
+    },
+    {
+      "id": "texture-asset",
+      "summary": "贴图通道、图集与分辨率分类",
+      "allowed_skills": ["art-asset-classify"],
+      "allowed_actions": ["list_resource_entries"],
+      "input_globs": ["**/textures/**"],
+      "output_kind": "report",
+      "can_parallel": true,
+      "acceptance": ["按路径模式分组给出计数", "标注透明/发光等需人工确认项"]
+    },
+    {
+      "id": "audio-asset",
+      "summary": "音效清单与事件表映射",
+      "allowed_skills": ["art-asset-classify"],
+      "allowed_actions": ["list_resource_entries", "read_public_docs"],
+      "input_globs": ["**/sounds/**", "**/tacz_sounds/**"],
+      "output_kind": "mapping",
+      "can_parallel": true,
+      "acceptance": ["音效数量与命名模式", "sounds.json 到目标侧事件表的映射口径"]
+    },
+    {
+      "id": "display-index",
+      "summary": "display 客户端表现层与 index 内容注册层分离",
+      "allowed_skills": ["art-asset-classify"],
+      "allowed_actions": ["list_resource_entries", "read_public_docs"],
+      "input_globs": ["**/display/**", "**/data/*/index/**"],
+      "output_kind": "mapping",
+      "can_parallel": true,
+      "acceptance": ["明确 assets 侧与 data 侧不 1:1", "给出命名空间转换规则"]
+    },
+    {
+      "id": "data-registry",
+      "summary": "配方/标签/战利品/进度等数据层转换",
+      "allowed_skills": ["art-asset-classify", "api-mapping-table"],
+      "allowed_actions": ["list_resource_entries", "read_public_docs", "read_own_data_files"],
+      "input_globs": ["data/**"],
+      "output_kind": "mapping",
+      "can_parallel": true,
+      "acceptance": ["26.3 数据格式差异清单", "命名空间冲突检查"]
+    },
+    {
+      "id": "localization-shader",
+      "summary": "lang / shader / lua / gui 等可插拔资产",
+      "allowed_skills": ["art-asset-classify"],
+      "allowed_actions": ["list_resource_entries", "read_public_docs"],
+      "input_globs": ["**/lang/**", "**/shaders/**", "**/*.lua", "**/textures/gui/**"],
+      "output_kind": "report",
+      "can_parallel": true,
+      "acceptance": ["列出目标侧明确不支持的着色器/脚本类别", "不假设 lua 可运行"]
+    },
+    {
+      "id": "animation-gap",
+      "summary": "目标侧动画能力缺口与最小可行路径",
+      "allowed_skills": ["build-hook-mapping", "api-mapping-table"],
+      "allowed_actions": ["read_public_docs", "read_own_data_files"],
+      "input_globs": ["third_party/horizon/native-hooks.json", "target/horizon.capabilities.json", "mappings/**"],
+      "output_kind": "report",
+      "can_parallel": true,
+      "acceptance": ["区分硬缺口与 workaround", "每个结论附 Horizon 文件路径或行号"]
+    },
+    {
+      "id": "contract-alignment",
+      "summary": "逻辑状态机 ↔ 动画状态机 shared_states 契约",
+      "allowed_skills": ["extract-behavior-contract", "diff-test-harness"],
+      "allowed_actions": ["read_public_docs", "read_own_data_files"],
+      "input_globs": ["schemas/manifest.schema.json", "docs/01-java-decompiled-classification.md"],
+      "output_kind": "review",
+      "can_parallel": false,
+      "acceptance": ["状态枚举双向可查", "不一致即判失败"]
+    },
+    {
+      "id": "policy-compliance",
+      "summary": "合规监督：审查所有任务包与 result 是否越界",
+      "allowed_skills": ["policy-gate"],
+      "allowed_actions": ["read_jar_metadata", "list_resource_entries", "read_own_data_files"],
+      "input_globs": ["work/dispatch/**", "policy/**"],
+      "output_kind": "review",
+      "can_parallel": false,
+      "acceptance": ["oracle-only 任务不得出现资产内容字段", "越界即整体中止"]
+    },
+    {
+      "id": "verification",
+      "summary": "汇总各子 agent 结果、检查闭合与生成验收清单",
+      "allowed_skills": ["collect-results", "diff-test-harness"],
+      "allowed_actions": ["read_own_data_files"],
+      "input_globs": ["work/dispatch/**"],
+      "output_kind": "report",
+      "can_parallel": false,
+      "acceptance": ["每个任务都有 result 或明确阻塞原因", "缺口清单闭合"]
+    }
+  ]
+}

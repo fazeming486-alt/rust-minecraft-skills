@@ -1,0 +1,90 @@
+{
+  "schema_version": "0.1.0",
+  "label": "M2",
+  "model_version": "0.1.0",
+  "inputs": {
+    "jar": "tacz-forge-1.20.1-1.2.0.jar",
+    "jar_total_files": 5567,
+    "assets_count": 4436,
+    "content_pack_assets": 4194,
+    "ext_counts": {
+      ".json": 1570,
+      ".lua": 66,
+      ".ogg": 1712,
+      ".png": 1079,
+      ".txt": 1,
+      ".fsh": 5,
+      ".vsh": 3
+    },
+    "unsupported_assets": 939,
+    "policy_mode": "oracle-only",
+    "capability_gaps": 1
+  },
+  "signals": {
+    "unit_count": {
+      "value": 799.0,
+      "normalized": 0.799,
+      "weighted": 0.0799,
+      "source": "artifact-index units"
+    },
+    "asset_count": {
+      "value": 4436.0,
+      "normalized": 1.0,
+      "weighted": 0.15,
+      "source": "jar 内 assets 条目数"
+    },
+    "format_diversity": {
+      "value": 7.0,
+      "normalized": 0.7,
+      "weighted": 0.056,
+      "source": "assets 扩展名种类数"
+    },
+    "content_pack_ratio": {
+      "value": 0.9454,
+      "normalized": 0.9454,
+      "weighted": 0.0473,
+      "source": "内容包资产 / 全部资产"
+    },
+    "unsupported_format_ratio": {
+      "value": 0.2117,
+      "normalized": 0.2117,
+      "weighted": 0.0423,
+      "source": "目标侧 .hmod 不接受的资产占比"
+    },
+    "capability_gap_count": {
+      "value": 1.0,
+      "normalized": 0.3333,
+      "weighted": 0.05,
+      "source": "target 绑定表中 unbound 能力数"
+    },
+    "policy_strictness": {
+      "value": 1.0,
+      "normalized": 1.0,
+      "weighted": 0.1,
+      "source": "full=0 / metadata=0.5 / oracle=1"
+    },
+    "c6_ratio": {
+      "value": 0.0,
+      "normalized": 0.0,
+      "weighted": 0.0,
+      "source": "分类结果中 C6 占比"
+    },
+    "cross_layer_contracts": {
+      "value": 0.0,
+      "normalized": 0.0,
+      "weighted": 0.0,
+      "source": "跨层契约条目数"
+    }
+  },
+  "score": 0.5255,
+  "band": "L",
+  "recommended_workers": 4,
+  "split": true,
+  "human_gate": true,
+  "hard_gates": [
+    "capability_gap_count > 0 (1)",
+    "policy_mode == oracle-only"
+  ],
+  "input_hash": "sha256:5f25878e129d2e57cc5993b0",
+  "note": "确定性评估；模型不得自评复杂度。人工覆盖需记录理由。"
+}

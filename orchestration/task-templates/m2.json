@@ -1,0 +1,141 @@
+{
+  "schema_version": "0.1.0",
+  "template_id": "m2",
+  "version": "0.1.0",
+  "milestone": "M2 · 美术链与 animation_driver 缺口",
+  "note": "任务来自 docs/05-m2-plan.md。资产类任务一律 oracle-only（TaCZ 资产 CC BY-NC-ND 4.0 禁止演绎），只做路径级清单与公开文档调研，不读资产内容。",
+  "tasks": [
+    {
+      "id": "m2-01-inventory",
+      "role": "art-inventory",
+      "goal": "产出资产路径级清单与各族规模统计",
+      "inputs": ["jar:assets/**"],
+      "policy_mode": "oracle-only",
+      "output_contract": "report:art-inventory",
+      "acceptance": ["按扩展名与目录精确计数", "不含资产内容"],
+      "depends_on": [],
+      "priority": 10
+    },
+    {
+      "id": "m2-02-geometry",
+      "role": "geometry-asset",
+      "goal": "分析 332 个 Bedrock geometry 模型到 Horizon 26.3 资产格式的差异",
+      "inputs": ["jar:**/geo_models/**", "jar:**/models/bedrock/**", "horizon:docs/resource-packs.md"],
+      "policy_mode": "oracle-only",
+      "output_contract": "mapping:geometry",
+      "acceptance": ["列出目标侧不接受的格式", "可原样迁移 / 需转译分类"],
+      "depends_on": ["m2-01-inventory"],
+      "priority": 20
+    },
+    {
+      "id": "m2-03-animation",
+      "role": "animation-asset",
+      "goal": "统计 73 个 *.animation.json 的 id 对齐与状态枚举候选",
+      "inputs": ["jar:**/animations/**", "horizon:docs/resource-packs.md"],
+      "policy_mode": "oracle-only",
+      "output_contract": "report:animation-assets",
+      "acceptance": ["动画 id 与模型 id 对齐率", "状态枚举来自公开文档"],
+      "depends_on": ["m2-01-inventory"],
+      "priority": 20
+    },
+    {
+      "id": "m2-04-texture",
+      "role": "texture-asset",
+      "goal": "1079 个 PNG 按路径模式分组，标注通道/图集待确认项",
+      "inputs": ["jar:**/textures/**"],
+      "policy_mode": "oracle-only",
+      "output_contract": "report:texture-assets",
+      "acceptance": ["分组计数闭合", "标注人工确认项"],
+      "depends_on": ["m2-01-inventory"],
+      "priority": 30
+    },
+    {
+      "id": "m2-05-audio",
+      "role": "audio-asset",
+      "goal": "1712 个 OGG 与 sounds.json 到目标侧事件表的映射口径",
+      "inputs": ["jar:**/sounds/**", "jar:**/tacz_sounds/**"],
+      "policy_mode": "oracle-only",
+      "output_contract": "mapping:audio",
+      "acceptance": ["数量与命名模式", "事件表映射口径"],
+      "depends_on": ["m2-01-inventory"],
+      "priority": 30
+    },
+    {
+      "id": "m2-06-display-index",
+      "role": "display-index",
+      "goal": "分离 236 个 display 与 232 个 index，给出命名空间转换规则",
+      "inputs": ["jar:**/display/**", "jar:**/data/*/index/**"],
+      "policy_mode": "oracle-only",
+      "output_contract": "mapping:display-index",
+      "acceptance": ["明确 assets 侧与 data 侧不 1:1", "命名空间规则"],
+      "depends_on": ["m2-01-inventory"],
+      "priority": 30
+    },
+    {
+      "id": "m2-07-data-registry",
+      "role": "data-registry",
+      "goal": "~790 个内容包数据 JSON 到 26.3 数据格式的差异清单",
+      "inputs": ["jar:data/**", "horizon:docs/api/data-formats.md"],
+      "policy_mode": "oracle-only",
+      "output_contract": "mapping:data-registry",
+      "acceptance": ["格式差异清单", "命名空间冲突检查"],
+      "depends_on": ["m2-01-inventory"],
+      "priority": 30
+    },
+    {
+      "id": "m2-08-loc-shader",
+      "role": "localization-shader",
+      "goal": "42 lang / 13 shader / 66 lua / 7 gui 的目标侧支持性分类",
+      "inputs": ["jar:**/lang/**", "jar:**/shaders/**", "jar:**/*.lua"],
+      "policy_mode": "oracle-only",
+      "output_contract": "report:loc-shader",
+      "acceptance": ["明确不支持类别", "不假设 lua 可运行"],
+      "depends_on": ["m2-01-inventory"],
+      "priority": 40
+    },
+    {
+      "id": "m2-09-animation-gap",
+      "role": "animation-gap",
+      "goal": "复核 animation_driver 硬缺口，给出不依赖 0.5 的两阶段渲染路径",
+      "inputs": ["horizon:native-hooks.json", "target/horizon.capabilities.json", "mappings/**"],
+      "policy_mode": "full-inspection",
+      "output_contract": "report:animation-gap",
+      "acceptance": ["区分硬缺口与 workaround", "结论附 Horizon 路径或行号"],
+      "depends_on": [],
+      "priority": 10
+    },
+    {
+      "id": "m2-10-contract-alignment",
+      "role": "contract-alignment",
+      "goal": "逻辑状态机 ↔ 动画状态机 shared_states 契约与验收用例",
+      "inputs": ["schemas/manifest.schema.json", "docs/01-java-decompiled-classification.md"],
+      "policy_mode": "full-inspection",
+      "output_contract": "review:contract-alignment",
+      "acceptance": ["状态枚举双向可查", "不一致即判失败"],
+      "depends_on": ["m2-03-animation", "m2-09-animation-gap"],
+      "priority": 50
+    },
+    {
+      "id": "m2-11-policy-compliance",
+      "role": "policy-compliance",
+      "goal": "审查所有任务包与 result 是否越界",
+      "inputs": ["work/dispatch/**", "policy/**"],
+      "policy_mode": "full-inspection",
+      "output_contract": "review:policy-compliance",
+      "acceptance": ["oracle-only 不得出现资产内容字段", "越界即整体中止"],
+      "depends_on": [],
+      "priority": 5
+    },
+    {
+      "id": "m2-12-verification",
+      "role": "verification",
+      "goal": "汇总结果、检查清单闭合并生成 M2 验收清单",
+      "inputs": ["work/dispatch/**"],
+      "policy_mode": "full-inspection",
+      "output_contract": "report:verification",
+      "acceptance": ["每个任务有 result 或阻塞原因", "缺口清单闭合"],
+      "depends_on": ["m2-10-contract-alignment", "m2-11-policy-compliance"],
+      "priority": 90
+    }
+  ]
+}

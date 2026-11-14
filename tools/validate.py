@@ -105,6 +105,11 @@ def main() -> int:
         "docs/04-roadmap.md", "docs/adr/0006-policy-tiered-inspection.md",
         "policy/license-profiles.json", "mappings/forge-to-horizon.json",
         "mappings/disposition-to-tier.json", "tools/build_hook_mapping.py",
+        "docs/05-m2-plan.md", "docs/adr/0007-subagent-dispatch.md",
+        "orchestration/roles.json", "orchestration/complexity-model.json",
+        "orchestration/task-templates/m2.json", "orchestration/dispatch-pack.schema.json",
+        "tools/estimate_complexity.py", "tools/plan_dispatch.py", "tools/collect_results.py",
+        "reports/m2-complexity.json", "reports/m2-collection.json",
         "profiles/forge/1.20.1.json", "reports/calibration-before.json",
         "reports/calibration-1.20.1.json", "tools/lib_facts.py", "tools/experiment.py",
     ]
@@ -311,6 +316,47 @@ def main() -> int:
     routes = load("mappings/disposition-to-tier.json")
     check("C1–C6 → API tier 路由覆盖六种处置",
           set(routes["routes"]) == {"C1", "C2", "C3", "C4", "C5", "C6"})
+
+    # 16. 子 agent 编排层（ADR 0007）
+    roles_doc = load("orchestration/roles.json")
+    template = load("orchestration/task-templates/m2.json")
+    cmodel = load("orchestration/complexity-model.json")
+    role_ids = {r["id"] for r in roles_doc["roles"]}
+    check("角色 id 唯一且模板任务角色均已定义",
+          len(role_ids) == len(roles_doc["roles"])
+          and all(t["role"] in role_ids for t in template["tasks"]))
+    check("复杂度模型权重归一且 band 连续",
+          abs(sum(s["weight"] for s in cmodel["signals"].values()) - 1.0) < 1e-6
+          and cmodel["bands"][0]["min"] == 0.0
+          and all(cmodel["bands"][i]["max"] == cmodel["bands"][i + 1]["min"]
+                  for i in range(len(cmodel["bands"]) - 1)))
+    check("派发包 schema 定义完整",
+          isinstance(load("orchestration/dispatch-pack.schema.json").get("required"), list))
+    cr = load("reports/m2-complexity.json")
+    check("复杂度报告 band 与 score / 硬门槛自洽",
+          cr["band"] == next(b["id"] for b in cmodel["bands"]
+                            if b["min"] <= cr["score"] < b["max"])
+          and cr["human_gate"] is True and len(cr["hard_gates"]) >= 1)
+    coll = load("reports/m2-collection.json")
+    check("汇总报告 verdict 与计数自洽",
+          coll["total"] == len(template["tasks"])
+          and coll["completed"] + coll["missing"] + len(coll["violations"]) == coll["total"]
+          and coll["verdict"] in ("COMPLETE", "PARTIAL", "BLOCKED"))
+
+    dispatch_index = ROOT / "work/dispatch/index.json"
+    if dispatch_index.is_file():
+        di = json.loads(dispatch_index.read_text(encoding="utf-8"))
+        packs = [json.loads((ROOT / "work/dispatch" / (e["task_id"] + ".json")).read_text(
+            encoding="utf-8")) for e in di["packs"]]
+        check("每个任务包携带 policy 约束与 input_hash",
+              all(p.get("policy_mode") and p.get("forbidden_actions")
+                  and p.get("input_hash") and p.get("allowed_actions") for p in packs))
+        check("oracle-only 任务包禁止读取源码/资产内容",
+              all("read_source_text" in p["forbidden_actions"] and "read_class_constant_pool"
+                  in p["forbidden_actions"] for p in packs
+                  if p["policy_mode"] == "oracle-only"))
+    else:
+        check("派发产物存在（work/dispatch/index.json）", False, "未生成")
 
     print("=" * 68)
     for name in PASSED:

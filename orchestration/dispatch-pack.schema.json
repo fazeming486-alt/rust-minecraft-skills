@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rustmc-skills.local/orchestration/dispatch-pack.schema.json",
+  "title": "Sub-agent dispatch pack",
+  "description": "发给子 agent 的自包含任务包。policy_mode 与 forbidden_actions 是硬约束，子 agent 不得越界。",
+  "type": "object",
+  "required": ["task_id", "role", "goal", "policy_mode", "allowed_actions", "forbidden_actions", "inputs", "output_contract", "acceptance", "complexity", "input_hash"],
+  "properties": {
+    "task_id": {"type": "string"},
+    "role": {"type": "string"},
+    "goal": {"type": "string"},
+    "milestone": {"type": "string"},
+    "policy_mode": {"type": "string", "enum": ["full-inspection", "metadata-only", "oracle-only"]},
+    "allowed_actions": {"type": "array", "items": {"type": "string"}},
+    "forbidden_actions": {"type": "array", "items": {"type": "string"}},
+    "inputs": {"type": "array", "items": {"type": "string"}},
+    "output_contract": {"type": "string"},
+    "output_path": {"type": "string"},
+    "acceptance": {"type": "array", "items": {"type": "string"}},
+    "depends_on": {"type": "array", "items": {"type": "string"}},
+    "can_parallel": {"type": "boolean"},
+    "complexity": {
+      "type": "object",
+      "required": ["band", "score"],
+      "properties": {
+        "band": {"type": "string", "enum": ["S", "M", "L", "XL"]},
+        "score": {"type": "number"},
+        "reason": {"type": "string"}
+      }
+    },
+    "input_hash": {"type": "string"},
+    "invariants": {"type": "array", "items": {"type": "string"}},
+    "assigned_worker": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}

@@ -10,13 +10,13 @@
   "modes": {
     "full-inspection": {
       "summary": "完整双轨：源码正文 + class 常量池",
-      "allowed_actions": ["read_source_text", "read_class_constant_pool", "extract_string_literals", "extract_annotation_values", "extract_method_names", "extract_type_signatures"],
+      "allowed_actions": ["read_source_text", "read_class_constant_pool", "extract_string_literals", "extract_annotation_values", "extract_method_names", "extract_type_signatures", "read_jar_metadata", "list_resource_entries", "read_public_docs", "read_own_data_files", "observe_behaviour"],
       "forbidden_actions": [],
       "output_fields": ["annotations", "superclasses", "interfaces", "import_prefixes", "referenced_types", "constant_strings", "methods", "declared_kind"]
     },
     "metadata-only": {
       "summary": "签名级：类 FQN / 注解类型名 / 父类 / 接口 / 声明类型",
-      "allowed_actions": ["read_jar_metadata", "list_resource_entries", "extract_type_signatures", "extract_annotation_type_names", "extract_declared_kind"],
+      "allowed_actions": ["read_jar_metadata", "list_resource_entries", "extract_type_signatures", "extract_annotation_type_names", "extract_declared_kind", "read_public_docs", "read_own_data_files", "observe_behaviour"],
       "forbidden_actions": ["read_source_text", "read_method_bodies", "extract_string_literals", "extract_annotation_values", "extract_method_names"],
       "output_fields": ["annotations", "superclasses", "interfaces", "import_prefixes", "referenced_types", "declared_kind"]
     },
