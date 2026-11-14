@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.idea/
+.vscode/
+.DS_Store
+
+# 本地反编译 / 中间产物工作目录
+work/
+out/
+tmp/
+*.log
+
+# 版权边界：绝不把第三方 mod 的产物提交进本仓库
+*.jar
+*.class
+*.zip
+*.png
+*.ogg
+*.wav
+*.bbmodel
+*.obj
+*.fbx
+
+# 例外：仓库自身的夹具与黄金用例一律是 json
+!tests/**/*.json

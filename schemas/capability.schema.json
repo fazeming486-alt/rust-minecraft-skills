@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rustmc-skills.local/schemas/capability.schema.json",
+  "title": "Platform-agnostic capability vocabulary",
+  "description": "能力词汇表只描述『需要什么』，禁止描述任何平台实现。绑定状态在 target/horizon.capabilities.json。",
+  "type": "object",
+  "required": ["schema_version", "vocabulary_version", "status", "groups", "capabilities"],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "vocabulary_version": {"type": "string"},
+    "status": {"type": "string", "enum": ["draft", "frozen"]},
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "summary"],
+        "properties": {
+          "id": {"type": "string"},
+          "summary": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "group", "summary", "java_counterparts", "contract"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "group": {"type": "string"},
+          "summary": {"type": "string"},
+          "java_counterparts": {"type": "array", "items": {"type": "string"}},
+          "contract": {
+            "type": "object",
+            "required": ["inputs", "outputs"],
+            "properties": {
+              "inputs": {"type": "array", "items": {"type": "string"}},
+              "outputs": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

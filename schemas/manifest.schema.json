@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rustmc-skills.local/schemas/manifest.schema.json",
+  "title": "Porting manifest",
+  "description": "集群唯一共享状态。所有 skill 只读自己的切片、只写 delta。",
+  "type": "object",
+  "required": ["schema_version", "manifest_version", "source", "frozen", "units"],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "manifest_version": {"type": "string"},
+    "source": {"$ref": "#/$defs/source"},
+    "frozen": {"type": "boolean"},
+    "content_hash": {"type": ["string", "null"]},
+    "units": {"type": "array", "items": {"$ref": "#/$defs/unit"}},
+    "cross_layer_contracts": {"type": "array", "items": {"$ref": "#/$defs/contract"}},
+    "capability_gaps": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["artifact_id", "loader", "loader_profile"],
+      "properties": {
+        "artifact_id": {"type": "string"},
+        "loader": {"type": "string"},
+        "loader_profile": {"type": "string"},
+        "mc_version": {"type": ["string", "null"]},
+        "mapping_id": {"type": ["string", "null"]},
+        "checksum_sha256": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["rule_id", "kind", "source"],
+      "properties": {
+        "rule_id": {"type": "string"},
+        "kind": {
+          "type": "string",
+          "enum": ["annotation", "import_prefix", "superclass", "method_signature", "package_glob", "constant_string", "call_graph", "flag", "kind", "path", "fallback"]
+        },
+        "matched": {"type": ["string", "null"]},
+        "source": {"type": "string", "enum": ["bytecode", "source", "path", "profile", "derived"]}
+      },
+      "additionalProperties": false
+    },
+    "edge": {
+      "type": "object",
+      "required": ["kind", "to"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["inherits", "implements", "calls", "field_ref", "event_subscription", "constant_ref", "registry_id", "cross_layer_contract"]
+        },
+        "to": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "unit": {
+      "type": "object",
+      "required": ["unit_id", "path", "kind", "carrier", "semantic", "disposition", "evidence", "confidence", "review_state"],
+      "properties": {
+        "unit_id": {"type": "string"},
+        "path": {"type": "string"},
+        "kind": {"type": "string", "enum": ["class", "resource", "metadata", "data", "dependency", "method_group"]},
+        "carrier": {
+          "type": "string",
+          "enum": ["source", "bytecode", "resource", "metadata", "data", "dependency", "build_residue"]
+        },
+        "semantic": {
+          "type": "string",
+          "enum": ["registry", "domain_logic", "data_model", "platform_glue", "presentation", "io_persistence", "tooling", "artifact", "unknown"]
+        },
+        "semantic_subtype": {"type": ["string", "null"]},
+        "disposition": {"type": "string", "enum": ["C1", "C2", "C3", "C4", "C5", "C6"]},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "review_state": {"type": "string", "enum": ["unreviewed", "model_adjudicated", "human_confirmed"]},
+        "requires_drilldown": {"type": "boolean"},
+        "behavior_delta": {
+          "type": ["object", "null"],
+          "properties": {
+            "delta_target": {"type": ["string", "null"]},
+            "delta_semantics": {"type": ["string", "null"]},
+            "hook_candidate": {"type": ["string", "null"]}
+          },
+          "additionalProperties": false
+        },
+        "graph": {
+          "type": "object",
+          "properties": {
+            "cluster_id": {"type": ["string", "null"]},
+            "edges": {"type": "array", "items": {"$ref": "#/$defs/edge"}}
+          },
+          "additionalProperties": false
+        },
+        "target": {
+          "type": "object",
+          "properties": {
+            "capabilities": {"type": "array", "items": {"type": "string"}},
+            "binding": {"type": "string", "enum": ["unbound", "declared", "implemented"]}
+          },
+          "additionalProperties": false
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "skill_id": {"type": "string"},
+            "skill_version": {"type": "string"},
+            "input_hash": {"type": "string"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "contract": {
+      "type": "object",
+      "required": ["contract_id", "kind", "left_unit", "right_unit", "status"],
+      "properties": {
+        "contract_id": {"type": "string"},
+        "kind": {"type": "string", "enum": ["state_machine_alignment", "registry_id_alias", "animation_asset_pair", "network_state_pair"]},
+        "left_unit": {"type": "string"},
+        "right_unit": {"type": "string"},
+        "shared_states": {"type": "array", "items": {"type": "string"}},
+        "status": {"type": "string", "enum": ["unverified", "verified", "violated"]}
+      },
+      "additionalProperties": false
+    }
+  }
+}

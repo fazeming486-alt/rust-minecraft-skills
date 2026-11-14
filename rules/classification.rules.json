@@ -1,0 +1,177 @@
+{
+  "schema_version": "0.1.0",
+  "ruleset_version": "0.1.0",
+  "loader": "forge",
+  "execution": "first_match_wins_with_full_evidence",
+  "low_confidence_threshold": 0.70,
+  "carrier_by_kind": {
+    "class": "source",
+    "method_group": "source",
+    "resource": "resource",
+    "metadata": "metadata",
+    "data": "data",
+    "dependency": "dependency"
+  },
+  "rules": [
+    {
+      "id": "R001",
+      "priority": 10,
+      "title": "反编译伪影折叠",
+      "when": {"any": [
+        {"type": "flag_is", "field": "flags.synthetic", "value": true},
+        {"all": [
+          {"type": "flag_is", "field": "flags.anonymous", "value": true},
+          {"type": "count_lte", "field": "symbols.methods", "value": 0}
+        ]}
+      ]},
+      "then": {
+        "semantic": "artifact", "semantic_subtype": "decompiler_artifact", "disposition": "C5",
+        "confidence": 1.0, "evidence_kind": "flag", "carrier_override": "build_residue",
+        "note": "折叠剔除，不计入移植范围；原始 class 文件仍保留供复核"
+      }
+    },
+    {
+      "id": "R002",
+      "priority": 20,
+      "title": "反编译失败 / native / 混淆",
+      "when": {"any": [
+        {"type": "flag_is", "field": "flags.decompile_failed", "value": true},
+        {"type": "flag_is", "field": "flags.native", "value": true},
+        {"type": "flag_is", "field": "flags.obfuscated", "value": true}
+      ]},
+      "then": {
+        "semantic": "unknown", "semantic_subtype": null, "disposition": "C6",
+        "confidence": 1.0, "evidence_kind": "flag",
+        "note": "强制进入 S4 人工关卡，不允许静默猜测"
+      }
+    },
+    {
+      "id": "R009",
+      "priority": 25,
+      "title": "非代码载体分流",
+      "when": {"type": "kind_in", "values": ["resource", "metadata", "data", "dependency"]},
+      "then": {
+        "semantic": "tooling", "semantic_subtype": null, "disposition": "C4",
+        "confidence": 0.99, "evidence_kind": "kind",
+        "by_kind": {
+          "resource": {"semantic": "presentation", "semantic_subtype": "art_asset", "disposition": "C4"},
+          "data": {"semantic": "data_model", "semantic_subtype": "schema_convertible", "disposition": "C4"},
+          "metadata": {"semantic": "tooling", "semantic_subtype": "loader_metadata", "disposition": "C4"},
+          "dependency": {"semantic": "tooling", "semantic_subtype": "embedded_library", "disposition": "C5"}
+        },
+        "note": "资源走美术链，内嵌依赖单独识别，不混入 mod 自身逻辑"
+      }
+    },
+    {
+      "id": "R003",
+      "priority": 30,
+      "title": "Mixin 行为增量",
+      "when": {"all": [
+        {"type": "kind_in", "values": ["class", "method_group"]},
+        {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "Mixin"}
+      ]},
+      "then": {
+        "semantic": "platform_glue", "semantic_subtype": "behavior_delta", "disposition": "C5",
+        "confidence": 0.98, "evidence_kind": "annotation",
+        "behavior_delta": {"hook_candidate": "event_hook"},
+        "note": "必须成对记录 (delta_target, delta_semantics)，不得当普通类直译"
+      }
+    },
+    {
+      "id": "R004",
+      "priority": 40,
+      "title": "Forge 事件与平台粘合",
+      "when": {"all": [
+        {"type": "kind_in", "values": ["class", "method_group"]},
+        {"any": [
+          {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "SubscribeEvent"},
+          {"type": "symbol_prefix_in", "field": "symbols.import_prefixes", "group": "type_prefix", "names": ["FORGE"]}
+        ]}
+      ]},
+      "then": {
+        "semantic": "platform_glue", "semantic_subtype": "platform_api", "disposition": "C3",
+        "confidence": 0.95, "evidence_kind": "import_prefix",
+        "note": "走能力映射表，映射到 event_hook / registry_entry / network_sync"
+      }
+    },
+    {
+      "id": "R005",
+      "priority": 50,
+      "title": "数据驱动内容",
+      "when": {"all": [
+        {"type": "kind_in", "values": ["class", "method_group"]},
+        {"any": [
+          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "JsonObject"},
+          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "Codec"},
+          {"type": "symbol_glob_any", "field": "symbols.constant_strings", "group": "glob", "name": "data_path"}
+        ]}
+      ]},
+      "then": {
+        "semantic": "data_model", "semantic_subtype": "schema_convertible", "disposition": "C4",
+        "confidence": 0.92, "evidence_kind": "constant_string",
+        "note": "schema 转换器一次性生成，产物是数据不是运行时代码"
+      }
+    },
+    {
+      "id": "R006",
+      "priority": 60,
+      "title": "表现层 / 渲染管线",
+      "when": {"all": [
+        {"type": "kind_in", "values": ["class", "method_group"]},
+        {"any": [
+          {"type": "symbol_glob_any", "field": "path", "group": "glob", "name": "client_package"},
+          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "PoseStack"},
+          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "RenderType"}
+        ]}
+      ]},
+      "then": {
+        "semantic": "presentation", "semantic_subtype": "render_pipeline", "disposition": "C5",
+        "confidence": 0.94, "evidence_kind": "package_glob",
+        "note": "渲染管线不可直译，转资产链与 render_handle 能力"
+      }
+    },
+    {
+      "id": "R007",
+      "priority": 70,
+      "title": "注册中心 / 全局 ID 表",
+      "when": {"all": [
+        {"type": "kind_in", "values": ["class", "method_group"]},
+        {"type": "count_gte", "field": "flags.registration_id_count", "value": 3}
+      ]},
+      "then": {
+        "semantic": "registry", "semantic_subtype": "id_table", "disposition": "C3",
+        "confidence": 0.90, "evidence_kind": "flag",
+        "note": "提取全局 ID 表，它是贯穿所有层的命名空间主键；阈值待真实样本校准"
+      }
+    },
+    {
+      "id": "R008",
+      "priority": 80,
+      "title": "纯逻辑金矿",
+      "when": {"all": [
+        {"type": "kind_in", "values": ["class", "method_group"]},
+        {"type": "not", "condition": {"type": "symbol_prefix_in", "field": "symbols.import_prefixes", "group": "type_prefix", "names": ["MC", "FORGE", "MIXIN"]}},
+        {"any": [
+          {"type": "count_gte", "field": "symbols.methods", "value": 1},
+          {"type": "count_gte", "field": "symbols.import_prefixes", "value": 1}
+        ]}
+      ]},
+      "then": {
+        "semantic": "domain_logic", "semantic_subtype": "pure_algorithm", "disposition": "C1",
+        "confidence": 0.88, "evidence_kind": "import_prefix",
+        "note": "最高价值单元，可直接做差分测试；S2 需复核 import 完整度"
+      }
+    },
+    {
+      "id": "R010",
+      "priority": 999,
+      "title": "兜底：禁止静默猜测",
+      "when": {"type": "always"},
+      "then": {
+        "semantic": "unknown", "semantic_subtype": null, "disposition": "C6",
+        "confidence": 0.0, "evidence_kind": "fallback",
+        "note": "任何无法判定的单元必须显式进入人工关卡"
+      }
+    }
+  ]
+}

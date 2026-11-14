@@ -1,0 +1,39 @@
+{
+  "profile_id": "forge/_template",
+  "schema_version": "0.1.0",
+  "loader": "forge",
+  "mc_version": null,
+  "status": "template",
+  "notes": "版本档模板。按实际 MC 版本复制为 <mc-version>.json 后填写字面值；规则库不随版本改动。mc_version 为 null 表示版本未指定。",
+  "mappings": {
+    "namespace": "mojmap",
+    "mapping_id": null,
+    "deobf_required": true
+  },
+  "symbols": {
+    "annotation": {
+      "Mixin": ["org.spongepowered.asm.mixin.Mixin"],
+      "SubscribeEvent": ["net.minecraftforge.eventbus.api.SubscribeEvent"],
+      "Mod": ["net.minecraftforge.fml.common.Mod"],
+      "OnlyIn": ["net.minecraftforge.api.distmarker.OnlyIn"]
+    },
+    "type": {
+      "PoseStack": ["com.mojang.blaze3d.vertex.PoseStack"],
+      "RenderType": ["net.minecraft.client.renderer.RenderType"],
+      "ResourceLocation": ["net.minecraft.resources.ResourceLocation"],
+      "JsonObject": ["com.google.gson.JsonObject"],
+      "Codec": ["com.mojang.serialization.Codec"]
+    },
+    "type_prefix": {
+      "MC": ["net.minecraft."],
+      "FORGE": ["net.minecraftforge."],
+      "JDK": ["java.", "javax."],
+      "MIXIN": ["org.spongepowered.asm."]
+    },
+    "glob": {
+      "client_package": ["*/client/*", "*/render/*", "*/gui/*", "*/screen/*", "*/model/*", "*/animation/*"],
+      "asset_path": ["assets/*/*"],
+      "data_path": ["data/*/*"]
+    }
+  }
+}

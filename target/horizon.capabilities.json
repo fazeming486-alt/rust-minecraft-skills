@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "target": "horizon",
+  "status": "unbound",
+  "note": "Horizon 运行时架构待明确。本表是唯一的目标侧绑定入口：把每个 capability 的 status 改为 declared/implemented 并填写 mechanism 即可，上游 skill 与规则库无需改动。禁止在本表之外引用具体 Horizon API。",
+  "binding_guide": {
+    "unbound": "尚未确定由目标侧哪种机制提供",
+    "declared": "已确定机制（组件/系统、trait、host function、脚本 API 等），但尚未实现",
+    "implemented": "已有可用实现且通过 conformance 检查"
+  },
+  "bindings": {
+    "tick": {"status": "unbound", "mechanism": null, "notes": null},
+    "scheduled_task": {"status": "unbound", "mechanism": null, "notes": null},
+    "cooldown": {"status": "unbound", "mechanism": null, "notes": null},
+    "raycast": {"status": "unbound", "mechanism": null, "notes": null},
+    "entity_query": {"status": "unbound", "mechanism": null, "notes": null},
+    "block_query": {"status": "unbound", "mechanism": null, "notes": null},
+    "collision_query": {"status": "unbound", "mechanism": null, "notes": null},
+    "entity_state": {"status": "unbound", "mechanism": null, "notes": null},
+    "persistent_data": {"status": "unbound", "mechanism": null, "notes": null},
+    "config_read": {"status": "unbound", "mechanism": null, "notes": null},
+    "random_source": {"status": "unbound", "mechanism": null, "notes": "差分测试需要可注入种子"},
+    "input_event": {"status": "unbound", "mechanism": null, "notes": null},
+    "network_sync": {"status": "unbound", "mechanism": null, "notes": null},
+    "event_hook": {"status": "unbound", "mechanism": null, "notes": "Mixin 与 Forge 事件的统一归宿"},
+    "damage_apply": {"status": "unbound", "mechanism": null, "notes": null},
+    "asset_handle": {"status": "unbound", "mechanism": null, "notes": null},
+    "resource_reload": {"status": "unbound", "mechanism": null, "notes": null},
+    "localization": {"status": "unbound", "mechanism": null, "notes": null},
+    "content_pack": {"status": "unbound", "mechanism": null, "notes": "数据驱动内容包装载"},
+    "render_handle": {"status": "unbound", "mechanism": null, "notes": null},
+    "animation_driver": {"status": "unbound", "mechanism": null, "notes": "需与逻辑状态机共用状态枚举"},
+    "audio_play": {"status": "unbound", "mechanism": null, "notes": null},
+    "particle_emit": {"status": "unbound", "mechanism": null, "notes": null},
+    "gui_surface": {"status": "unbound", "mechanism": null, "notes": null},
+    "registry_entry": {"status": "unbound", "mechanism": null, "notes": null},
+    "tag_lookup": {"status": "unbound", "mechanism": null, "notes": null}
+  }
+}

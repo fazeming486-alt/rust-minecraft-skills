@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1.0",
+  "registry_version": "0.1.0",
+  "protocol": "docs/02-skill-cluster-protocol.md",
+  "orchestrator": {
+    "status": "planned",
+    "description": "按 depends_on 与 reads/writes 建 DAG、检测写冲突、按序应用 delta 并重算 content_hash。不是 skill，不参与 manifest 读写。"
+  },
+  "stages": [
+    {"id": "00-intake", "summary": "规范化与事实提取"},
+    {"id": "01-classify", "summary": "五维机械分诊"},
+    {"id": "02-contract", "summary": "行为契约抽取"},
+    {"id": "03-map", "summary": "能力映射与目标绑定"},
+    {"id": "04-art", "summary": "美术资产分类与转换"},
+    {"id": "09-verify", "summary": "验收与回归"}
+  ],
+  "skills": [
+    {
+      "id": "intake-jar",
+      "version": "0.1.0",
+      "stage": "00-intake",
+      "path": "skills/00-intake/intake-jar",
+      "execution": "deterministic",
+      "status": "specified",
+      "reads": [],
+      "writes": ["source", "units[]"],
+      "depends_on": [],
+      "acceptance": [
+        "源码与字节码双轨留存",
+        "每个 unit 有稳定 unit_id 与 path/kind",
+        "常量池字符串全部进入 symbols.constant_strings"
+      ],
+      "summary": "解包 jar、反编译、按 profile 生成 artifact-index；字节码是 ground truth"
+    },
+    {
+      "id": "classify-java-decompiled",
+      "version": "0.1.0",
+      "stage": "01-classify",
+      "path": "skills/01-classify/classify-java-decompiled",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": ["source", "units[].path", "units[].kind", "units[].symbols", "units[].flags"],
+      "writes": ["units[].carrier", "units[].semantic", "units[].semantic_subtype", "units[].disposition", "units[].evidence", "units[].confidence", "units[].review_state", "units[].requires_drilldown", "units[].behavior_delta", "units[].provenance"],
+      "depends_on": ["intake-jar"],
+      "acceptance": [
+        "每个 unit 都有 disposition",
+        "每条标签至少 1 条 evidence",
+        "confidence 在 [0,1] 且低于阈值的标记待裁决",
+        "C6 单元不得静默产生",
+        "相同 input_hash 重跑逐字节一致"
+      ],
+      "summary": "按符号规则做五维机械分诊，输出 delta；零模型参与"
+    },
+    {
+      "id": "extract-behavior-contract",
+      "version": "0.1.0",
+      "stage": "02-contract",
+      "path": "skills/02-contract/extract-behavior-contract",
+      "execution": "assisted",
+      "status": "specified",
+      "reads": ["units[].semantic", "units[].disposition", "units[].behavior_delta", "units[].graph"],
+      "writes": ["units[].target.capabilities", "cross_layer_contracts[]"],
+      "depends_on": ["classify-java-decompiled"],
+      "acceptance": [
+        "每个 C1/C2 单元有状态机或纯函数契约",
+        "每个 behavior_delta 成对记录 delta_target 与 delta_semantics",
+        "contract 中不得出现 Java 类名 FQN 或 Horizon 具体 API",
+        "逻辑状态机与动画状态机共用同一 shared_states"
+      ],
+      "summary": "把行为收敛为平台无关契约，只引用 capability id"
+    },
+    {
+      "id": "api-mapping-table",
+      "version": "0.1.0",
+      "stage": "03-map",
+      "path": "skills/03-map/api-mapping-table",
+      "execution": "human",
+      "status": "specified",
+      "reads": ["units[].target.capabilities", "capability_gaps"],
+      "writes": ["capability_gaps[]"],
+      "depends_on": ["extract-behavior-contract"],
+      "acceptance": [
+        "每个引用的 capability id 存在于 vocabulary",
+        "语义等价项必须人工确认",
+        "未绑定能力全部进入 capability_gaps"
+      ],
+      "summary": "维护能力映射与 Horizon 绑定表，产出可移植性缺口清单"
+    },
+    {
+      "id": "art-asset-classify",
+      "version": "0.1.0",
+      "stage": "04-art",
+      "path": "skills/04-art/art-asset-classify",
+      "execution": "deterministic",
+      "status": "specified",
+      "reads": ["units[].carrier", "units[].semantic", "units[].disposition", "units[].graph"],
+      "writes": ["units[].semantic_subtype", "cross_layer_contracts[]"],
+      "depends_on": ["classify-java-decompiled"],
+      "acceptance": [
+        "每个 C4 资源有资产类别与完整性清单",
+        "模型/贴图/动画/音效分类互斥且全覆盖",
+        "动画资源与逻辑状态机建立 contract 边"
+      ],
+      "summary": "美术资源分类、坐标与骨骼命名、贴图通道、动画状态机对齐"
+    },
+    {
+      "id": "diff-test-harness",
+      "version": "0.1.0",
+      "stage": "09-verify",
+      "path": "skills/09-verify/diff-test-harness",
+      "execution": "deterministic",
+      "status": "specified",
+      "reads": ["units[].disposition", "units[].target.capabilities", "cross_layer_contracts[]"],
+      "writes": [],
+      "depends_on": ["extract-behavior-contract", "art-asset-classify"],
+      "acceptance": [
+        "C1 单元有录制的输入序列与状态序列",
+        "重放差异逐条可定位到 unit_id",
+        "跨层契约状态枚举不一致即判失败"
+      ],
+      "summary": "Java 侧录制 → Rust 侧重放差分、资产完整性与视觉快照"
+    }
+  ]
+}

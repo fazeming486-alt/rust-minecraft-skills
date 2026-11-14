@@ -1,0 +1,415 @@
+{
+  "delta_id": "dlt-c7916b9810f16e19",
+  "skill_id": "classify-java-decompiled",
+  "skill_version": "0.1.0",
+  "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5",
+  "created_at": null,
+  "summary": {
+    "total_units": 14,
+    "by_disposition": {
+      "C1": 1,
+      "C3": 2,
+      "C4": 5,
+      "C5": 4,
+      "C6": 2
+    },
+    "by_semantic": {
+      "artifact": 1,
+      "data_model": 3,
+      "domain_logic": 1,
+      "platform_glue": 2,
+      "presentation": 2,
+      "registry": 1,
+      "tooling": 2,
+      "unknown": 2
+    },
+    "low_confidence_units": [
+      "cls:com/tacz/Weird"
+    ],
+    "c6_ratio": 0.1429
+  },
+  "unit_patches": [
+    {
+      "unit_id": "cls:com/tacz/logic/Ballistics",
+      "set": {
+        "carrier": "source",
+        "semantic": "domain_logic",
+        "semantic_subtype": "pure_algorithm",
+        "disposition": "C1",
+        "evidence": [
+          {
+            "rule_id": "R008",
+            "kind": "import_prefix",
+            "matched": "symbols.methods=1",
+            "source": "bytecode"
+          }
+        ],
+        "confidence": 0.88,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "cls:com/tacz/mixin/MixinPlayer",
+      "set": {
+        "carrier": "source",
+        "semantic": "platform_glue",
+        "semantic_subtype": "behavior_delta",
+        "disposition": "C5",
+        "evidence": [
+          {
+            "rule_id": "R003",
+            "kind": "annotation",
+            "matched": "org.spongepowered.asm.mixin.Mixin",
+            "source": "bytecode"
+          }
+        ],
+        "confidence": 0.98,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": {
+          "delta_target": null,
+          "delta_semantics": null,
+          "hook_candidate": "event_hook"
+        },
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "cls:com/tacz/GunEventHandler",
+      "set": {
+        "carrier": "source",
+        "semantic": "platform_glue",
+        "semantic_subtype": "platform_api",
+        "disposition": "C3",
+        "evidence": [
+          {
+            "rule_id": "R004",
+            "kind": "import_prefix",
+            "matched": "net.minecraftforge.eventbus.api.SubscribeEvent",
+            "source": "bytecode"
+          }
+        ],
+        "confidence": 0.95,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "cls:com/tacz/data/GunPackLoader",
+      "set": {
+        "carrier": "source",
+        "semantic": "data_model",
+        "semantic_subtype": "schema_convertible",
+        "disposition": "C4",
+        "evidence": [
+          {
+            "rule_id": "R005",
+            "kind": "constant_string",
+            "matched": "com.google.gson.JsonObject",
+            "source": "bytecode"
+          }
+        ],
+        "confidence": 0.92,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "cls:com/tacz/client/render/GunRenderer",
+      "set": {
+        "carrier": "source",
+        "semantic": "presentation",
+        "semantic_subtype": "render_pipeline",
+        "disposition": "C5",
+        "evidence": [
+          {
+            "rule_id": "R006",
+            "kind": "package_glob",
+            "matched": "com/tacz/client/render/GunRenderer.java",
+            "source": "path"
+          }
+        ],
+        "confidence": 0.94,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "res:assets/tacz/textures/gun.png",
+      "set": {
+        "carrier": "resource",
+        "semantic": "presentation",
+        "semantic_subtype": "art_asset",
+        "disposition": "C4",
+        "evidence": [
+          {
+            "rule_id": "R009",
+            "kind": "kind",
+            "matched": "resource",
+            "source": "path"
+          }
+        ],
+        "confidence": 0.99,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "meta:META-INF/mods.toml",
+      "set": {
+        "carrier": "metadata",
+        "semantic": "tooling",
+        "semantic_subtype": "loader_metadata",
+        "disposition": "C4",
+        "evidence": [
+          {
+            "rule_id": "R009",
+            "kind": "kind",
+            "matched": "metadata",
+            "source": "path"
+          }
+        ],
+        "confidence": 0.99,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "dep:META-INF/jars/geckolib.jar",
+      "set": {
+        "carrier": "dependency",
+        "semantic": "tooling",
+        "semantic_subtype": "embedded_library",
+        "disposition": "C5",
+        "evidence": [
+          {
+            "rule_id": "R009",
+            "kind": "kind",
+            "matched": "dependency",
+            "source": "path"
+          }
+        ],
+        "confidence": 0.99,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "cls:com/tacz/GunRegistry",
+      "set": {
+        "carrier": "source",
+        "semantic": "registry",
+        "semantic_subtype": "id_table",
+        "disposition": "C3",
+        "evidence": [
+          {
+            "rule_id": "R007",
+            "kind": "flag",
+            "matched": "flags.registration_id_count=5",
+            "source": "bytecode"
+          }
+        ],
+        "confidence": 0.9,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "cls:com/tacz/Outer$1",
+      "set": {
+        "carrier": "build_residue",
+        "semantic": "artifact",
+        "semantic_subtype": "decompiler_artifact",
+        "disposition": "C5",
+        "evidence": [
+          {
+            "rule_id": "R001",
+            "kind": "flag",
+            "matched": "flags.synthetic=True",
+            "source": "bytecode"
+          }
+        ],
+        "confidence": 1.0,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "cls:com/tacz/NativeBridge",
+      "set": {
+        "carrier": "source",
+        "semantic": "unknown",
+        "semantic_subtype": null,
+        "disposition": "C6",
+        "evidence": [
+          {
+            "rule_id": "R002",
+            "kind": "flag",
+            "matched": "flags.decompile_failed=True",
+            "source": "bytecode"
+          }
+        ],
+        "confidence": 1.0,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "cls:com/tacz/Weird",
+      "set": {
+        "carrier": "source",
+        "semantic": "unknown",
+        "semantic_subtype": null,
+        "disposition": "C6",
+        "evidence": [
+          {
+            "rule_id": "R010",
+            "kind": "fallback",
+            "matched": null,
+            "source": "derived"
+          }
+        ],
+        "confidence": 0.0,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "data:data/tacz/guns/ak47.json",
+      "set": {
+        "carrier": "data",
+        "semantic": "data_model",
+        "semantic_subtype": "schema_convertible",
+        "disposition": "C4",
+        "evidence": [
+          {
+            "rule_id": "R009",
+            "kind": "kind",
+            "matched": "data",
+            "source": "path"
+          }
+        ],
+        "confidence": 0.99,
+        "review_state": "unreviewed",
+        "requires_drilldown": false,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    },
+    {
+      "unit_id": "cls:com/tacz/client/model/GunModelLoader",
+      "set": {
+        "carrier": "source",
+        "semantic": "data_model",
+        "semantic_subtype": "schema_convertible",
+        "disposition": "C4",
+        "evidence": [
+          {
+            "rule_id": "R005",
+            "kind": "constant_string",
+            "matched": "com.google.gson.JsonObject",
+            "source": "bytecode"
+          },
+          {
+            "rule_id": "R006",
+            "kind": "package_glob",
+            "matched": "com/tacz/client/model/GunModelLoader.java",
+            "source": "path"
+          }
+        ],
+        "confidence": 0.92,
+        "review_state": "unreviewed",
+        "requires_drilldown": true,
+        "behavior_delta": null,
+        "provenance": {
+          "skill_id": "classify-java-decompiled",
+          "skill_version": "0.1.0",
+          "input_hash": "sha256:c7916b9810f16e1978ea79b3439eaa47457ac45e8a3c4233f168694b9152c1e5"
+        }
+      }
+    }
+  ],
+  "contracts_add": [],
+  "gaps_add": [],
+  "warnings": [
+    "review_required:cls:com/tacz/NativeBridge",
+    "low_confidence:cls:com/tacz/Weird:0.0",
+    "review_required:cls:com/tacz/Weird",
+    "drilldown:cls:com/tacz/client/model/GunModelLoader"
+  ]
+}

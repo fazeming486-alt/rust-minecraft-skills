@@ -1,0 +1,167 @@
+{
+  "schema_version": "0.1.0",
+  "source": {
+    "artifact_id": "sample-fixture",
+    "loader": "forge",
+    "loader_profile": "forge/_template",
+    "mc_version": "unspecified",
+    "mapping_id": null,
+    "checksum_sha256": null
+  },
+  "units": [
+    {
+      "unit_id": "cls:com/tacz/logic/Ballistics",
+      "path": "com/tacz/logic/Ballistics.java",
+      "kind": "class",
+      "symbols": {
+        "annotations": [],
+        "superclasses": [],
+        "interfaces": [],
+        "import_prefixes": ["java.util.", "com.tacz."],
+        "referenced_types": ["java.util.List"],
+        "constant_strings": [],
+        "methods": ["computeTrajectory"]
+      },
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/tacz/mixin/MixinPlayer",
+      "path": "com/tacz/mixin/MixinPlayer.java",
+      "kind": "class",
+      "symbols": {
+        "annotations": ["org.spongepowered.asm.mixin.Mixin"],
+        "superclasses": [],
+        "interfaces": [],
+        "import_prefixes": ["org.spongepowered.asm.", "net.minecraft."],
+        "referenced_types": ["net.minecraft.world.entity.player.Player"],
+        "constant_strings": [],
+        "methods": ["onTick"]
+      },
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/tacz/GunEventHandler",
+      "path": "com/tacz/GunEventHandler.java",
+      "kind": "class",
+      "symbols": {
+        "annotations": ["net.minecraftforge.eventbus.api.SubscribeEvent"],
+        "superclasses": [],
+        "interfaces": [],
+        "import_prefixes": ["net.minecraftforge.eventbus.api.", "net.minecraft.world."],
+        "referenced_types": ["net.minecraftforge.event.TickEvent"],
+        "constant_strings": [],
+        "methods": ["onPlayerTick"]
+      },
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/tacz/data/GunPackLoader",
+      "path": "com/tacz/data/GunPackLoader.java",
+      "kind": "class",
+      "symbols": {
+        "annotations": [],
+        "superclasses": [],
+        "interfaces": [],
+        "import_prefixes": ["java.util.", "net.minecraft.resources."],
+        "referenced_types": ["com.google.gson.JsonObject"],
+        "constant_strings": ["data/tacz/guns/ak47.json"],
+        "methods": ["loadPack"]
+      },
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/tacz/client/render/GunRenderer",
+      "path": "com/tacz/client/render/GunRenderer.java",
+      "kind": "class",
+      "symbols": {
+        "annotations": [],
+        "superclasses": [],
+        "interfaces": [],
+        "import_prefixes": ["net.minecraft.client.", "com.mojang.blaze3d."],
+        "referenced_types": ["com.mojang.blaze3d.vertex.PoseStack"],
+        "constant_strings": [],
+        "methods": ["render"]
+      },
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "res:assets/tacz/textures/gun.png",
+      "path": "assets/tacz/textures/gun.png",
+      "kind": "resource",
+      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": [], "methods": []},
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "meta:META-INF/mods.toml",
+      "path": "META-INF/mods.toml",
+      "kind": "metadata",
+      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": [], "methods": []},
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "dep:META-INF/jars/geckolib.jar",
+      "path": "META-INF/jars/geckolib.jar",
+      "kind": "dependency",
+      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": [], "methods": []},
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/tacz/GunRegistry",
+      "path": "com/tacz/GunRegistry.java",
+      "kind": "class",
+      "symbols": {
+        "annotations": [],
+        "superclasses": [],
+        "interfaces": [],
+        "import_prefixes": ["net.minecraft.resources."],
+        "referenced_types": ["net.minecraft.resources.ResourceLocation"],
+        "constant_strings": ["tacz:ak47", "tacz:m4a1", "tacz:glock"],
+        "methods": ["registerAll"]
+      },
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 5}
+    },
+    {
+      "unit_id": "cls:com/tacz/Outer$1",
+      "path": "com/tacz/Outer$1.java",
+      "kind": "class",
+      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": [], "methods": []},
+      "flags": {"synthetic": true, "anonymous": true, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/tacz/NativeBridge",
+      "path": "com/tacz/NativeBridge.java",
+      "kind": "class",
+      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": [], "methods": []},
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": true, "native": true, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/tacz/Weird",
+      "path": "com/tacz/Weird.java",
+      "kind": "class",
+      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": [], "methods": []},
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "data:data/tacz/guns/ak47.json",
+      "path": "data/tacz/guns/ak47.json",
+      "kind": "data",
+      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": [], "methods": []},
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/tacz/client/model/GunModelLoader",
+      "path": "com/tacz/client/model/GunModelLoader.java",
+      "kind": "class",
+      "symbols": {
+        "annotations": [],
+        "superclasses": [],
+        "interfaces": [],
+        "import_prefixes": ["com.google.gson.", "net.minecraft.client."],
+        "referenced_types": ["com.google.gson.JsonObject"],
+        "constant_strings": ["data/tacz/models/ak47.json"],
+        "methods": ["loadGeometry"]
+      },
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rustmc-skills.local/schemas/artifact-index.schema.json",
+  "title": "Artifact index (S0 output)",
+  "description": "intake-jar 的产物：从字节码与解包目录提取的事实清单。字面值原样保留，符号展开交给 profile。",
+  "type": "object",
+  "required": ["schema_version", "source", "units"],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "source": {
+      "type": "object",
+      "required": ["artifact_id", "loader", "loader_profile"],
+      "properties": {
+        "artifact_id": {"type": "string"},
+        "loader": {"type": "string"},
+        "loader_profile": {"type": "string"},
+        "mc_version": {"type": ["string", "null"]},
+        "mapping_id": {"type": ["string", "null"]},
+        "checksum_sha256": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["unit_id", "path", "kind", "symbols", "flags"],
+        "properties": {
+          "unit_id": {"type": "string"},
+          "path": {"type": "string"},
+          "kind": {"type": "string", "enum": ["class", "resource", "metadata", "data", "dependency", "method_group"]},
+          "symbols": {
+            "type": "object",
+            "required": ["annotations", "import_prefixes", "constant_strings"],
+            "properties": {
+              "annotations": {"type": "array", "items": {"type": "string"}},
+              "superclasses": {"type": "array", "items": {"type": "string"}},
+              "interfaces": {"type": "array", "items": {"type": "string"}},
+              "import_prefixes": {"type": "array", "items": {"type": "string"}},
+              "referenced_types": {"type": "array", "items": {"type": "string"}},
+              "constant_strings": {"type": "array", "items": {"type": "string"}},
+              "methods": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": false
+          },
+          "flags": {
+            "type": "object",
+            "properties": {
+              "synthetic": {"type": "boolean"},
+              "anonymous": {"type": "boolean"},
+              "decompile_failed": {"type": "boolean"},
+              "native": {"type": "boolean"},
+              "obfuscated": {"type": "boolean"},
+              "registration_id_count": {"type": "integer", "minimum": 0}
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

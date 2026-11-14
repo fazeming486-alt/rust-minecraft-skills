@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rustmc-skills.local/schemas/delta.schema.json",
+  "title": "Skill output delta",
+  "description": "skill 的唯一合法输出形式。补丁，而非整份 manifest 覆写。",
+  "type": "object",
+  "required": ["delta_id", "skill_id", "skill_version", "input_hash", "unit_patches"],
+  "properties": {
+    "delta_id": {"type": "string"},
+    "skill_id": {"type": "string"},
+    "skill_version": {"type": "string"},
+    "input_hash": {"type": "string"},
+    "created_at": {"type": ["string", "null"]},
+    "summary": {"type": "object"},
+    "unit_patches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["unit_id", "set"],
+        "properties": {
+          "unit_id": {"type": "string"},
+          "set": {"type": "object"},
+          "append": {"type": "object"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "contracts_add": {"type": "array", "items": {"type": "object"}},
+    "gaps_add": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

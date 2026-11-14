@@ -1,0 +1,42 @@
+{
+  "schema_version": "0.1.0",
+  "vocabulary_version": "0.1.0",
+  "status": "frozen",
+  "groups": [
+    {"id": "scheduling", "summary": "时间推进与延时行为"},
+    {"id": "world", "summary": "世界查询与空间判定"},
+    {"id": "state", "summary": "状态、持久化与配置"},
+    {"id": "interaction", "summary": "输入、事件、网络与行为增量"},
+    {"id": "resource", "summary": "资产、内容与本地化"},
+    {"id": "presentation", "summary": "渲染、动画、音效与界面"},
+    {"id": "registry", "summary": "注册与内容寻址"}
+  ],
+  "capabilities": [
+    {"id": "tick", "group": "scheduling", "summary": "按游戏刻获得确定性推进机会", "java_counterparts": ["服务端/客户端 tick 事件"], "contract": {"inputs": ["tick_index", "side"], "outputs": ["side_effect"]}},
+    {"id": "scheduled_task", "group": "scheduling", "summary": "在未来某一刻或延时后执行一次性/周期任务", "java_counterparts": ["定时任务", "延迟队列"], "contract": {"inputs": ["delay_ticks", "task_id"], "outputs": ["completion"]}},
+    {"id": "cooldown", "group": "scheduling", "summary": "按实体与动作维护冷却计时", "java_counterparts": ["物品冷却", "自定义 cooldown 字段"], "contract": {"inputs": ["entity", "action", "duration_ticks"], "outputs": ["ready", "remaining"]}},
+    {"id": "raycast", "group": "world", "summary": "从起点沿方向做实体/方块射线检测", "java_counterparts": ["世界射线检测", "命中判定辅助"], "contract": {"inputs": ["origin", "direction", "distance", "filter"], "outputs": ["hit", "position", "entity"]}},
+    {"id": "entity_query", "group": "world", "summary": "按范围或条件查询实体集合", "java_counterparts": ["AABB 范围查询", "实体选择器"], "contract": {"inputs": ["bounds", "predicate"], "outputs": ["entities"]}},
+    {"id": "block_query", "group": "world", "summary": "查询方块状态与碰撞信息", "java_counterparts": ["方块状态读取"], "contract": {"inputs": ["position"], "outputs": ["block_state", "hardness"]}},
+    {"id": "collision_query", "group": "world", "summary": "查询碰撞体与视线遮挡", "java_counterparts": ["碰撞箱查询", "视线检测"], "contract": {"inputs": ["shape", "world"], "outputs": ["collisions"]}},
+    {"id": "entity_state", "group": "state", "summary": "读写实体/物品的运行时状态", "java_counterparts": ["实体字段", "Capability 附加状态"], "contract": {"inputs": ["entity", "key"], "outputs": ["value"]}},
+    {"id": "persistent_data", "group": "state", "summary": "跨会话持久化结构化数据", "java_counterparts": ["存档 NBT", "持久化 capability"], "contract": {"inputs": ["owner", "key", "value"], "outputs": ["ok"]}},
+    {"id": "config_read", "group": "state", "summary": "读取可重载的模组配置", "java_counterparts": ["Forge 配置系统"], "contract": {"inputs": ["key"], "outputs": ["value"]}},
+    {"id": "random_source", "group": "state", "summary": "可复现的随机源，供差分测试注入种子", "java_counterparts": ["世界随机源", "RNG 实例"], "contract": {"inputs": ["seed"], "outputs": ["number"]}},
+    {"id": "input_event", "group": "interaction", "summary": "接收玩家输入事件及其时序", "java_counterparts": ["鼠标/按键事件", "客户端输入处理"], "contract": {"inputs": ["player", "action", "tick_index"], "outputs": ["handled"]}},
+    {"id": "network_sync", "group": "interaction", "summary": "在服务端与客户端间同步状态", "java_counterparts": ["自定义网络包", "channel"], "contract": {"inputs": ["channel", "payload", "targets"], "outputs": ["delivered"]}},
+    {"id": "event_hook", "group": "interaction", "summary": "在原版行为点挂载前置/后置/取消逻辑（Mixin 与 Forge 事件的统一归宿）", "java_counterparts": ["Mixin 注入点", "Forge 事件订阅"], "contract": {"inputs": ["hook_point", "phase", "context"], "outputs": ["result", "cancelled"]}},
+    {"id": "damage_apply", "group": "interaction", "summary": "按目标侧规则施加伤害与效果", "java_counterparts": ["伤害源与伤害计算"], "contract": {"inputs": ["target", "amount", "source"], "outputs": ["applied"]}},
+    {"id": "asset_handle", "group": "resource", "summary": "以逻辑 ID 引用模型、贴图、音效等资产", "java_counterparts": ["资源位置常量", "资源管理器"], "contract": {"inputs": ["asset_id"], "outputs": ["handle"]}},
+    {"id": "resource_reload", "group": "resource", "summary": "参与资源重载并接收变更通知", "java_counterparts": ["重载监听器", "数据包重载"], "contract": {"inputs": ["scope"], "outputs": ["reloaded"]}},
+    {"id": "localization", "group": "resource", "summary": "按语言键解析显示文本", "java_counterparts": ["语言文件条目"], "contract": {"inputs": ["key", "locale"], "outputs": ["text"]}},
+    {"id": "content_pack", "group": "resource", "summary": "装载外部数据驱动内容包并解析其 schema", "java_counterparts": ["自定义内容包", "数据驱动的 JSON 定义"], "contract": {"inputs": ["pack_id", "schema_id"], "outputs": ["entries"]}},
+    {"id": "render_handle", "group": "presentation", "summary": "提交自定义几何/材质到渲染管线", "java_counterparts": ["渲染器", "模型烘焙", "渲染类型"], "contract": {"inputs": ["handle", "transform", "pass"], "outputs": ["draw_call"]}},
+    {"id": "animation_driver", "group": "presentation", "summary": "按状态枚举驱动骨骼动画时间轴", "java_counterparts": ["动画状态机", "骨骼动画控制器"], "contract": {"inputs": ["animation_id", "state", "time"], "outputs": ["pose"]}},
+    {"id": "audio_play", "group": "presentation", "summary": "按位置或实体播放音效", "java_counterparts": ["音效播放调用"], "contract": {"inputs": ["sound_id", "position", "volume", "pitch"], "outputs": ["playing"]}},
+    {"id": "particle_emit", "group": "presentation", "summary": "生成粒子效果", "java_counterparts": ["粒子生成调用"], "contract": {"inputs": ["particle_id", "position", "velocity"], "outputs": ["emitted"]}},
+    {"id": "gui_surface", "group": "presentation", "summary": "绘制自定义界面与覆盖层", "java_counterparts": ["屏幕与覆盖层"], "contract": {"inputs": ["layout_id", "data"], "outputs": ["surface"]}},
+    {"id": "registry_entry", "group": "registry", "summary": "注册并解析内容 ID 到运行时对象", "java_counterparts": ["注册表与延迟注册"], "contract": {"inputs": ["entry_id", "definition"], "outputs": ["entry"]}},
+    {"id": "tag_lookup", "group": "registry", "summary": "按标签查询内容集合", "java_counterparts": ["标签系统"], "contract": {"inputs": ["tag_id"], "outputs": ["entries"]}}
+  ]
+}
