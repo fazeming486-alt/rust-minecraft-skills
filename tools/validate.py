@@ -101,6 +101,7 @@ def main() -> int:
         "skills/registry.json", "tests/fixtures/artifact-index.sample.json",
         "tests/golden/classification.delta.json",
         "docs/03-empirical-calibration.md", "docs/adr/0004-empirical-rule-calibration.md",
+        "docs/adr/0005-horizon-target-binding-and-policy-boundary.md",
         "profiles/forge/1.20.1.json", "reports/calibration-before.json",
         "reports/calibration-1.20.1.json", "tools/lib_facts.py", "tools/experiment.py",
     ]
@@ -160,6 +161,10 @@ def main() -> int:
           "缺: %s / 多: %s" % (sorted(set(cap_ids) - set(bindings)), sorted(set(bindings) - set(cap_ids))))
     check("绑定状态取值合法",
           all(b["status"] in ("unbound", "declared", "implemented") for b in bindings.values()))
+    check("已绑定能力均可追溯到 Horizon 快照证据",
+          all(b.get("evidence") for b in bindings.values() if b["status"] != "unbound"))
+    check("能力缺口被显式记录且数量可控",
+          sum(1 for b in bindings.values() if b["status"] == "unbound") <= 3)
 
     # 8. registry DAG
     registry = load("skills/registry.json")

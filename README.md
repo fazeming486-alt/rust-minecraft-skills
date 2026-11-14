@@ -98,13 +98,23 @@ python tools/experiment.py --profile profiles/forge/1.20.1.json \
 - 不把「AI 生成的一段代码」当作 skill 的合格产物。
 - **不为了让 C6 数字好看而放宽兜底**；反编译失败与信息不足仍必须显式进人工关卡。
 
+## v0.3 · Horizon 目标侧已明确
+
+查阅工作区内的 Horizon 源码快照（`third_party/horizon`），把 ADR 0001 里「全 unbound」的占位表换成真实绑定。Horizon 是 Rust + wgpu/Vulkan（MIT，MC 26.3），mod 分 **content mod `.hmod`（纯数据/资产）** 与 **native mod `.hnmod`（Rust via horizon-mixins）**；Java mod 不能原样运行。`native-hooks.json` 有 **434 hooks / 177 helpers，318 个带 NeoForge 事件映射**。
+
+26 个 capability 现有 **17 implemented / 8 declared / 1 明确缺口： `animation_driver`**（骨骼动画驱动，0.5 规划未落地）。上游规则、schema、12 个 skill 一行未改——ADR 0001 的隔离设计得到验证。详见 [ADR 0005](docs/adr/0005-horizon-target-binding-and-policy-boundary.md)。
+
+**一处必须知道的边界**：Horizon 官方 `docs/modpacks.md` 的 cleanroom 政策是「第三方 mod 代码不反编译、不阅读，只从行为 oracle / 公开文档 / 自有数据文件移植」。本仓库 v0.2 的双轨事实提取与之不一致。ADR 0005 §4 给出 A/B/C 三个处理方向（推荐按许可证分档的混合模式），**待用户拍板前不改变仓库定位**。
+
 ## 状态与下一步
 
-**v0.2 — 方法已被真实样本验证**：三轨事实提取、20 条实证校准规则、12 个 skill、30 项自检全绿。
+**v0.3 — 方法已被真实样本验证，目标侧已绑定**：三轨事实提取、20 条实证校准规则、12 个 skill、31 项自检全绿、SSH 推送已通。
 
-C6 归零是在**未混淆、带调试信息的单一 mod** 上取得的，不可外推。下一步（按顺序）：
+C6 归零是在**未混淆、带调试信息的单一 mod** 上取得的，不可外推。下一步（我制定的顺序）：
 
-1. 换第二个真实 mod（优先混淆或跨版本差异大的）跑同一流程，检验规则是否过拟合 TaCZ。
-2. 逐条归因剩余 0.1266 的双轨差异，区分解析器缺陷与真实信息差。
-3. 用真实 `assets/` 跑美术资产链，补 `C4` 资源的端到端用例。
-4. 之后才批量扩充下游 skill（contract / map / art / verify）与 Horizon 目标侧绑定。
+1. **建 API 映射表 skill**：直接消费 `native-hooks.json` 的 `neoforge` 字段，把 `@SubscribeEvent` / Mixin 映射到命名 hook，替代自建映射表；同时把 `C1–C6 → Horizon API tier (data/logic/machines/deep/client/none)` 路由写进 registry。
+2. **补美术资产链缺口**：`animation_driver` 是当前唯一 unbound 能力。用 TaCZ 的 Bedrock geometry / glTF 动画资产做格式差异分析，产出「0.5 落地前可用的临时 draw-list 方案」与契约对齐用例。
+3. **接官方 harness**：把 `horizon-ctl` 接入 `diff-test-harness`，用 dev-only Java oracle 作为录制端。
+4. **换第二个真实 mod**（优先混淆或跨版本差异大的）验证规则是否过拟合 TaCZ；归因剩余 0.1266 双轨差异。
+
+> 待用户拍板：ADR 0005 §4 的 cleanroom 政策定位（A 独立研究 / B 完全对齐 / **C 按许可证分档（推荐）**）。
