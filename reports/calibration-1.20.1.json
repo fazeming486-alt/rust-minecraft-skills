@@ -1,0 +1,168 @@
+{
+  "schema_version": "0.1.0",
+  "experiment_id": "tacz-1.20.1-forge-1.2.0",
+  "label": "after",
+  "profile": "profiles/forge/1.20.1.json",
+  "ruleset": "0.1.0",
+  "inputs": {
+    "source_java_files": 799,
+    "decompiled_java_files": 799,
+    "jar_class_files": 1061,
+    "source_root": "official MCModderAnchor/TACZ 1.20.1 branch",
+    "binary": "Modrinth tacz-forge-1.20.1-1.2.0.jar",
+    "decompiler": "Vineflower 1.12.0",
+    "license_note": "Code GPL-3.0 / Assets CC BY-NC-ND 4.0；本仓库只保留统计与规则，不含任何源码或资产"
+  },
+  "tracks": {
+    "source": {
+      "units": 799,
+      "by_disposition": {
+        "C1": 21,
+        "C2": 2,
+        "C3": 390,
+        "C4": 121,
+        "C5": 265
+      },
+      "by_semantic": {
+        "api_contract": 2,
+        "artifact": 8,
+        "data_model": 121,
+        "domain_logic": 21,
+        "io_persistence": 13,
+        "platform_glue": 353,
+        "presentation": 200,
+        "registry": 81
+      },
+      "rule_hits": {
+        "R003": 20,
+        "R004": 275,
+        "R005": 16,
+        "R006": 354,
+        "R007": 4,
+        "R008": 175,
+        "R011": 17,
+        "R012": 81,
+        "R013": 99,
+        "R014": 169,
+        "R015": 60,
+        "R016": 71,
+        "R017": 560,
+        "R018": 17,
+        "R019": 9,
+        "R020": 8
+      },
+      "fallback_units": 0,
+      "fallback_samples": [],
+      "c6_units": 0,
+      "c6_ratio": 0.0,
+      "c6_samples": [],
+      "low_confidence_units": 0,
+      "drilldown_units": 658
+    },
+    "decompiled": {
+      "units": 799,
+      "by_disposition": {
+        "C1": 24,
+        "C2": 2,
+        "C3": 387,
+        "C4": 127,
+        "C5": 259
+      },
+      "by_semantic": {
+        "api_contract": 2,
+        "artifact": 7,
+        "data_model": 127,
+        "domain_logic": 24,
+        "io_persistence": 13,
+        "platform_glue": 350,
+        "presentation": 195,
+        "registry": 81
+      },
+      "rule_hits": {
+        "R003": 20,
+        "R004": 276,
+        "R005": 30,
+        "R006": 354,
+        "R007": 4,
+        "R008": 178,
+        "R011": 17,
+        "R012": 81,
+        "R013": 99,
+        "R014": 169,
+        "R015": 60,
+        "R016": 71,
+        "R017": 560,
+        "R018": 17,
+        "R019": 9,
+        "R020": 7
+      },
+      "fallback_units": 0,
+      "fallback_samples": [],
+      "c6_units": 0,
+      "c6_ratio": 0.0,
+      "c6_samples": [],
+      "low_confidence_units": 0,
+      "drilldown_units": 660
+    },
+    "bytecode": {
+      "units": 1061,
+      "by_disposition": {
+        "C1": 41,
+        "C2": 3,
+        "C3": 501,
+        "C4": 187,
+        "C5": 329
+      },
+      "by_semantic": {
+        "api_contract": 3,
+        "artifact": 29,
+        "data_model": 187,
+        "domain_logic": 41,
+        "io_persistence": 31,
+        "platform_glue": 423,
+        "presentation": 242,
+        "registry": 105
+      },
+      "rule_hits": {
+        "R001": 29,
+        "R003": 20,
+        "R004": 375,
+        "R005": 34,
+        "R006": 444,
+        "R007": 3,
+        "R008": 310,
+        "R011": 17,
+        "R012": 105,
+        "R013": 105,
+        "R014": 232,
+        "R015": 82,
+        "R016": 117,
+        "R017": 696,
+        "R018": 33,
+        "R019": 11
+      },
+      "fallback_units": 0,
+      "fallback_samples": [],
+      "c6_units": 0,
+      "c6_ratio": 0.0,
+      "c6_samples": [],
+      "low_confidence_units": 0,
+      "drilldown_units": 914
+    }
+  },
+  "cross_track": {
+    "source_vs_decompiled": {
+      "common_units": 798,
+      "disposition_agreement": 0.99
+    },
+    "source_vs_bytecode": {
+      "common_units": 798,
+      "disposition_agreement": 0.8734,
+      "annotation_sets_equal": 502,
+      "annotation_equal_ratio": 0.6291,
+      "bytecode_only_string_literals": 665
+    },
+    "bytecode_only_class_units": 262,
+    "bytecode_only_note": "内部类/lambda/合成类在编译期生成，反编译器会折叠回外层文件；这是源码轨不是 ground truth 的直接证据"
+  }
+}

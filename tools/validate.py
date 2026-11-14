@@ -75,7 +75,11 @@ def depends_reachable(skills: Dict[str, Dict[str, Any]], start: str, target: str
 
 def main() -> int:
     # 1. 所有 JSON 可解析
-    json_files = sorted(p for p in ROOT.rglob("*.json") if ".git" not in p.parts)
+    excluded = {".git", "work", "out", "tmp", "__pycache__"}
+    json_files = sorted(
+        p for p in ROOT.rglob("*.json")
+        if not (set(p.relative_to(ROOT).parts[:-1]) & excluded)
+    )
     bad_json: List[str] = []
     for path in json_files:
         try:
@@ -96,9 +100,15 @@ def main() -> int:
         "target/horizon.capabilities.json", "rules/classification.rules.json",
         "skills/registry.json", "tests/fixtures/artifact-index.sample.json",
         "tests/golden/classification.delta.json",
+        "docs/03-empirical-calibration.md", "docs/adr/0004-empirical-rule-calibration.md",
+        "profiles/forge/1.20.1.json", "reports/calibration-before.json",
+        "reports/calibration-1.20.1.json", "tools/lib_facts.py", "tools/experiment.py",
     ]
     missing = [rel for rel in required_files if not (ROOT / rel).is_file()]
     check("核心文件齐全 (%d 项)" % len(required_files), not missing, ", ".join(missing))
+    gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    check("版权边界：work/ 与二进制产物被排除入库",
+          all(token in gitignore for token in ("work/", "*.jar", "*.png", "*.class")))
 
     for rel in ["schemas/manifest.schema.json", "schemas/delta.schema.json",
                 "schemas/artifact-index.schema.json", "schemas/capability.schema.json"]:
@@ -195,6 +205,12 @@ def main() -> int:
                 if not (depends_reachable(skills, a, b) or depends_reachable(skills, b, a)):
                     conflicts.append("%s <- %s / %s" % (field, a, b))
     check("无无拓扑序的写字段冲突", not conflicts, "; ".join(conflicts))
+
+    implemented = [s for s in skills.values() if s["status"] == "implemented"]
+    missing_runners = [s["id"] for s in implemented
+                       if not (ROOT / s.get("runner", s["path"] + "/run.py")).is_file()]
+    check("implemented skill 均有确定性执行层 (%d 个)" % len(implemented),
+          not missing_runners, ", ".join(missing_runners))
 
     # 10. SKILL.md 存在且 frontmatter 与 registry 一致
     fm_errors: List[str] = []

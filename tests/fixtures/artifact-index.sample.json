@@ -138,7 +138,7 @@
       "unit_id": "cls:com/tacz/Weird",
       "path": "com/tacz/Weird.java",
       "kind": "class",
-      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": [], "methods": []},
+      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": ["opaque"], "methods": [], "declared_kind": "class"},
       "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
     },
     {
@@ -161,6 +161,27 @@
         "constant_strings": ["data/tacz/models/ak47.json"],
         "methods": ["loadGeometry"]
       },
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/tacz/api/entity/ShootResult",
+      "path": "com/tacz/api/entity/ShootResult.java",
+      "kind": "class",
+      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": ["SUCCESS", "NO_AMMO"], "methods": [], "declared_kind": "enum"},
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/tacz/api/item/IGun",
+      "path": "com/tacz/api/item/IGun.java",
+      "kind": "class",
+      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": [], "methods": ["getGunId"], "declared_kind": "interface"},
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/tacz/EmptyPlaceholder",
+      "path": "com/tacz/EmptyPlaceholder.java",
+      "kind": "class",
+      "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": [], "methods": [], "declared_kind": "class"},
       "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
     }
   ]

@@ -39,6 +39,7 @@
       "path": "skills/01-classify/classify-java-decompiled",
       "execution": "deterministic",
       "status": "implemented",
+      "runner": "tools/classify.py",
       "reads": ["source", "units[].path", "units[].kind", "units[].symbols", "units[].flags"],
       "writes": ["units[].carrier", "units[].semantic", "units[].semantic_subtype", "units[].disposition", "units[].evidence", "units[].confidence", "units[].review_state", "units[].requires_drilldown", "units[].behavior_delta", "units[].provenance"],
       "depends_on": ["intake-jar"],
@@ -119,6 +120,84 @@
         "跨层契约状态枚举不一致即判失败"
       ],
       "summary": "Java 侧录制 → Rust 侧重放差分、资产完整性与视觉快照"
+    },
+    {
+      "id": "fetch-mod-artifact",
+      "version": "0.1.0",
+      "stage": "00-intake",
+      "path": "skills/00-intake/fetch-mod-artifact",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [],
+      "writes": [],
+      "depends_on": [],
+      "acceptance": ["下载产物记录 url / size / sha256", "产物只落在 work/ 等被 .gitignore 排除的目录", "校验和不一致即失败"],
+      "summary": "从官方源获取第三方产物并记录 provenance，产物绝不入库"
+    },
+    {
+      "id": "decompile-forge-jar",
+      "version": "0.1.0",
+      "stage": "00-intake",
+      "path": "skills/00-intake/decompile-forge-jar",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [],
+      "writes": [],
+      "depends_on": ["fetch-mod-artifact"],
+      "acceptance": ["记录反编译器文件名与反编译出的 java 文件数", "输出目录位于 work/", "明确标注反编译源码不是 ground truth"],
+      "summary": "编排 Vineflower 形成第三条轨，量化源码→编译→反编译的信息损失"
+    },
+    {
+      "id": "parse-java-source",
+      "version": "0.1.0",
+      "stage": "00-intake",
+      "path": "skills/00-intake/parse-java-source",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [],
+      "writes": [],
+      "depends_on": ["fetch-mod-artifact"],
+      "acceptance": ["每个 .java 生成一个 unit", "注解简单名必须解析成 FQN", "字符串字面量与 .register 调用计数全部保留"],
+      "summary": "解析 Java 源码树生成 artifact-index（源码轨）"
+    },
+    {
+      "id": "parse-bytecode",
+      "version": "0.1.0",
+      "stage": "00-intake",
+      "path": "skills/00-intake/parse-bytecode",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [],
+      "writes": [],
+      "depends_on": ["fetch-mod-artifact"],
+      "acceptance": ["每个 .class 生成一个 unit", "注解描述符与字符串常量来自常量池而非反编译文本", "Long/Double 双槽与 $ 嵌套类正确处理"],
+      "summary": "解析 class 常量池生成 artifact-index（ground truth 轨），纯标准库"
+    },
+    {
+      "id": "compare-tracks",
+      "version": "0.1.0",
+      "stage": "00-intake",
+      "path": "skills/00-intake/compare-tracks",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [],
+      "writes": [],
+      "depends_on": ["parse-java-source", "parse-bytecode"],
+      "acceptance": ["输出两轨的单元数差与分类一致率", "输出注解集合相等率与字节码独有字符串数", "明确写出以字节码轨为准的结论"],
+      "summary": "量化源码轨与字节码轨的事实差异，把 ground truth 断言变成可测数字"
+    },
+    {
+      "id": "calibrate-classification",
+      "version": "0.1.0",
+      "stage": "01-classify",
+      "path": "skills/01-classify/calibrate-classification",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": ["units[].semantic", "units[].disposition", "units[].evidence"],
+      "writes": [],
+      "depends_on": ["compare-tracks", "classify-java-decompiled"],
+      "acceptance": ["输出校准前后 C6 占比与兜底单元数", "报告只含统计与 unit_id，不含第三方源码", "每条新增规则都有 golden 用例覆盖", "规则升级后 validate.py 全绿"],
+      "summary": "三轨实验 + 规则命中统计 + 脱敏校准报告，用数据驱动规则升级"
     }
   ]
 }

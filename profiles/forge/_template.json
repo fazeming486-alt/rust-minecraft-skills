@@ -13,27 +13,48 @@
   "symbols": {
     "annotation": {
       "Mixin": ["org.spongepowered.asm.mixin.Mixin"],
+      "Inject": ["org.spongepowered.asm.mixin.injection.Inject"],
+      "At": ["org.spongepowered.asm.mixin.injection.At"],
+      "Shadow": ["org.spongepowered.asm.mixin.Shadow"],
+      "Unique": ["org.spongepowered.asm.mixin.Unique"],
+      "ModifyArg": ["org.spongepowered.asm.mixin.injection.ModifyArg"],
+      "Redirect": ["org.spongepowered.asm.mixin.injection.Redirect"],
+      "Accessor": ["org.spongepowered.asm.mixin.gen.Accessor"],
+      "Invoker": ["org.spongepowered.asm.mixin.gen.Invoker"],
+      "Overwrite": ["org.spongepowered.asm.mixin.Overwrite"],
       "SubscribeEvent": ["net.minecraftforge.eventbus.api.SubscribeEvent"],
       "Mod": ["net.minecraftforge.fml.common.Mod"],
-      "OnlyIn": ["net.minecraftforge.api.distmarker.OnlyIn"]
+      "EventBusSubscriber": ["net.minecraftforge.fml.common.Mod.EventBusSubscriber"],
+      "OnlyIn": ["net.minecraftforge.api.distmarker.OnlyIn"],
+      "SerializedName": ["com.google.gson.annotations.SerializedName"]
     },
     "type": {
       "PoseStack": ["com.mojang.blaze3d.vertex.PoseStack"],
       "RenderType": ["net.minecraft.client.renderer.RenderType"],
       "ResourceLocation": ["net.minecraft.resources.ResourceLocation"],
       "JsonObject": ["com.google.gson.JsonObject"],
-      "Codec": ["com.mojang.serialization.Codec"]
+      "Codec": ["com.mojang.serialization.Codec"],
+      "DeferredRegister": ["net.minecraftforge.registries.DeferredRegister"],
+      "RegistryObject": ["net.minecraftforge.registries.RegistryObject"],
+      "ForgeRegistries": ["net.minecraftforge.registries.ForgeRegistries"],
+      "RegisterEvent": ["net.minecraftforge.registries.RegisterEvent"]
     },
     "type_prefix": {
       "MC": ["net.minecraft."],
       "FORGE": ["net.minecraftforge."],
       "JDK": ["java.", "javax."],
-      "MIXIN": ["org.spongepowered.asm."]
+      "MIXIN": ["org.spongepowered.asm."],
+      "GSON": ["com.google.gson."],
+      "SELF": ["com.tacz."]
     },
     "glob": {
-      "client_package": ["*/client/*", "*/render/*", "*/gui/*", "*/screen/*", "*/model/*", "*/animation/*"],
+      "client_package": ["*/client/*", "*/render/*", "*/renderer/*", "*/gui/*", "*/screen/*", "*/model/*", "*/animation/*"],
       "asset_path": ["assets/*/*"],
-      "data_path": ["data/*/*"]
+      "data_path": ["data/*/*"],
+      "network_package": ["*/network/*", "*/entity/sync/*"],
+      "resource_package": ["*/resource/pojo/*", "*/resource/manager/*", "*/resource/index/*", "*/resource/serialize/*", "*/resource/modifier/*"],
+      "compat_package": ["*/compat/*"],
+      "api_package": ["*/api/*"]
     }
   }
 }

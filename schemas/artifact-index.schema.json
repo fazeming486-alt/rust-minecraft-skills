@@ -39,7 +39,8 @@
               "import_prefixes": {"type": "array", "items": {"type": "string"}},
               "referenced_types": {"type": "array", "items": {"type": "string"}},
               "constant_strings": {"type": "array", "items": {"type": "string"}},
-              "methods": {"type": "array", "items": {"type": "string"}}
+              "methods": {"type": "array", "items": {"type": "string"}},
+              "declared_kind": {"type": "string", "enum": ["class", "interface", "enum", "record", "annotation"]}
             },
             "additionalProperties": false
           },

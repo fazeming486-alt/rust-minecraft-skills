@@ -69,7 +69,7 @@
         },
         "semantic": {
           "type": "string",
-          "enum": ["registry", "domain_logic", "data_model", "platform_glue", "presentation", "io_persistence", "tooling", "artifact", "unknown"]
+          "enum": ["registry", "domain_logic", "data_model", "platform_glue", "presentation", "io_persistence", "tooling", "artifact", "api_contract", "unknown"]
         },
         "semantic_subtype": {"type": ["string", "null"]},
         "disposition": {"type": "string", "enum": ["C1", "C2", "C3", "C4", "C5", "C6"]},

@@ -115,6 +115,10 @@ def eval_condition(cond: Dict[str, Any], unit: Dict[str, Any],
     if ctype == "always":
         return True, None
 
+    if ctype == "equals":
+        ok = get_field(unit, cond["field"]) == cond["value"]
+        return ok, str(cond["value"]) if ok else None
+
     if ctype == "flag_is":
         ok = get_field(unit, cond["field"]) == cond["value"]
         return ok, "%s=%s" % (cond["field"], cond["value"]) if ok else None

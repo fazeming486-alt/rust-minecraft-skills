@@ -77,18 +77,32 @@
 
 规则库位于 `rules/classification.rules.json`。规则按 `priority` 升序执行（**执行顺序由 priority 决定，不是 id 顺序**），**首个命中的规则给出 semantic + disposition**，所有命中规则都记入 `evidence[]`。确定性、可复现、零模型参与。
 
-| ID | 命中特征 | semantic | disposition | 说明 |
-|---|---|---|---|---|
-| R001 | `synthetic` / 无意义匿名类 | `artifact` | `C5` | 折叠剔除，不计入工作量 |
-| R002 | `decompile_failed` / native / 混淆 | 保留原值 | `C6` | 强制人工关卡 |
-| R003 | Mixin 注解 | `platform_glue` | `C5` | 标记为 `behavior_delta`，见 §6 |
-| R004 | 事件订阅注解 / Forge 包前缀 | `platform_glue` | `C3` | 走能力映射表 |
-| R005 | JSON/codec 解析 或 data 路径常量 | `data_model` | `C4` | schema 转换器 |
-| R006 | client/render/gui/model 路径 或 渲染类型 | `presentation` | `C5` | 渲染管线不可直译 |
-| R007 | 注册 ID 常量密集 / 注册事件 | `registry` | `C3` | 提取全局 ID 表（贯穿各层的命名空间主键） |
-| R008 | 无 MC/Forge 前缀，仅 JDK 与自身类型，**且至少有一条 import 或方法证据** | `domain_logic` | `C1` | **金矿**，可直接做差分测试；证据为空的单元不判 C1，落 C6 |
-| R009 | 按 `kind` 分流资源/元数据/数据/依赖 | 按载体 | `C4` / `C5` | 用 `then.by_kind` 细分；资源走美术链，内嵌依赖单独处理 |
-| R010 | 兜底 | `unknown` | `C6` | 不允许静默猜测 |
+下表的 R011–R020 由 [03 · 实证校准](03-empirical-calibration.md) 从真实样本反推得出，**不是推演产物**。按 `priority` 升序列出：
+
+| priority | ID | 命中特征 | semantic | disposition | 来源 |
+|---|---|---|---|---|---|
+| 10 | R001 | `synthetic` / 无意义匿名类 | `artifact` | `C5` | v0.1 |
+| 12 | R020 | 空源码单元（无 import / 方法 / 注解 / 常量） | `artifact` | `C5` | 实验 |
+| 20 | R002 | `decompile_failed` / native / 混淆 | 保留原值 | `C6` | v0.1 |
+| 25 | R009 | 按 `kind` 分流资源/元数据/数据/依赖 | 按载体 | `C4` / `C5` | v0.1 |
+| 30 | R003 | `@Mixin` | `platform_glue` | `C5` | v0.1 |
+| 32 | R011 | Mixin 注入族（Inject/At/Shadow/Unique/Accessor…） | `platform_glue` | `C5` | 实验 |
+| 35 | R012 | `DeferredRegister` / `RegistryObject` / `EventBusSubscriber` | `registry` | `C3` | 实验 |
+| 40 | R004 | 事件订阅注解 / Forge 包前缀 | `platform_glue` | `C3` | v0.1 |
+| 45 | R013 | `@SerializedName`（Gson POJO） | `data_model` | `C4` | 实验 |
+| 50 | R005 | JSON/codec 解析 或 data 路径常量 | `data_model` | `C4` | v0.1 |
+| 60 | R006 | client/render/gui/model 路径 或 渲染类型 | `presentation` | `C5` | v0.1 |
+| 62 | R014 | `resource/{pojo,manager,index,serialize,modifier}` 包 | `data_model` | `C4` | 实验 |
+| 64 | R015 | `network` / `entity/sync` 包 | `io_persistence` | `C3` | 实验 |
+| 66 | R016 | `compat` 包（可选第三方集成） | `platform_glue` | `C5` | 实验 |
+| 70 | R007 | 注册 ID 计数密集 | `registry` | `C3` | v0.1 |
+| 78 | R018 | 平台无关 `enum` | `domain_logic` | `C1` | 实验 |
+| 79 | R019 | 平台无关 `interface` | `api_contract` | `C2` | 实验 |
+| 80 | R008 | 无平台前缀且有方法/import 证据的纯逻辑 | `domain_logic` | `C1` | v0.1 |
+| 90 | R017 | 引用 `net.minecraft.*` 但无 Forge 事件/注解 | `platform_glue` | `C3` | 实验 |
+| 999 | R010 | 兜底 | `unknown` | `C6` | v0.1 |
+
+**R017 是降 C6 的主力**：它接住了基线里 186 个被系统性漏掉的 Minecraft 原生 API 依赖类。**R013 是纠错的关键**：基线把 99 个数据 POJO 误判成 C1 直译金矿，这比落 C6 更危险。
 
 规则里**不写字面 FQN，也不写 MC 版本号**，只写符号名；符号到字面值的展开由 `profiles/forge/<version>.json` 提供。profile 缺符号时 `validate.py` 直接报错，不允许静默失配。
 
@@ -117,6 +131,14 @@ Mixin / Forge 事件回调是对原版行为的 **delta**。必须成对记录�
 ## 7. 混合层下钻
 
 一个 unit 同时命中多条规则是常态，不是异常。规则给出主标签后，若 `mixed_signals ≥ 2`，标记 `requires_drilldown: true`，由 S2 下钻到方法级重新分类，而不是硬塞一个标签。
+
+### 7.1 声明类型（declared_kind）
+
+`artifact-index` 的 `symbols.declared_kind` 由 `parse-java-source` / `parse-bytecode` 提取，取值 `class` / `interface` / `enum` / `record` / `annotation`。它由实证引入：枚举与平台无关接口通常没有 import 或方法特征，旧规则会把它们推进 C6，而它们恰恰是**状态契约**与**接口契约**的最佳来源。
+
+- `enum` → C1 `state_enum`，常量作为 `shared_states` 候选；
+- `interface` → C2 `api_contract`，进 portable contract，不直译实现；
+- `record` / `annotation` 暂按普通类走后续规则，样本不足，待下一轮校准。
 
 ## 8. 输出到 manifest
 
