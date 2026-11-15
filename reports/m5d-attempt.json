@@ -17,15 +17,33 @@
     "detail": "apply 的 complete() 会把整个工作区复制到 .horizon-mixins-lock-* 再跑 cargo update；本机该步骤退化到约 2 秒/文件（45 个文件用 20 分钟），22 分钟后仍无 stage 输出",
     "step2": "cargo build",
     "detail2": "一次因 rlib 被占用报 os error 5，删掉后重建 27 分钟未完成（无新产物、无链接）",
-    "why": "本机 D 盘 IO / 安全扫描退化：同一个 apply 在 16:56 只需 140 秒"
+    "why": "本机 D 盘 IO / 安全扫描退化：同一个 apply 在 16:56 只需 140 秒",
+    "step2_detail": {
+      "symptom": "LNK2019：48 个无法解析的 anon.*.llvm.* 符号，全部来自 libhorizon_world-7012b56d3b6c48bb.rlib",
+      "cause": "上一次 build 中途报 rlib os error 5，删掉 deps/libhorizon_world* 后重建，incremental 产物与下游不一致",
+      "tried": [
+        "删除 deps/libhorizon_world* 后重建（同样失败）",
+        "touch crates/horizon-world/src/lib.rs 强制重编（同样失败）"
+      ],
+      "fix": [
+        "CARGO_INCREMENTAL=0 cargo build（会重编较多 crate，本机估 20-40 min）",
+        "或 cargo clean -p horizon-world 后再 build",
+        "或整体 cargo clean 后重建"
+      ]
+    }
   },
   "not_verified": [
     "弹药扣减、空仓拒绝：逻辑已写进生成器，但没在游戏内观测",
     "干净的 apply→build：仍未完成（M5c 的就地补丁欠账继续存在）"
   ],
   "next": [
-    "清理 work/m5/stage.old*、work/m5/target-engine 与旧的 .horizon-mixins-lock-* 后重试",
-    "或换一台 IO 正常的机器跑 apply（plan 已能通过，说明 bundle 本身合法）",
+    "先修构建：CARGO_INCREMENTAL=0 重建 horizon-world 与下游，或 cargo clean -p horizon-world",
+    "构建恢复后再谈 mixins apply（本机 apply 会在写 stage 前卡住 7 分钟以上，0 文件）",
     "游戏内断言：31 次 use-item 应为 30 行 shot（ammo 29→0）+ 1 行 empty"
-  ]
+  ],
+  "current_tree": {
+    "state": "native_hooks.rs 里有一份就地注入的 ak47_probe（含弹匣），但没有对应的可链接二进制",
+    "binary": "target/fast/horizon-client.exe 仍是 17:28 的 claim-only 版本",
+    "before_retry": "干净 apply 前必须先把这个文件从 work/m5/src 还原"
+  }
 }
