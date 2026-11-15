@@ -13,7 +13,7 @@
     "探针 bundle work/m5/probe/ak47_probe：无 [[crate]]，用于绕开 complete() 的全工作区 scratch 拷贝"
   ],
   "blocked": {
-    "step": "horizon-mixins apply",
+    "step": "horizon-mixins apply（未变）+ 运行期加载（新）",
     "detail": "apply 的 complete() 会把整个工作区复制到 .horizon-mixins-lock-* 再跑 cargo update；本机该步骤退化到约 2 秒/文件（45 个文件用 20 分钟），22 分钟后仍无 stage 输出",
     "step2": "cargo build",
     "detail2": "一次因 rlib 被占用报 os error 5，删掉后重建 27 分钟未完成（无新产物、无链接）",
@@ -45,5 +45,15 @@
     "state": "native_hooks.rs 里有一份就地注入的 ak47_probe（含弹匣），但没有对应的可链接二进制",
     "binary": "target/fast/horizon-client.exe 仍是 17:28 的 claim-only 版本",
     "before_retry": "干净 apply 前必须先把这个文件从 work/m5/src 还原"
+  },
+  "build_resolved": {
+    "how": "CARGO_INCREMENTAL=0 cargo build --profile fast -p horizon-client --offline",
+    "result": "ok, 26m15s",
+    "conclusion": "LNK2019 的 48 个 anon.*.llvm.* 符号来自增量产物不一致；关闭增量后一次通过。lld 不解决问题（不是链接器缺陷）"
+  },
+  "runtime_blocked": {
+    "symptom": "新二进制启动后停在 'Horizon 0.1.0'，10 分钟没有 'content from 1 mod(s)'；换新世界、删 options/graphics 状态后仍一样",
+    "binary_has_probe": true,
+    "not_observed": "31 次 use-item 的 30 shot + 1 empty"
   }
 }
