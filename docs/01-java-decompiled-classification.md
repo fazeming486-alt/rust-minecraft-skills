@@ -77,7 +77,7 @@
 
 规则库位于 `rules/classification.rules.json`。规则按 `priority` 升序执行（**执行顺序由 priority 决定，不是 id 顺序**），**首个命中的规则给出 semantic + disposition**，所有命中规则都记入 `evidence[]`。确定性、可复现、零模型参与。
 
-下表的 R011–R020 由 [03 · 实证校准](03-empirical-calibration.md) 从真实样本反推得出，**不是推演产物**。按 `priority` 升序列出：
+下表的 R011–R020 由 [03 · 实证校准](03-empirical-calibration.md) 从真实样本反推得出；**R021** 由 [M4 第二样本泛化验证](07-m3-m4-execution.md) 从 Create 的兜底单元反推得出，**均不是推演产物**。按 `priority` 升序列出：
 
 | priority | ID | 命中特征 | semantic | disposition | 来源 |
 |---|---|---|---|---|---|
@@ -85,6 +85,7 @@
 | 12 | R020 | 空源码单元（无 import / 方法 / 注解 / 常量） | `artifact` | `C5` | 实验 |
 | 20 | R002 | `decompile_failed` / native / 混淆 | 保留原值 | `C6` | v0.1 |
 | 25 | R009 | 按 `kind` 分流资源/元数据/数据/依赖 | 按载体 | `C4` / `C5` | v0.1 |
+| 29 | R021 | `IMixinConfigPlugin` / ASM 基础设施（无 `@Mixin`） | `platform_glue` | `C5` | M4 |
 | 30 | R003 | `@Mixin` | `platform_glue` | `C5` | v0.1 |
 | 32 | R011 | Mixin 注入族（Inject/At/Shadow/Unique/Accessor…） | `platform_glue` | `C5` | 实验 |
 | 35 | R012 | `DeferredRegister` / `RegistryObject` / `EventBusSubscriber` | `registry` | `C3` | 实验 |
@@ -103,6 +104,8 @@
 | 999 | R010 | 兜底 | `unknown` | `C6` | v0.1 |
 
 **R017 是降 C6 的主力**：它接住了基线里 186 个被系统性漏掉的 Minecraft 原生 API 依赖类。**R013 是纠错的关键**：基线把 99 个数据 POJO 误判成 C1 直译金矿，这比落 C6 更危险。
+
+**R021 由 M4 泛化验证发现**：Create 的 `CreateMixinPlugin` 实现 `IMixinConfigPlugin`、引用 ASM，但没有 `@Mixin` 注解（R003 不命中）、也没有 `net.minecraft.*`（R017 不命中），原本掉进兜底。这类加载期基础设施不是 mod 行为逻辑，归 `C5 / mixin_infrastructure` 舍弃替身，不该占用人工关卡。新增规则后四个样本 C6 与兜底全部归零，夹具里也有独立用例覆盖。
 
 规则里**不写字面 FQN，也不写 MC 版本号**，只写符号名；符号到字面值的展开由 `profiles/forge/<version>.json` 提供。profile 缺符号时 `validate.py` 直接报错，不允许静默失配。
 

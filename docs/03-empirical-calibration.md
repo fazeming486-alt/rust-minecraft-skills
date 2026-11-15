@@ -85,6 +85,8 @@ jar 内 .class  ──> index.bytecode.json ─┤
 
 `validate.py` 30 项全绿（含 golden 逐字段一致、幂等、registry 无环、frontmatter 一致、写冲突检测）。
 
+> **v0.8 注记**：本表是 v0.2 当时的历史快照，保留原文作决策记录。M4 新增 R021 并修复泛型签名解析后，同一 TaCZ 样本在 `reports/calibration-1.20.1.json` 的当前值为 **C1 / C2 / C3 / C4 / C5 = 21 / 2 / 388 / 121 / 267**（两个 Mixin 基础设施类从 C3 改判 C5），C6 仍为 0、兜底仍为 0、双轨一致率仍 0.8734。规则演进导致的分类迁移属正常，详见 `docs/07-m3-m4-execution.md` §3。
+
 ## 8. 双轨对照：为什么必须以字节码为准
 
 | 指标 | 值 |

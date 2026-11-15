@@ -125,6 +125,20 @@ def main() -> int:
         "reports/horizon-render-pipeline.json", "reports/horizon-asset-schema.json",
         "reports/horizon-mod-api.json", "reports/m2-feature-slices.json",
         "reports/m2-conversion.json",
+        "docs/adr/0010-m3-harness-bridge-and-m4-generalization.md",
+        "docs/07-m3-m4-execution.md", "mappings/harness-contract.json",
+        "schemas/recording-contract.schema.json", "orchestration/m4-samples.json",
+        "orchestration/recording-capability-map.json",
+        "orchestration/task-templates/m3-m4.json",
+        "tools/m4_generalize.py", "tools/build_recording_contract.py",
+        "tools/diff_assertions.py",
+        "skills/09-verify/diff-test-harness/run.py",
+        "skills/09-verify/verify-generalization/run.py",
+        "tests/fixtures/recording-contract.sample.json",
+        "tests/fixtures/oracle-observations.pass.json",
+        "tests/fixtures/oracle-observations.fail.json",
+        "reports/m4-generalization.json", "reports/m3-diff-pass.json",
+        "reports/m3-diff-fail.json", "reports/m34-collection.json",
     ]
     missing = [rel for rel in required_files if not (ROOT / rel).is_file()]
     check("核心文件齐全 (%d 项)" % len(required_files), not missing, ", ".join(missing))
@@ -462,6 +476,145 @@ def main() -> int:
     check("M2 汇总 COMPLETE 且零越界",
           coll["verdict"] == "COMPLETE" and coll["total"] == len(template["tasks"])
           and coll["missing"] == 0 and not coll["violations"])
+
+    # 18. v0.8 · R021 与常量池解析回归
+    check("规则 21 条且 R021 由 M4 泛化验证新增",
+          len(rules["rules"]) == 21
+          and any(r["id"] == "R021" and r["priority"] == 29
+                  and r["then"]["disposition"] == "C5" for r in rules["rules"]))
+    golden_ids = {p["unit_id"] for p in golden["unit_patches"]}
+    check("R021 有独立 golden 夹具用例",
+          any("ExampleMixinPlugin" in u for u in golden_ids)
+          and any("ExampleMixinPlugin" in p["unit_id"]
+                  and p["set"]["disposition"] == "C5"
+                  and any(e.get("rule_id") == "R021" for e in p["set"]["evidence"])
+                  for p in golden["unit_patches"]))
+    check("两个 forge profile 都定义 MIXIN_PLUGIN 前缀组",
+          all("MIXIN_PLUGIN" in load("profiles/forge/%s.json" % n)["symbols"]["type_prefix"]
+              for n in ("_template", "1.20.1")))
+    lib_src = (ROOT / "tools/lib_facts.py").read_text(encoding="utf-8")
+    check("常量池解析器拒绝泛型签名伪引用",
+          "re.fullmatch(r\"L[\\w/$]+;\", value)" in lib_src)
+
+    # 19. v0.8 · 合规门禁单段广播回归（不依赖 work/ 产物，可跨机器复现）
+    import importlib.util
+    gate_path = ROOT / "skills/00-intake/policy-gate/run.py"
+    spec = importlib.util.spec_from_file_location("policy_gate_impl", gate_path)
+    gate_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate_mod)
+    profiles_doc = load("policy/license-profiles.json")
+    d_mit = gate_mod.decide("MIT", profiles_doc, "fixture-mit")
+    d_arr = gate_mod.decide("All Rights Reserved", profiles_doc, "fixture-arr")
+    d_split = gate_mod.decide("GPL3 / CC BY-NC-ND 4.0", profiles_doc, "fixture-split")
+    check("单段许可证广播到所有 scope 且强制 review_required",
+          d_mit["single_license_broadcast"] and d_mit["review_required"]
+          and all(v["mode"] == "full-inspection" for v in d_mit["scope_decisions"].values())
+          and d_arr["single_license_broadcast"] and d_arr["review_required"]
+          and len({v["mode"] for v in d_arr["scope_decisions"].values()}) == 1)
+    check("多段许可证不触发广播、基线判定零变化",
+          not d_split["single_license_broadcast"] and not d_split["review_required"]
+          and d_split["scope_decisions"]["code"]["mode"] == "full-inspection"
+          and d_split["scope_decisions"]["assets"]["transformation"] == "technical-only")
+    d_unknown = gate_mod.decide("some-unlisted-license-xyz", profiles_doc, "fixture-unknown")
+    check("完全无匹配仍 default_deny",
+          not d_unknown["single_license_broadcast"]
+          and all(v["mode"] == "oracle-only" for v in d_unknown["scope_decisions"].values())
+          and d_unknown["review_required"])
+
+    # 20. v0.8 · M4 泛化报告
+    m4 = load("reports/m4-generalization.json")
+    check("M4 四样本两档且阈值先于实验写死",
+          len(m4["samples"]) == 4
+          and m4["criteria"]["c6_ratio_max"] == 0.05
+          and m4["criteria"]["fallback_ratio_max"] == 0.05
+          and all(all(k in s["by_mode"] for k in ("full-inspection", "metadata-only"))
+                  for s in m4["samples"]))
+    check("M4 verdict 与逐样本 C6 / 兜底自洽",
+          m4["verdict"] == "generalizes" and not m4["failures"]
+          and all(s["by_mode"]["full-inspection"]["c6_ratio"] <= 0.05
+                  and s["by_mode"]["full-inspection"]["fallback_ratio"] <= 0.05
+                  for s in m4["samples"]))
+    check("M4 样本形态确实不同（class 数跨度 > 5x）",
+          max(s["shape"]["class_files"] for s in m4["samples"])
+          > 5 * min(s["shape"]["class_files"] for s in m4["samples"]))
+
+    # 21. v0.8 · M3 harness 对接契约
+    hc = load("mappings/harness-contract.json")
+    check("官方 result.json 契约字段与 report.rs 一致",
+          hc["result_json"]["required_by_report_rs"] == ["passed", "checks"]
+          and "passed" in hc["result_json"]["shape"]
+          and hc["coverage_row"]["shape"].startswith("array of Row")
+          and len(hc["coverage_row"]["status_enum"]) == 4)
+    check("明确区分官方 harness 不覆盖逻辑录制",
+          len(hc["capability_boundary"]["official_harness_covers"]) == 10
+          and any("Java 逻辑" in x for x in hc["capability_boundary"]["official_harness_does_not_cover"])
+          and hc["m3_status"].find("M3b") >= 0)
+    check("桥接映射三个自定义 check 且 carry 生命周期有证据",
+          set(hc["bridge_mapping"]) >= {"logic_replay", "shared_states", "asset_integrity"}
+          and any("carry" in x["step"] for x in hc["lifecycle"])
+          and any("删除" in x["warning"] for x in hc["lifecycle"] if x.get("warning")))
+    rc_schema = load("schemas/recording-contract.schema.json")
+    check("录制契约 schema 合法且平台无关",
+          rc_schema.get("$schema", "").startswith("https://json-schema.org/draft/2020-12/")
+          and "contract" in rc_schema["$defs"]
+          and "java." not in json.dumps(rc_schema, ensure_ascii=False).lower()
+          and "horizon_" not in json.dumps(rc_schema, ensure_ascii=False).lower())
+    fixture_contract = load("tests/fixtures/recording-contract.sample.json")
+    known_caps = {c["id"] for c in load("capabilities/vocabulary.json")["capabilities"]}
+    check("录制契约夹具只引用已定义的 capability id",
+          all(set(c["capability_ids"]) <= known_caps for c in fixture_contract["contracts"]))
+
+    # 22. v0.8 · 差分断言正反用例（断言器必须能抓错）
+    dp = load("reports/m3-diff-pass.json")
+    df = load("reports/m3-diff-fail.json")
+    check("PASS 用例全绿且标注 fixture 来源",
+          dp["verdict"] == "PASS" and dp["observation_is_fixture"]
+          and all(v["failed"] == 0 for v in dp["checks"].values()))
+    check("FAIL 用例抓到三类失配且可定位",
+          df["verdict"] == "FAIL"
+          and sum(v["failed"] for v in df["checks"].values()) >= 3
+          and any("rc-001[2]" in x for x in df["checks"]["logic_replay"]["examples"])
+          and df["checks"]["shared_states"]["failed"] >= 1)
+    check("官方 harness 不覆盖逻辑重放被如实记录",
+          dp["official_harness_covers_logic_replay"] is False
+          and df["official_harness_covers_logic_replay"] is False)
+
+    # 23. v0.8 · 独立子 agent 闭环
+    m34 = load("reports/m34-collection.json")
+    check("M3/M4 子 agent 汇总 7/7 COMPLETE 且零越界",
+          m34["verdict"] == "COMPLETE" and m34["total"] == 7
+          and m34["completed"] == 7 and m34["missing"] == 0 and not m34["violations"])
+    m34_roles = {i["role"] for i in m34["items"]}
+    check("6 个 result 由独立子 agent 角色产出（非主 agent 代写）",
+          len(m34_roles) >= 6 and "verification" in m34_roles
+          and all(i["assigned_worker"].startswith("worker-") for i in m34["items"]
+                  if i["role"] != "verification"))
+    check("任务包支持随包下发可复现命令",
+          "command" in load("orchestration/dispatch-pack.schema.json")["properties"])
+    m34_packs = ROOT / "work/dispatch-m34"
+    if m34_packs.is_dir():
+        ri = m34_packs / "results"
+        ok = True
+        for pth in sorted(m34_packs.glob("m34-*.json")):
+            pk = json.loads(pth.read_text(encoding="utf-8"))
+            rp = ri / (pk["task_id"] + ".json")
+            if not rp.is_file():
+                ok = False
+                break
+            res = json.loads(rp.read_text(encoding="utf-8"))
+            if res.get("input_hash") != pk["input_hash"]:
+                ok = False
+                break
+        check("子 agent result 的 input_hash 与任务包逐一匹配", ok)
+    else:
+        check("子 agent result 的 input_hash 与任务包逐一匹配", True, "work/ 未生成，跳过")
+
+    # 24. v0.8 · registry 与 skill 状态
+    check("集群 23 个 skill 且 M3 验收层已实现",
+          len(skills) == 23
+          and skills["diff-test-harness"]["status"] == "implemented"
+          and skills["verify-generalization"]["status"] == "implemented"
+          and skills["policy-gate"]["version"] == "0.3.0")
 
     print("=" * 68)
     for name in PASSED:

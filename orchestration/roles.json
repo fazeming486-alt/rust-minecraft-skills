@@ -181,6 +181,56 @@
       "acceptance": ["distribution 为 local-only 且禁止发布/商用/创造性改编", "转换产物不得出现在可入库目录", "越界即整体中止"]
     },
     {
+      "id": "generalization-check",
+      "summary": "跑第二样本泛化验证并复核规则是否过拟合",
+      "allowed_skills": ["verify-generalization", "classify-java-decompiled", "policy-gate"],
+      "allowed_actions": ["read_jar_metadata", "list_resource_entries", "extract_type_signatures", "read_own_data_files", "read_public_docs"],
+      "input_globs": ["work/m4/*.jar", "work/m4/*.policy.json", "orchestration/m4-samples.json"],
+      "output_kind": "report",
+      "can_parallel": true,
+      "acceptance": ["四个样本 C6 与兜底统计完整", "阈值与判定可复核", "报告不含第三方实现内容"]
+    },
+    {
+      "id": "recording-contract",
+      "summary": "生成 C1/C2 平台无关录制契约骨架",
+      "allowed_skills": ["diff-test-harness", "build-feature-slices"],
+      "allowed_actions": ["read_own_data_files", "build_cross_layer_slice"],
+      "input_globs": ["work/delta.source.json", "reports/m2-feature-slices.json", "work/policy-decision.json"],
+      "output_kind": "contract",
+      "can_parallel": true,
+      "acceptance": ["契约只引用 capability id", "oracle.status 为 pending 且不虚构观测", "契约数与 C1/C2 单元数一致"]
+    },
+    {
+      "id": "diff-verification",
+      "summary": "跑差分断言正反用例并产出官方形状 result.json",
+      "allowed_skills": ["diff-test-harness", "collect-results"],
+      "allowed_actions": ["read_own_data_files", "list_resource_entries"],
+      "input_globs": ["tests/fixtures/*.json", "reports/m2-conversion.json", "reports/m2-feature-slices.json"],
+      "output_kind": "verification",
+      "can_parallel": true,
+      "acceptance": ["PASS 用例全绿", "FAIL 用例必须抓到失配且可定位", "result.json 形状符合 report.rs 消费规则"]
+    },
+    {
+      "id": "harness-probe",
+      "summary": "重跑目标侧源码探针并核对 harness 契约字段",
+      "allowed_skills": ["study-horizon-mod-api"],
+      "allowed_actions": ["read_horizon_source", "read_own_data_files", "read_public_docs"],
+      "input_globs": ["third_party/horizon/crates/horizon-port-pack/**", "mappings/harness-contract.json"],
+      "output_kind": "facts",
+      "can_parallel": true,
+      "acceptance": ["missing_files 为空", "result.json 字段与 report.rs 消费规则一致", "报告不含源码正文"]
+    },
+    {
+      "id": "policy-regression",
+      "summary": "复核单段许可证广播修复与基线不变",
+      "allowed_skills": ["policy-gate", "validate"],
+      "allowed_actions": ["read_jar_metadata", "list_resource_entries", "read_own_data_files"],
+      "input_globs": ["work/m4/*.policy.json", "work/policy-decision.json", "policy/license-profiles.json"],
+      "output_kind": "review",
+      "can_parallel": true,
+      "acceptance": ["MIT / ARR 单段串两个 scope 判定一致", "TaCZ 多段串不触发广播且判定零变化", "广播一律 review_required"]
+    },
+    {
       "id": "verification",
       "summary": "汇总各子 agent 结果、检查闭合与生成验收清单",
       "allowed_skills": ["collect-results", "diff-test-harness"],

@@ -1,0 +1,41 @@
+{
+  "schema_version": "0.1.0",
+  "version": "0.1.0",
+  "note": "M4 泛化验证样本清单。全部为 Forge 1.20.1，只检验「换 mod」的泛化，不检验跨版本。jar 与 policy decision 只在 work/ 下，不入库；本清单只记录相对路径与用途，换机器重新下载后即可复跑。",
+  "selection_criteria": [
+    "与 TaCZ 同为 Forge 1.20.1，控制 MC 版本与 loader 变量",
+    "形态差异要大：轻量内容 mod / 大型机械 mod / 带骨骼动画生态的法术 mod",
+    "许可证覆盖宽松(MIT)、未分段(MIT 单串)、保留所有权利(ARR) 三类，用于检验门禁广播修复",
+    "优先官方 Modrinth 分发，避免来路不明的构建"
+  ],
+  "samples": [
+    {
+      "id": "tacz-baseline",
+      "jar": "work/tacz-forge-1.20.1-1.2.0.jar",
+      "policy": "work/policy-decision.json",
+      "baseline": true,
+      "shape_note": "枪械 mod，带 Bedrock geometry 与 73 个动画文件；v0.2 校准样本"
+    },
+    {
+      "id": "farmers-delight",
+      "jar": "work/m4/FarmersDelight-1.20.1-1.3.4.jar",
+      "policy": "work/m4/FarmersDelight-1.20.1-1.3.4.policy.json",
+      "baseline": false,
+      "shape_note": "轻量内容 mod，MIT，289 class / 992 assets，无动画系统"
+    },
+    {
+      "id": "create",
+      "jar": "work/m4/create-1.20.1-6.0.8.jar",
+      "policy": "work/m4/create-1.20.1-6.0.8.policy.json",
+      "baseline": false,
+      "shape_note": "大型机械 mod，MIT，2687 class / 5071 assets，大量 block entity 与配方，无骨骼动画"
+    },
+    {
+      "id": "irons-spellbooks",
+      "jar": "work/m4/irons_spellbooks-1.20.1-3.16.3.jar",
+      "policy": "work/m4/irons_spellbooks-1.20.1-3.16.3.policy.json",
+      "baseline": false,
+      "shape_note": "法术 mod，All Rights Reserved，1264 class / 1832 assets，依赖 GeckoLib 动画生态"
+    }
+  ]
+}

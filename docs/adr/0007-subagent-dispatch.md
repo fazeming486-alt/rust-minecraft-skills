@@ -70,7 +70,15 @@ M2 任务包按 ADR 0008 传导三个维度：`policy_mode: full-inspection`、`
 
 规模变化：12 → **17 个任务包 / 4 wave / 17 完成 / verdict COMPLETE**；角色 12 → 17；skill 17 → 22。复杂度仍为 0.4255 / M / 2 workers（输入未变）。
 
-一个诚实的限制：17 个 result 目前由主 agent 按真实报告归档，尚未全部由独立子 agent 产出；「大量子 agent 并行收益」仍需下一轮用 wave 2 的资产族实证。
+一个诚实的限制（**v0.8 已解除**）：当时 17 个 result 由主 agent 按真实报告归档，尚未全部由独立子 agent 产出。
+
+## v0.8 闭环实证声明（ADR 0010 §6）
+
+`orchestration/task-templates/m3-m4.json` 的 7 个任务 / 2 wave 中，wave 1 的 6 个任务由 **3 个独立子 agent 各领 2 个、真实执行命令并各自写 result**，主 agent 只做 wave-2 汇总。`collect-results` 给出 **7/7 COMPLETE / 0 缺失 / 0 越界**，6 个 result 的 `input_hash` 全部匹配、evidence 非空、无发布/商用/创造性改编字段。
+
+配套两处机制修正：任务包新增可选 `command` 字段并随包下发（子 agent 自包含）；`output_path` 从硬编码 `work/dispatch/` 改为跟随 `--out-dir`，避免新里程碑污染 M2 结果目录。
+
+**主 agent 语义复核仍不可省**：抽查 5 项上报数值全部与真实产物一致，但发现 1 处字段类型歧义（`failures` 子 agent 写计数 `0`、报告里是空数组 `[]`），语义等价但类型不一致，已改为 `failure_count` + `failures_list` 并留痕。`collect-results` 能查 `input_hash` 与越界字段，查不了这种语义漂移。
 
 ## 复核条件
 

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rustmc-skills.local/schemas/recording-contract.schema.json",
+  "title": "Platform-agnostic recording contract",
+  "description": "C1/C2 逻辑单元的录制契约。只引用 capability id，不出现任何 Java FQN、Rust 类型或 Horizon API（ADR 0001）。官方 harness 不覆盖逻辑行为录制，本契约是自建层；结论经 mappings/harness-contract.json 桥接进官方 result.json。",
+  "type": "object",
+  "required": ["schema_version", "generated_by", "source_artifact", "policy", "contracts", "summary"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "generated_by": {"type": "string"},
+    "source_artifact": {"type": "string"},
+    "policy": {
+      "type": "object",
+      "required": ["inspection", "transformation", "distribution"],
+      "properties": {
+        "inspection": {"type": "string"},
+        "transformation": {"type": "string", "enum": ["technical-only", "creative", "port", "none"]},
+        "distribution": {"type": "string", "enum": ["local-only", "redistributable"]}
+      },
+      "additionalProperties": false
+    },
+    "contracts": {"type": "array", "items": {"$ref": "#/$defs/contract"}},
+    "summary": {
+      "type": "object",
+      "required": ["contract_count", "by_disposition", "capability_ids", "oracle_required", "offline_ready"],
+      "properties": {
+        "contract_count": {"type": "integer"},
+        "by_disposition": {"type": "object"},
+        "capability_ids": {"type": "array", "items": {"type": "string"}},
+        "oracle_required": {"type": "boolean"},
+        "offline_ready": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "contract": {
+      "type": "object",
+      "required": ["contract_id", "unit_id", "disposition", "semantic", "capability_ids", "input_sequence", "state_sequence", "assertions", "oracle"],
+      "properties": {
+        "contract_id": {"type": "string"},
+        "unit_id": {"type": "string"},
+        "disposition": {"type": "string", "enum": ["C1", "C2"]},
+        "semantic": {"type": "string"},
+        "capability_ids": {"type": "array", "items": {"type": "string"}},
+        "input_sequence": {"type": "array", "items": {"$ref": "#/$defs/step"}},
+        "state_sequence": {"type": "array", "items": {"$ref": "#/$defs/state"}},
+        "assertions": {"type": "array", "items": {"type": "string"}},
+        "oracle": {
+          "type": "object",
+          "required": ["status", "source"],
+          "properties": {
+            "status": {"type": "string", "enum": ["pending", "recorded", "replayed", "verified"]},
+            "source": {"type": "string"},
+            "note": {"type": "string"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "step": {
+      "type": "object",
+      "required": ["tick", "action", "capability_id"],
+      "properties": {
+        "tick": {"type": "integer", "minimum": 0},
+        "action": {"type": "string"},
+        "capability_id": {"type": "string"},
+        "payload": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "state": {
+      "type": "object",
+      "required": ["tick", "shared_state"],
+      "properties": {
+        "tick": {"type": "integer", "minimum": 0},
+        "shared_state": {"type": "string"},
+        "fields": {"type": "object"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

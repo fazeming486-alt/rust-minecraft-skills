@@ -3,7 +3,7 @@
   "ruleset_version": "0.1.0",
   "loader": "forge",
   "execution": "first_match_wins_with_full_evidence",
-  "low_confidence_threshold": 0.70,
+  "low_confidence_threshold": 0.7,
   "carrier_by_kind": {
     "class": "source",
     "method_group": "source",
@@ -17,16 +17,36 @@
       "id": "R001",
       "priority": 10,
       "title": "反编译伪影折叠",
-      "when": {"any": [
-        {"type": "flag_is", "field": "flags.synthetic", "value": true},
-        {"all": [
-          {"type": "flag_is", "field": "flags.anonymous", "value": true},
-          {"type": "count_lte", "field": "symbols.methods", "value": 0}
-        ]}
-      ]},
+      "when": {
+        "any": [
+          {
+            "type": "flag_is",
+            "field": "flags.synthetic",
+            "value": true
+          },
+          {
+            "all": [
+              {
+                "type": "flag_is",
+                "field": "flags.anonymous",
+                "value": true
+              },
+              {
+                "type": "count_lte",
+                "field": "symbols.methods",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
       "then": {
-        "semantic": "artifact", "semantic_subtype": "decompiler_artifact", "disposition": "C5",
-        "confidence": 1.0, "evidence_kind": "flag", "carrier_override": "build_residue",
+        "semantic": "artifact",
+        "semantic_subtype": "decompiler_artifact",
+        "disposition": "C5",
+        "confidence": 1.0,
+        "evidence_kind": "flag",
+        "carrier_override": "build_residue",
         "note": "折叠剔除，不计入移植范围；原始 class 文件仍保留供复核"
       }
     },
@@ -34,14 +54,31 @@
       "id": "R002",
       "priority": 20,
       "title": "反编译失败 / native / 混淆",
-      "when": {"any": [
-        {"type": "flag_is", "field": "flags.decompile_failed", "value": true},
-        {"type": "flag_is", "field": "flags.native", "value": true},
-        {"type": "flag_is", "field": "flags.obfuscated", "value": true}
-      ]},
+      "when": {
+        "any": [
+          {
+            "type": "flag_is",
+            "field": "flags.decompile_failed",
+            "value": true
+          },
+          {
+            "type": "flag_is",
+            "field": "flags.native",
+            "value": true
+          },
+          {
+            "type": "flag_is",
+            "field": "flags.obfuscated",
+            "value": true
+          }
+        ]
+      },
       "then": {
-        "semantic": "unknown", "semantic_subtype": null, "disposition": "C6",
-        "confidence": 1.0, "evidence_kind": "flag",
+        "semantic": "unknown",
+        "semantic_subtype": null,
+        "disposition": "C6",
+        "confidence": 1.0,
+        "evidence_kind": "flag",
         "note": "强制进入 S4 人工关卡，不允许静默猜测"
       }
     },
@@ -49,18 +86,54 @@
       "id": "R020",
       "priority": 12,
       "title": "空源码单元折叠",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"type": "equals", "field": "symbols.declared_kind", "value": "class"},
-        {"type": "count_lte", "field": "symbols.import_prefixes", "value": 0},
-        {"type": "count_lte", "field": "symbols.referenced_types", "value": 0},
-        {"type": "count_lte", "field": "symbols.methods", "value": 0},
-        {"type": "count_lte", "field": "symbols.annotations", "value": 0},
-        {"type": "count_lte", "field": "symbols.constant_strings", "value": 0}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "equals",
+            "field": "symbols.declared_kind",
+            "value": "class"
+          },
+          {
+            "type": "count_lte",
+            "field": "symbols.import_prefixes",
+            "value": 0
+          },
+          {
+            "type": "count_lte",
+            "field": "symbols.referenced_types",
+            "value": 0
+          },
+          {
+            "type": "count_lte",
+            "field": "symbols.methods",
+            "value": 0
+          },
+          {
+            "type": "count_lte",
+            "field": "symbols.annotations",
+            "value": 0
+          },
+          {
+            "type": "count_lte",
+            "field": "symbols.constant_strings",
+            "value": 0
+          }
+        ]
+      },
       "then": {
-        "semantic": "artifact", "semantic_subtype": "empty_source_unit", "disposition": "C5",
-        "confidence": 0.99, "evidence_kind": "flag", "carrier_override": "build_residue",
+        "semantic": "artifact",
+        "semantic_subtype": "empty_source_unit",
+        "disposition": "C5",
+        "confidence": 0.99,
+        "evidence_kind": "flag",
+        "carrier_override": "build_residue",
         "note": "空文件/空类无可移植语义，折叠剔除；不占用 S4 人工关卡"
       }
     },
@@ -68,15 +141,42 @@
       "id": "R009",
       "priority": 25,
       "title": "非代码载体分流",
-      "when": {"type": "kind_in", "values": ["resource", "metadata", "data", "dependency"]},
+      "when": {
+        "type": "kind_in",
+        "values": [
+          "resource",
+          "metadata",
+          "data",
+          "dependency"
+        ]
+      },
       "then": {
-        "semantic": "tooling", "semantic_subtype": null, "disposition": "C4",
-        "confidence": 0.99, "evidence_kind": "kind",
+        "semantic": "tooling",
+        "semantic_subtype": null,
+        "disposition": "C4",
+        "confidence": 0.99,
+        "evidence_kind": "kind",
         "by_kind": {
-          "resource": {"semantic": "presentation", "semantic_subtype": "art_asset", "disposition": "C4"},
-          "data": {"semantic": "data_model", "semantic_subtype": "schema_convertible", "disposition": "C4"},
-          "metadata": {"semantic": "tooling", "semantic_subtype": "loader_metadata", "disposition": "C4"},
-          "dependency": {"semantic": "tooling", "semantic_subtype": "embedded_library", "disposition": "C5"}
+          "resource": {
+            "semantic": "presentation",
+            "semantic_subtype": "art_asset",
+            "disposition": "C4"
+          },
+          "data": {
+            "semantic": "data_model",
+            "semantic_subtype": "schema_convertible",
+            "disposition": "C4"
+          },
+          "metadata": {
+            "semantic": "tooling",
+            "semantic_subtype": "loader_metadata",
+            "disposition": "C4"
+          },
+          "dependency": {
+            "semantic": "tooling",
+            "semantic_subtype": "embedded_library",
+            "disposition": "C5"
+          }
         },
         "note": "资源走美术链，内嵌依赖单独识别，不混入 mod 自身逻辑"
       }
@@ -85,14 +185,32 @@
       "id": "R003",
       "priority": 30,
       "title": "Mixin 行为增量",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "Mixin"}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "symbol_in",
+            "field": "symbols.annotations",
+            "group": "annotation",
+            "name": "Mixin"
+          }
+        ]
+      },
       "then": {
-        "semantic": "platform_glue", "semantic_subtype": "behavior_delta", "disposition": "C5",
-        "confidence": 0.98, "evidence_kind": "annotation",
-        "behavior_delta": {"hook_candidate": "event_hook"},
+        "semantic": "platform_glue",
+        "semantic_subtype": "behavior_delta",
+        "disposition": "C5",
+        "confidence": 0.98,
+        "evidence_kind": "annotation",
+        "behavior_delta": {
+          "hook_candidate": "event_hook"
+        },
         "note": "必须成对记录 (delta_target, delta_semantics)，不得当普通类直译"
       }
     },
@@ -100,16 +218,41 @@
       "id": "R004",
       "priority": 40,
       "title": "Forge 事件与平台粘合",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"any": [
-          {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "SubscribeEvent"},
-          {"type": "symbol_prefix_in", "field": "symbols.import_prefixes", "group": "type_prefix", "names": ["FORGE"]}
-        ]}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "any": [
+              {
+                "type": "symbol_in",
+                "field": "symbols.annotations",
+                "group": "annotation",
+                "name": "SubscribeEvent"
+              },
+              {
+                "type": "symbol_prefix_in",
+                "field": "symbols.import_prefixes",
+                "group": "type_prefix",
+                "names": [
+                  "FORGE"
+                ]
+              }
+            ]
+          }
+        ]
+      },
       "then": {
-        "semantic": "platform_glue", "semantic_subtype": "platform_api", "disposition": "C3",
-        "confidence": 0.95, "evidence_kind": "import_prefix",
+        "semantic": "platform_glue",
+        "semantic_subtype": "platform_api",
+        "disposition": "C3",
+        "confidence": 0.95,
+        "evidence_kind": "import_prefix",
         "note": "走能力映射表，映射到 event_hook / registry_entry / network_sync"
       }
     },
@@ -117,17 +260,45 @@
       "id": "R005",
       "priority": 50,
       "title": "数据驱动内容",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"any": [
-          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "JsonObject"},
-          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "Codec"},
-          {"type": "symbol_glob_any", "field": "symbols.constant_strings", "group": "glob", "name": "data_path"}
-        ]}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "any": [
+              {
+                "type": "symbol_in",
+                "field": "symbols.referenced_types",
+                "group": "type",
+                "name": "JsonObject"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.referenced_types",
+                "group": "type",
+                "name": "Codec"
+              },
+              {
+                "type": "symbol_glob_any",
+                "field": "symbols.constant_strings",
+                "group": "glob",
+                "name": "data_path"
+              }
+            ]
+          }
+        ]
+      },
       "then": {
-        "semantic": "data_model", "semantic_subtype": "schema_convertible", "disposition": "C4",
-        "confidence": 0.92, "evidence_kind": "constant_string",
+        "semantic": "data_model",
+        "semantic_subtype": "schema_convertible",
+        "disposition": "C4",
+        "confidence": 0.92,
+        "evidence_kind": "constant_string",
         "note": "schema 转换器一次性生成，产物是数据不是运行时代码"
       }
     },
@@ -135,17 +306,45 @@
       "id": "R006",
       "priority": 60,
       "title": "表现层 / 渲染管线",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"any": [
-          {"type": "symbol_glob_any", "field": "path", "group": "glob", "name": "client_package"},
-          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "PoseStack"},
-          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "RenderType"}
-        ]}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "any": [
+              {
+                "type": "symbol_glob_any",
+                "field": "path",
+                "group": "glob",
+                "name": "client_package"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.referenced_types",
+                "group": "type",
+                "name": "PoseStack"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.referenced_types",
+                "group": "type",
+                "name": "RenderType"
+              }
+            ]
+          }
+        ]
+      },
       "then": {
-        "semantic": "presentation", "semantic_subtype": "render_pipeline", "disposition": "C5",
-        "confidence": 0.94, "evidence_kind": "package_glob",
+        "semantic": "presentation",
+        "semantic_subtype": "render_pipeline",
+        "disposition": "C5",
+        "confidence": 0.94,
+        "evidence_kind": "package_glob",
         "note": "渲染管线不可直译，转资产链与 render_handle 能力"
       }
     },
@@ -153,13 +352,28 @@
       "id": "R007",
       "priority": 70,
       "title": "注册中心 / 全局 ID 表",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"type": "count_gte", "field": "flags.registration_id_count", "value": 3}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "count_gte",
+            "field": "flags.registration_id_count",
+            "value": 3
+          }
+        ]
+      },
       "then": {
-        "semantic": "registry", "semantic_subtype": "id_table", "disposition": "C3",
-        "confidence": 0.90, "evidence_kind": "flag",
+        "semantic": "registry",
+        "semantic_subtype": "id_table",
+        "disposition": "C3",
+        "confidence": 0.9,
+        "evidence_kind": "flag",
         "note": "提取全局 ID 表，它是贯穿所有层的命名空间主键；阈值待真实样本校准"
       }
     },
@@ -167,14 +381,41 @@
       "id": "R018",
       "priority": 78,
       "title": "领域状态枚举",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"type": "equals", "field": "symbols.declared_kind", "value": "enum"},
-        {"type": "not", "condition": {"type": "symbol_prefix_in", "field": "symbols.import_prefixes", "group": "type_prefix", "names": ["MC", "FORGE", "MIXIN"]}}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "equals",
+            "field": "symbols.declared_kind",
+            "value": "enum"
+          },
+          {
+            "type": "not",
+            "condition": {
+              "type": "symbol_prefix_in",
+              "field": "symbols.import_prefixes",
+              "group": "type_prefix",
+              "names": [
+                "MC",
+                "FORGE",
+                "MIXIN"
+              ]
+            }
+          }
+        ]
+      },
       "then": {
-        "semantic": "domain_logic", "semantic_subtype": "state_enum", "disposition": "C1",
-        "confidence": 0.94, "evidence_kind": "flag",
+        "semantic": "domain_logic",
+        "semantic_subtype": "state_enum",
+        "disposition": "C1",
+        "confidence": 0.94,
+        "evidence_kind": "flag",
         "note": "枚举常量是跨层状态契约的直接来源，应作为 shared_states 候选"
       }
     },
@@ -182,14 +423,41 @@
       "id": "R019",
       "priority": 79,
       "title": "平台无关接口（契约边界）",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"type": "equals", "field": "symbols.declared_kind", "value": "interface"},
-        {"type": "not", "condition": {"type": "symbol_prefix_in", "field": "symbols.import_prefixes", "group": "type_prefix", "names": ["MC", "FORGE", "MIXIN"]}}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "equals",
+            "field": "symbols.declared_kind",
+            "value": "interface"
+          },
+          {
+            "type": "not",
+            "condition": {
+              "type": "symbol_prefix_in",
+              "field": "symbols.import_prefixes",
+              "group": "type_prefix",
+              "names": [
+                "MC",
+                "FORGE",
+                "MIXIN"
+              ]
+            }
+          }
+        ]
+      },
       "then": {
-        "semantic": "api_contract", "semantic_subtype": "interface_boundary", "disposition": "C2",
-        "confidence": 0.92, "evidence_kind": "flag",
+        "semantic": "api_contract",
+        "semantic_subtype": "interface_boundary",
+        "disposition": "C2",
+        "confidence": 0.92,
+        "evidence_kind": "flag",
         "note": "Java 接口是天然的平台无关契约边界；进 portable contract，不直译实现"
       }
     },
@@ -197,17 +465,50 @@
       "id": "R008",
       "priority": 80,
       "title": "纯逻辑金矿",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"type": "not", "condition": {"type": "symbol_prefix_in", "field": "symbols.import_prefixes", "group": "type_prefix", "names": ["MC", "FORGE", "MIXIN"]}},
-        {"any": [
-          {"type": "count_gte", "field": "symbols.methods", "value": 1},
-          {"type": "count_gte", "field": "symbols.import_prefixes", "value": 1}
-        ]}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "not",
+            "condition": {
+              "type": "symbol_prefix_in",
+              "field": "symbols.import_prefixes",
+              "group": "type_prefix",
+              "names": [
+                "MC",
+                "FORGE",
+                "MIXIN"
+              ]
+            }
+          },
+          {
+            "any": [
+              {
+                "type": "count_gte",
+                "field": "symbols.methods",
+                "value": 1
+              },
+              {
+                "type": "count_gte",
+                "field": "symbols.import_prefixes",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
       "then": {
-        "semantic": "domain_logic", "semantic_subtype": "pure_algorithm", "disposition": "C1",
-        "confidence": 0.88, "evidence_kind": "import_prefix",
+        "semantic": "domain_logic",
+        "semantic_subtype": "pure_algorithm",
+        "disposition": "C1",
+        "confidence": 0.88,
+        "evidence_kind": "import_prefix",
         "note": "最高价值单元，可直接做差分测试；S2 需复核 import 完整度"
       }
     },
@@ -215,23 +516,78 @@
       "id": "R011",
       "priority": 32,
       "title": "Mixin 注入族（行为增量详情）",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"any": [
-          {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "Inject"},
-          {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "Redirect"},
-          {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "ModifyArg"},
-          {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "Accessor"},
-          {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "Invoker"},
-          {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "Overwrite"},
-          {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "Shadow"},
-          {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "Unique"}
-        ]}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "any": [
+              {
+                "type": "symbol_in",
+                "field": "symbols.annotations",
+                "group": "annotation",
+                "name": "Inject"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.annotations",
+                "group": "annotation",
+                "name": "Redirect"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.annotations",
+                "group": "annotation",
+                "name": "ModifyArg"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.annotations",
+                "group": "annotation",
+                "name": "Accessor"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.annotations",
+                "group": "annotation",
+                "name": "Invoker"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.annotations",
+                "group": "annotation",
+                "name": "Overwrite"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.annotations",
+                "group": "annotation",
+                "name": "Shadow"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.annotations",
+                "group": "annotation",
+                "name": "Unique"
+              }
+            ]
+          }
+        ]
+      },
       "then": {
-        "semantic": "platform_glue", "semantic_subtype": "behavior_delta", "disposition": "C5",
-        "confidence": 0.95, "evidence_kind": "annotation",
-        "behavior_delta": {"hook_candidate": "event_hook"},
+        "semantic": "platform_glue",
+        "semantic_subtype": "behavior_delta",
+        "disposition": "C5",
+        "confidence": 0.95,
+        "evidence_kind": "annotation",
+        "behavior_delta": {
+          "hook_candidate": "event_hook"
+        },
         "note": "注入点 target 字符串在 constant_strings 中，供契约层记录 delta_target"
       }
     },
@@ -239,19 +595,57 @@
       "id": "R012",
       "priority": 35,
       "title": "延迟注册中心",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"any": [
-          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "DeferredRegister"},
-          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "RegistryObject"},
-          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "ForgeRegistries"},
-          {"type": "symbol_in", "field": "symbols.referenced_types", "group": "type", "name": "RegisterEvent"},
-          {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "EventBusSubscriber"}
-        ]}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "any": [
+              {
+                "type": "symbol_in",
+                "field": "symbols.referenced_types",
+                "group": "type",
+                "name": "DeferredRegister"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.referenced_types",
+                "group": "type",
+                "name": "RegistryObject"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.referenced_types",
+                "group": "type",
+                "name": "ForgeRegistries"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.referenced_types",
+                "group": "type",
+                "name": "RegisterEvent"
+              },
+              {
+                "type": "symbol_in",
+                "field": "symbols.annotations",
+                "group": "annotation",
+                "name": "EventBusSubscriber"
+              }
+            ]
+          }
+        ]
+      },
       "then": {
-        "semantic": "registry", "semantic_subtype": "deferred_register", "disposition": "C3",
-        "confidence": 0.96, "evidence_kind": "import_prefix",
+        "semantic": "registry",
+        "semantic_subtype": "deferred_register",
+        "disposition": "C3",
+        "confidence": 0.96,
+        "evidence_kind": "import_prefix",
         "note": "实践中注册 ID 来自 .register(\"id\", ...) 调用，而非静态 ResourceLocation 常量"
       }
     },
@@ -259,13 +653,29 @@
       "id": "R013",
       "priority": 45,
       "title": "Gson 数据 POJO",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"type": "symbol_in", "field": "symbols.annotations", "group": "annotation", "name": "SerializedName"}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "symbol_in",
+            "field": "symbols.annotations",
+            "group": "annotation",
+            "name": "SerializedName"
+          }
+        ]
+      },
       "then": {
-        "semantic": "data_model", "semantic_subtype": "gson_pojo", "disposition": "C4",
-        "confidence": 0.97, "evidence_kind": "annotation",
+        "semantic": "data_model",
+        "semantic_subtype": "gson_pojo",
+        "disposition": "C4",
+        "confidence": 0.97,
+        "evidence_kind": "annotation",
         "note": "@SerializedName 的字符串即 schema 字段名，可直接生成目标侧数据定义"
       }
     },
@@ -273,13 +683,29 @@
       "id": "R014",
       "priority": 62,
       "title": "内容包资源管理层",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"type": "symbol_glob_any", "field": "path", "group": "glob", "name": "resource_package"}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "symbol_glob_any",
+            "field": "path",
+            "group": "glob",
+            "name": "resource_package"
+          }
+        ]
+      },
       "then": {
-        "semantic": "data_model", "semantic_subtype": "content_pack_index", "disposition": "C4",
-        "confidence": 0.90, "evidence_kind": "package_glob",
+        "semantic": "data_model",
+        "semantic_subtype": "content_pack_index",
+        "disposition": "C4",
+        "confidence": 0.9,
+        "evidence_kind": "package_glob",
         "note": "pojo / manager / index / serialize / modifier 属于内容包装载层"
       }
     },
@@ -287,13 +713,29 @@
       "id": "R015",
       "priority": 64,
       "title": "网络同步层",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"type": "symbol_glob_any", "field": "path", "group": "glob", "name": "network_package"}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "symbol_glob_any",
+            "field": "path",
+            "group": "glob",
+            "name": "network_package"
+          }
+        ]
+      },
       "then": {
-        "semantic": "io_persistence", "semantic_subtype": "network_sync", "disposition": "C3",
-        "confidence": 0.91, "evidence_kind": "package_glob",
+        "semantic": "io_persistence",
+        "semantic_subtype": "network_sync",
+        "disposition": "C3",
+        "confidence": 0.91,
+        "evidence_kind": "package_glob",
         "note": "走 network_sync 能力，帧序与状态序列需进入差分测试"
       }
     },
@@ -301,13 +743,29 @@
       "id": "R016",
       "priority": 66,
       "title": "可选第三方兼容层",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"type": "symbol_glob_any", "field": "path", "group": "glob", "name": "compat_package"}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "symbol_glob_any",
+            "field": "path",
+            "group": "glob",
+            "name": "compat_package"
+          }
+        ]
+      },
       "then": {
-        "semantic": "platform_glue", "semantic_subtype": "optional_integration", "disposition": "C5",
-        "confidence": 0.88, "evidence_kind": "package_glob",
+        "semantic": "platform_glue",
+        "semantic_subtype": "optional_integration",
+        "disposition": "C5",
+        "confidence": 0.88,
+        "evidence_kind": "package_glob",
         "note": "目标侧若不存在对应 mod，则整体舍弃而非翻译"
       }
     },
@@ -315,13 +773,31 @@
       "id": "R017",
       "priority": 90,
       "title": "Minecraft 原生 API 依赖（平台适配兜底）",
-      "when": {"all": [
-        {"type": "kind_in", "values": ["class", "method_group"]},
-        {"type": "symbol_prefix_in", "field": "symbols.import_prefixes", "group": "type_prefix", "names": ["MC"]}
-      ]},
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "symbol_prefix_in",
+            "field": "symbols.import_prefixes",
+            "group": "type_prefix",
+            "names": [
+              "MC"
+            ]
+          }
+        ]
+      },
       "then": {
-        "semantic": "platform_glue", "semantic_subtype": "vanilla_api", "disposition": "C3",
-        "confidence": 0.85, "evidence_kind": "import_prefix",
+        "semantic": "platform_glue",
+        "semantic_subtype": "vanilla_api",
+        "disposition": "C3",
+        "confidence": 0.85,
+        "evidence_kind": "import_prefix",
         "note": "引用 net.minecraft.* 但无 Forge 事件/注解：走能力映射表，不再落入 C6"
       }
     },
@@ -329,11 +805,60 @@
       "id": "R010",
       "priority": 999,
       "title": "兜底：禁止静默猜测",
-      "when": {"type": "always"},
+      "when": {
+        "type": "always"
+      },
       "then": {
-        "semantic": "unknown", "semantic_subtype": null, "disposition": "C6",
-        "confidence": 0.0, "evidence_kind": "fallback",
+        "semantic": "unknown",
+        "semantic_subtype": null,
+        "disposition": "C6",
+        "confidence": 0.0,
+        "evidence_kind": "fallback",
         "note": "任何无法判定的单元必须显式进入人工关卡"
+      }
+    },
+    {
+      "id": "R021",
+      "priority": 29,
+      "title": "Mixin 配置插件 / ASM 基础设施",
+      "when": {
+        "all": [
+          {
+            "type": "kind_in",
+            "values": [
+              "class",
+              "method_group"
+            ]
+          },
+          {
+            "type": "symbol_prefix_in",
+            "field": "symbols.import_prefixes",
+            "group": "type_prefix",
+            "names": [
+              "MIXIN_PLUGIN"
+            ]
+          },
+          {
+            "type": "not",
+            "condition": {
+              "type": "symbol_in",
+              "field": "symbols.annotations",
+              "group": "annotation",
+              "name": "Mixin"
+            }
+          }
+        ]
+      },
+      "then": {
+        "semantic": "platform_glue",
+        "semantic_subtype": "mixin_infrastructure",
+        "disposition": "C5",
+        "confidence": 0.9,
+        "evidence_kind": "import_prefix",
+        "behavior_delta": {
+          "hook_candidate": "event_hook"
+        },
+        "note": "IMixinConfigPlugin / ASM 改写类是加载期基础设施，不是 mod 行为逻辑；C5 舍弃替身，不占人工关卡。v0.8 由 M4 第二样本 Create 的 CreateMixinPlugin 兜底暴露"
       }
     }
   ]

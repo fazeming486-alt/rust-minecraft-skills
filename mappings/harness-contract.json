@@ -1,0 +1,115 @@
+{
+  "schema_version": "0.1.0",
+  "version": "0.1.0",
+  "note": "M3 目标侧对接契约。基于本机 Horizon 快照源码核对（非推测），字段与路径均附证据。核心判断：官方 harness 是 data/资产层 carry 对比，没有 Java 逻辑行为录制；因此本仓库的 C1 逻辑差分必须自建录制契约，再把结论桥接进官方 result.json 的 checks 里。",
+  "horizon_root": "D:/RUST重写mc项目/third_party/horizon",
+  "capability_boundary": {
+    "official_harness_covers": [
+      "blocks", "properties", "sounds", "shapes", "drops", "placement",
+      "tags", "recipes", "items", "item_stats"
+    ],
+    "official_harness_does_not_cover": [
+      "Java 逻辑单元的输入序列 → 状态序列录制",
+      "Rust 侧重放差分",
+      "跨层 shared_states 一致性",
+      "动画状态机与逻辑状态机的对齐"
+    ],
+    "consequence": "M3 分两层：A 把我们的检查结论写成官方 result.json 形状（可被 report.rs 消费）；B 自建平台无关的 C1 录制契约与差分断言，官方链里没有等价物。不得把 A 说成『已接入 Java oracle』。",
+    "evidence": [
+      "tools/mod_port_harness.py:35 CHECKS 常量（10 个数据/资产检查名）",
+      "tools/mod_port_harness.py:222-275 main()：需要 cargo build mod_port_probe + .local/horizon-client/26.3 资源",
+      "tools/neoforge_oracle.py:253-256 export 子命令：从 --jars 导出 oracle/facts.json，需真实 NeoForge 实例",
+      "crates/horizon-port-pack/src/oracle.rs:15 Facts { blocks, items, tags, recipes, vanilla_items }"
+    ]
+  },
+  "work_layout": {
+    "root": "<work>",
+    "oracle_facts": "<work>/oracle/facts.json",
+    "per_mod_carry": "<work>/mods/<key>/carry-report.json",
+    "per_mod_harness_result": "<work>/mods/<key>/harness/result.json",
+    "per_mod_harness_horizon": "<work>/mods/<key>/harness/horizon.json",
+    "coverage_json": "<work>/coverage.json",
+    "coverage_md": "<work>/coverage.md",
+    "evidence": [
+      "tools/mod_port_harness.py:229-250",
+      "crates/horizon-port-pack/src/pipeline.rs:313-321"
+    ]
+  },
+  "result_json": {
+    "path": "<work>/mods/<key>/harness/result.json",
+    "shape": {
+      "mod": "string（mod key）",
+      "passed": "bool（所有 check 的 failed 为 0 且总数 > 0）",
+      "checks": "object: { <name>: { passed: u64, failed: u64, examples: string[] } }"
+    },
+    "required_by_report_rs": ["passed", "checks"],
+    "consumption_rules": [
+      "h['passed'] == false → gap 'harness failed'",
+      "遍历 h['checks'] 每个 c，累加 c['passed'] + c['failed'] 到 checked",
+      "c['failed'] > 0 → gap '<name> <passed>/<total>'",
+      "checked == 0 → gap 'harness has no checks'",
+      "文件不存在 → gap 'harness not run'"
+    ],
+    "extensible": "report.rs 动态遍历 checks 键，不局限于 mod_port_harness.py 的 10 个 CHECKS 常量，因此可加入自定义 check 名（本仓库用 logic_replay / shared_states / asset_integrity）",
+    "evidence": [
+      "crates/horizon-port-pack/src/report.rs:283-306",
+      "tools/mod_port_harness.py:215-220",
+      "crates/horizon-port-pack/src/report.rs:713-722 (carried_harness_needs_executed_checks 测试)"
+    ]
+  },
+  "coverage_row": {
+    "file": "<work>/coverage.json",
+    "shape": "array of Row（不是带外层键的对象）",
+    "fields": ["key", "name", "class", "tier", "license", "license_kind", "status", "reason", "plain (default)", "waiting (default)"],
+    "status_enum": ["ported", "partial", "not-yet", "not-needed"],
+    "license_kind_enum": ["permissive", "copyleft", "all-rights-reserved", "restricted", "custom", "unknown"],
+    "verdict_enum": ["works", "partly", "no"],
+    "evidence": [
+      "crates/horizon-port-pack/src/report.rs:17-40 Status",
+      "crates/horizon-port-pack/src/report.rs:56-75 Row",
+      "crates/horizon-port-pack/src/check.rs:18-32 Verdict",
+      "crates/horizon-port-pack/src/pipeline.rs:318"
+    ]
+  },
+  "lifecycle": [
+    {
+      "step": "import",
+      "note": "导入 modpack 清单，产出 inventory.json"
+    },
+    {
+      "step": "carry",
+      "note": "搬运数据/资产，产出 carry-report.json",
+      "warning": "carry() 每次会删除旧的 harness/result.json，harness 必须在 carry 之后重跑"
+    },
+    {
+      "step": "harness",
+      "note": "mod_port_harness.py 对比 oracle facts 与 Horizon 26.3 数据，产出 result.json"
+    },
+    {
+      "step": "report",
+      "note": "report.rs 读 carry-report.json + result.json，产出 coverage.json / coverage.md"
+    }
+  ],
+  "lifecycle_evidence": [
+    "crates/horizon-port-pack/src/carry.rs:1000 (let verdict = out.join(\"harness/result.json\"))",
+    "crates/horizon-port-pack/src/carry.rs:1745,1773-1779 (删除与保留 green result 的测试)",
+    "tools/mod_port_harness.py:232-233 (main 启动时 unlink 旧 result.json)"
+  ],
+  "bridge_mapping": {
+    "logic_replay": "本仓库 C1 逻辑单元录制契约的重放差分，映射到 checks['logic_replay']",
+    "shared_states": "跨层切片 shared_states 双向可查断言，映射到 checks['shared_states']",
+    "asset_integrity": "格式等价转换 roundtrip 断言，映射到 checks['asset_integrity']",
+    "note": "三个自定义 check 的 passed/failed 由 tools/diff_assertions.py 计算，字段名与官方形状一致；report.rs 会照常累加并据此判 gap。"
+  },
+  "offline_capable": [
+    "生成官方形状的 result.json（不需 Java 实例）",
+    "录制契约骨架生成（不需 Java 实例）",
+    "对已有观测序列做差分断言（不需 Java 实例）"
+  ],
+  "requires_real_instance": [
+    "tools/neoforge_oracle.py export（需 1.20.1 NeoForge + mod jar 加载）",
+    "cargo build -p horizon-client-lib --example mod_port_probe + 26.3 客户端资源",
+    "Java 侧 C1 单元的真实行为录制"
+  ],
+  "m3_status": "本轮完成离线闭环（契约、断言、桥接、样例）；真机端到端录制留待 M3b，需可运行的 Java 与 Horizon 26.3 实例。"
+}

@@ -17,6 +17,7 @@
     "allowed_actions": {"type": "array", "items": {"type": "string"}},
     "forbidden_actions": {"type": "array", "items": {"type": "string"}},
     "inputs": {"type": "array", "items": {"type": "string"}},
+    "command": {"type": "string", "description": "可选：该任务的可复现执行命令，随包下发以保证子 agent 自包含"},
     "output_contract": {"type": "string"},
     "output_path": {"type": "string"},
     "acceptance": {"type": "array", "items": {"type": "string"}},

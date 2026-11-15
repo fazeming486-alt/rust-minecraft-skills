@@ -183,6 +183,13 @@
       "kind": "class",
       "symbols": {"annotations": [], "superclasses": [], "interfaces": [], "import_prefixes": [], "referenced_types": [], "constant_strings": [], "methods": [], "declared_kind": "class"},
       "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
+    },
+    {
+      "unit_id": "cls:com/example/foundation/mixin/ExampleMixinPlugin",
+      "path": "com/example/foundation/mixin/ExampleMixinPlugin.java",
+      "kind": "class",
+      "symbols": {"annotations": [], "superclasses": ["java.lang.Object"], "interfaces": ["org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin"], "import_prefixes": ["java.util.", "org.objectweb.asm.tree.", "org.spongepowered.asm.mixin.extensibility."], "referenced_types": ["org.objectweb.asm.tree.ClassNode"], "constant_strings": [], "methods": ["onLoad", "shouldApplyMixin", "getMixins"], "declared_kind": "class"},
+      "flags": {"synthetic": false, "anonymous": false, "decompile_failed": false, "native": false, "obfuscated": false, "registration_id_count": 0}
     }
   ]
 }

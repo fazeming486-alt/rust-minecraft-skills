@@ -18,6 +18,12 @@
   "default_redistribution": false,
   "severity": {"full-inspection": 0, "metadata-only": 1, "oracle-only": 2},
   "scopes": ["code", "assets"],
+  "single_license_broadcast": {
+    "enabled": true,
+    "review_required_when_broadcast": true,
+    "note": "v0.8 修复：单一许可证串（无 scope 分段，如 'MIT' / 'All Rights Reserved'）覆盖整个作品。规则库按 scope 标注，原先会让未匹配的 scope 落到 default_deny，出现 'MIT 资产被判 oracle-only'、'ARR 代码被判 oracle-only 而资产却 full-inspection' 的错乱。单段且只命中一条规则时，把该判定广播到其余 scope；完全无匹配仍保持 default_deny。广播一律 review_required，因为跨 scope 推断需要人工确认。",
+    "based_on_tag": "single_license_broadcast"
+  },
   "split_tokens": ["/", ";", "|", " and ", " & ", ","],
   "global_forbidden_actions": [
     "creative_adaptation",

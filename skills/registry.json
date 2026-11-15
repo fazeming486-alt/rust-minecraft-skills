@@ -108,20 +108,22 @@
     },
     {
       "id": "diff-test-harness",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "stage": "09-verify",
       "path": "skills/09-verify/diff-test-harness",
       "execution": "deterministic",
-      "status": "specified",
-      "reads": ["units[].disposition", "units[].target.capabilities", "cross_layer_contracts[]"],
-      "writes": [],
-      "depends_on": ["extract-behavior-contract", "art-asset-classify"],
+      "status": "implemented",
+      "reads": ["work/delta.source.json", "work/policy-decision.json", "reports/m2-feature-slices.json", "reports/m2-conversion.json", "tests/fixtures/recording-contract.sample.json", "mappings/harness-contract.json"],
+      "writes": ["work/m3/recording-contracts.json", "work/m3/harness-*/result.json", "reports/m3-diff-*.json"],
+      "depends_on": ["build-feature-slices", "technical-convert-assets", "extract-behavior-contract", "art-asset-classify"],
       "acceptance": [
-        "C1 单元有录制的输入序列与状态序列",
-        "重放差异逐条可定位到 unit_id",
-        "跨层契约状态枚举不一致即判失败"
+        "C1/C2 单元有平台无关录制契约且只引用 capability id",
+        "重放差异逐条可定位到 contract_id 与 tick",
+        "跨层 shared_states 不一致即判失败",
+        "产出的 result.json 符合官方形状且可被 report.rs 消费",
+        "离线 fixture 的 PASS/FAIL 两例都能正确判定"
       ],
-      "summary": "Java 侧录制 → Rust 侧重放差分、资产完整性与视觉快照"
+      "summary": "行为差分 + 跨层契约断言 + 资产完整性，桥接成官方 harness/result.json"
     },
     {
       "id": "fetch-mod-artifact",
@@ -203,7 +205,7 @@
     },
     {
       "id": "policy-gate",
-      "version": "0.1.0",
+      "version": "0.3.0",
       "stage": "00-intake",
       "path": "skills/00-intake/policy-gate",
       "execution": "deterministic",
@@ -211,8 +213,8 @@
       "reads": [],
       "writes": ["source.policy"],
       "depends_on": ["fetch-mod-artifact"],
-      "acceptance": ["非标准 license 串按 scope 拆分", "解析失败强制 oracle-only + review_required", "下游解析器按 policy_mode 降级"],
-      "summary": "S0 第一道合规门禁：按 (scope × license) 判定提取深度，default_deny"
+      "acceptance": ["非标准 license 串按 scope 拆分", "解析失败强制 oracle-only + review_required", "下游解析器按 policy_mode 降级", "单段许可证广播到所有 scope 且强制 review_required", "多段许可证不触发广播、基线判定零变化"],
+      "summary": "S0 第一道合规门禁：按 (scope × license) 判定三维度，单段广播 + default_deny"
     },
     {
       "id": "build-hook-mapping",
@@ -317,6 +319,19 @@
       "depends_on": ["parse-java-source", "classify-java-decompiled", "policy-gate", "study-horizon-render-pipeline", "study-horizon-asset-schema", "study-horizon-mod-api"],
       "acceptance": ["每个切片四层齐全且 shared_states 是唯一状态来源", "目标侧 hook/helper 名称全部可解析，未知符号即报错", "状态参数化 roundtrip 闭合且未匹配状态为 0", "verdict 三态判定可复核，硬缺口不得伪装成 portable"],
       "summary": "把动画这类跨层特性缝成资产/代码/目标/契约四层单一迁移单元"
+    },
+    {
+      "id": "verify-generalization",
+      "version": "0.1.0",
+      "stage": "09-verify",
+      "path": "skills/09-verify/verify-generalization",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": ["orchestration/m4-samples.json", "profiles/forge/1.20.1.json", "rules/classification.rules.json", "work/m4/*.jar", "work/m4/*.policy.json"],
+      "writes": ["reports/m4-generalization.json"],
+      "depends_on": ["classify-java-decompiled", "policy-gate", "parse-bytecode"],
+      "acceptance": ["至少两个与基线形态不同的真实 mod 参与", "阈值先于实验写死且不事后调参", "报告只含统计与包名计数，不复制第三方实现", "发现新盲区时必须新增规则并附 golden 用例，随后复跑归零"],
+      "summary": "同一套规则跑多个真实 mod，检验 C6=0 是否过拟合"
     },
     {
       "id": "technical-convert-assets",

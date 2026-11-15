@@ -288,7 +288,11 @@ class ClassFile:
         for entry in self.cp:
             if entry[0] == 1:
                 value = self.utf8[entry[1] - 1]
-                if value.startswith("L") and value.endswith(";") and "/" in value:
+                # 泛型签名 / 方法描述符不是类引用：只在整体是纯 FQN 描述符时才收。
+                # 否则会生成 "java.util.Set<Ljava.lang." 这类假包前缀，
+                # 污染 import_prefixes 并让规则命中证据失真。
+                if (value.startswith("L") and value.endswith(";") and "/" in value
+                        and re.fullmatch(r"L[\w/$]+;", value)):
                     self.class_refs.add(value[1:-1].replace("/", ".").replace("$", "."))
                 for m in re.findall(r"L([\w/$]+);", value):
                     self.class_refs.add(m.replace("/", ".").replace("$", "."))

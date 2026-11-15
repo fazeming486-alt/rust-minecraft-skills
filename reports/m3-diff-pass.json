@@ -1,0 +1,34 @@
+{
+  "schema_version": "0.1.0",
+  "generated_by": "diff-assertions@0.1.0",
+  "mod_key": "rustmc-skills",
+  "observation_source": "offline fixture (pass case)",
+  "observation_is_fixture": true,
+  "official_harness_covers_logic_replay": false,
+  "checks": {
+    "logic_replay": {
+      "passed": 21,
+      "failed": 0,
+      "examples": []
+    },
+    "shared_states": {
+      "passed": 35,
+      "failed": 0,
+      "examples": []
+    },
+    "asset_integrity": {
+      "passed": 12,
+      "failed": 0,
+      "examples": []
+    }
+  },
+  "verdict": "PASS",
+  "result_json": "work/m3/harness-pass/result.json",
+  "bridge": "mappings/harness-contract.json#bridge_mapping",
+  "limitations": [
+    "offline fixture 只验证断言器本身正确，不代表真机 Java oracle 录制",
+    "官方 harness 不覆盖 C1 逻辑行为录制；logic_replay 是本仓库自建层",
+    "result.json 必须在 carry() 之后生成，否则会被 carry 删除（carry.rs:1000）",
+    "report.rs 动态遍历 checks，自定义 check 名可被消费（report.rs:292-303）"
+  ]
+}

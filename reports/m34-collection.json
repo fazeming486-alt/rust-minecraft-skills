@@ -1,0 +1,74 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M3 · harness 对接 + M4 · 第二样本泛化",
+  "total": 7,
+  "completed": 7,
+  "missing": 0,
+  "violations": [],
+  "human_gate": true,
+  "waves": [
+    [
+      "m34-01-generalization",
+      "m34-02-recording-contract",
+      "m34-03-diff-pass",
+      "m34-04-diff-fail",
+      "m34-05-policy-regression",
+      "m34-06-harness-probe"
+    ],
+    [
+      "m34-07-verification"
+    ]
+  ],
+  "items": [
+    {
+      "task_id": "m34-01-generalization",
+      "role": "generalization-check",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-1",
+      "status": "completed"
+    },
+    {
+      "task_id": "m34-02-recording-contract",
+      "role": "recording-contract",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-2",
+      "status": "completed"
+    },
+    {
+      "task_id": "m34-03-diff-pass",
+      "role": "diff-verification",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-1",
+      "status": "completed"
+    },
+    {
+      "task_id": "m34-04-diff-fail",
+      "role": "diff-verification",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-2",
+      "status": "completed"
+    },
+    {
+      "task_id": "m34-05-policy-regression",
+      "role": "policy-regression",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-1",
+      "status": "completed"
+    },
+    {
+      "task_id": "m34-06-harness-probe",
+      "role": "harness-probe",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-2",
+      "status": "completed"
+    },
+    {
+      "task_id": "m34-07-verification",
+      "role": "verification",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "main-agent",
+      "status": "completed"
+    }
+  ],
+  "verdict": "COMPLETE"
+}

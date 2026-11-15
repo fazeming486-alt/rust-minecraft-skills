@@ -96,6 +96,26 @@ def decide(license_raw: str, profiles: Dict[str, Any], artifact_id: str,
                 "based_on": [],
             }
 
+    # 单一许可证串跨 scope 广播（v0.8）：只在「单段且恰好一条规则命中」时生效；
+    # 完全无匹配仍保持 default_deny，TaCZ 这类明确分段的多段串不受影响。
+    broadcast = profiles.get("single_license_broadcast", {})
+    matched = [f for f in findings if f["matched"]]
+    broadcast_applied = False
+    if (broadcast.get("enabled") and len(segments) == 1
+            and len(matched) == 1 and not override):
+        src = matched[0]
+        for scope in profiles["scopes"]:
+            if scope_decisions[scope]["based_on"]:
+                continue
+            scope_decisions[scope] = {
+                "mode": src["mode"],
+                "transformation": src["transformation"],
+                "distribution": src["distribution"],
+                "redistribution": src["redistribution"],
+                "based_on": [src.get("pattern_id"), broadcast.get("based_on_tag", "single_license_broadcast")],
+            }
+            broadcast_applied = True
+
     if override:
         for scope in scope_decisions:
             scope_decisions[scope]["mode"] = override
@@ -107,7 +127,9 @@ def decide(license_raw: str, profiles: Dict[str, Any], artifact_id: str,
                             key=lambda t: t_sev[t])
     overall_distribution = max((d["distribution"] for d in scope_decisions.values()),
                                key=lambda d: d_sev[d])
-    review = (not license_raw.strip()) or any(not f["matched"] for f in findings) or bool(override)
+    review = ((not license_raw.strip()) or any(not f["matched"] for f in findings)
+              or bool(override)
+              or (broadcast_applied and broadcast.get("review_required_when_broadcast", True)))
 
     return {
         "schema_version": "0.2.0",
@@ -122,7 +144,8 @@ def decide(license_raw: str, profiles: Dict[str, Any], artifact_id: str,
         "distribution_conditions": profiles["distribution_conditions"].get(overall_distribution, []),
         "redistribution": all(d["redistribution"] for d in scope_decisions.values()),
         "review_required": review,
-        "decided_by": "policy-gate@0.2.0",
+        "single_license_broadcast": broadcast_applied,
+        "decided_by": "policy-gate@0.3.0",
         "ruleset": "policy/license-profiles.json",
         "note": "三维度决策（ADR 0008）：inspection / transformation / distribution。技术性转换可做，改编版不得发布或商用。",
     }

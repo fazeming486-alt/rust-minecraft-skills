@@ -1,0 +1,103 @@
+{
+  "schema_version": "0.1.0",
+  "template_id": "m3-m4",
+  "version": "0.1.0",
+  "milestone": "M3 · harness 对接 + M4 · 第二样本泛化",
+  "note": "v0.8 执行模板。目标是验证子 agent 分工闭环：wave 1 的 5 个任务由独立子 agent 各自真实执行并写 result，主 agent 只做汇总裁决，不代写 result。",
+  "compliance": {
+    "transformation": "technical-only",
+    "distribution": "local-only",
+    "forbidden_actions": ["creative_adaptation", "publish_adapted_material", "commercial_use"],
+    "distribution_conditions": [
+      "产物只留在 work/ 等被 .gitignore 排除的目录",
+      "不发布、不上传、不进入任何发布链",
+      "不用于商业目的",
+      "不做创造性改编"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "m34-01-generalization",
+      "role": "generalization-check",
+      "goal": "跑四样本两档泛化验证，复核 C6 与兜底统计并给出 verdict",
+      "inputs": ["work/m4/samples.json", "orchestration/m4-samples.json", "profiles/forge/1.20.1.json"],
+      "policy_mode": "full-inspection",
+      "output_contract": "report:m4-generalization",
+      "acceptance": ["四个样本 C6 与兜底统计完整", "阈值与判定可复核", "报告不含第三方实现内容"],
+      "depends_on": [],
+      "priority": 10,
+      "command": "python skills/09-verify/verify-generalization/run.py --samples work/m4/samples.json --out reports/m4-generalization.json"
+    },
+    {
+      "id": "m34-02-recording-contract",
+      "role": "recording-contract",
+      "goal": "从真实分诊 delta 生成 C1/C2 平台无关录制契约骨架",
+      "inputs": ["work/delta.source.json", "reports/m2-feature-slices.json", "work/policy-decision.json"],
+      "policy_mode": "full-inspection",
+      "output_contract": "contract:recording-contracts",
+      "acceptance": ["契约只引用 capability id", "oracle.status 为 pending 且不虚构观测", "契约数与 C1/C2 单元数一致"],
+      "depends_on": [],
+      "priority": 10,
+      "command": "python skills/09-verify/diff-test-harness/run.py --delta work/delta.source.json --policy-decision work/policy-decision.json --slices reports/m2-feature-slices.json --conversion reports/m2-conversion.json --contracts work/m3/recording-contracts.json"
+    },
+    {
+      "id": "m34-03-diff-pass",
+      "role": "diff-verification",
+      "goal": "跑 PASS fixture，产出官方形状 result.json 与差分报告",
+      "inputs": ["tests/fixtures/recording-contract.sample.json", "tests/fixtures/oracle-observations.pass.json"],
+      "policy_mode": "full-inspection",
+      "output_contract": "verification:diff-pass",
+      "acceptance": ["PASS 用例全绿", "result.json 形状符合 report.rs 消费规则", "报告标注 fixture 来源"],
+      "depends_on": [],
+      "priority": 10,
+      "command": "python tools/diff_assertions.py --contracts tests/fixtures/recording-contract.sample.json --observations tests/fixtures/oracle-observations.pass.json --slices reports/m2-feature-slices.json --conversion reports/m2-conversion.json --result-out work/m3/harness-pass/result.json --report reports/m3-diff-pass.json"
+    },
+    {
+      "id": "m34-04-diff-fail",
+      "role": "diff-verification",
+      "goal": "跑 FAIL fixture，确认断言器能抓到 3 类失配并正确判 FAIL",
+      "inputs": ["tests/fixtures/recording-contract.sample.json", "tests/fixtures/oracle-observations.fail.json"],
+      "policy_mode": "full-inspection",
+      "output_contract": "verification:diff-fail",
+      "acceptance": ["FAIL 用例必须抓到失配且可定位", "退出码为 2", "差异可定位到 contract_id 与 tick"],
+      "depends_on": [],
+      "priority": 10,
+      "command": "python tools/diff_assertions.py --contracts tests/fixtures/recording-contract.sample.json --observations tests/fixtures/oracle-observations.fail.json --slices reports/m2-feature-slices.json --conversion reports/m2-conversion.json --result-out work/m3/harness-fail/result.json --report reports/m3-diff-fail.json"
+    },
+    {
+      "id": "m34-05-policy-regression",
+      "role": "policy-regression",
+      "goal": "复核单段许可证广播修复：MIT/ARR 两 scope 一致、TaCZ 基线零变化",
+      "inputs": ["work/m4/*.policy.json", "work/policy-decision.json", "policy/license-profiles.json"],
+      "policy_mode": "full-inspection",
+      "output_contract": "review:policy-regression",
+      "acceptance": ["MIT / ARR 单段串两个 scope 判定一致", "TaCZ 多段串不触发广播且判定零变化", "广播一律 review_required"],
+      "depends_on": [],
+      "priority": 10,
+      "command": "python -c \"import json,glob; [print(p, json.load(open(p,encoding='utf-8'))['scope_decisions']) for p in sorted(glob.glob('work/m4/*.policy.json'))]\""
+    },
+    {
+      "id": "m34-06-harness-probe",
+      "role": "harness-probe",
+      "goal": "重跑 mod-api 探针并核对 mappings/harness-contract.json 的字段与源码一致",
+      "inputs": ["orchestration/horizon-probes/mod-api.json", "mappings/harness-contract.json"],
+      "policy_mode": "full-inspection",
+      "output_contract": "facts:horizon-mod-api",
+      "acceptance": ["missing_files 为空", "result.json 字段与 report.rs 消费规则一致", "报告不含源码正文"],
+      "depends_on": [],
+      "priority": 10,
+      "command": "python skills/06-target-study/study-horizon-mod-api/run.py --horizon-root D:/RUST重写mc项目/third_party/horizon --out reports/horizon-mod-api.json"
+    },
+    {
+      "id": "m34-07-verification",
+      "role": "verification",
+      "goal": "汇总 6 个子任务结果、检查闭合并生成 M3/M4 验收清单",
+      "inputs": ["work/dispatch-m34/**", "reports/**"],
+      "policy_mode": "full-inspection",
+      "output_contract": "report:m34-verification",
+      "acceptance": ["每个任务有 result 或阻塞原因", "缺口清单闭合", "verdict 可复核"],
+      "depends_on": ["m34-01-generalization", "m34-02-recording-contract", "m34-03-diff-pass", "m34-04-diff-fail", "m34-05-policy-regression", "m34-06-harness-probe"],
+      "priority": 90
+    }
+  ]
+}

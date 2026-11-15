@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1.0",
+  "version": "0.1.0",
+  "note": "C1/C2 逻辑单元 → capability id 的确定性映射。只引用 capabilities/vocabulary.json 的 id，不出现 Java FQN / Rust 类型 / Horizon API（ADR 0001）。按 rules 顺序首命中，未命中走 default。",
+  "default": ["tick", "entity_state"],
+  "rules": [
+    {"match_class_tokens": ["Cache", "Parameterized", "Value"], "capability_ids": ["persistent_data"]},
+    {"match_class_tokens": ["Noise", "Perlin", "Random"], "capability_ids": ["random_source"]},
+    {"match_class_tokens": ["Filter", "Regex", "Literal", "Path", "Handler"], "capability_ids": ["tag_lookup"]},
+    {"match_class_tokens": ["Task", "Cycle", "Easing", "Time"], "capability_ids": ["scheduled_task", "cooldown"]},
+    {"match_class_tokens": ["Damage", "Shoot", "Result"], "capability_ids": ["entity_state", "damage_apply"]},
+    {"match_class_tokens": ["Resource", "Manager", "Reload"], "capability_ids": ["resource_reload", "content_pack"]},
+    {"match_class_tokens": ["Color", "Md5", "Hex", "Utils"], "capability_ids": ["tick"]},
+    {"match_class_tokens": ["Animation", "Display", "Slot"], "capability_ids": ["render_handle", "tick"]},
+    {"match_subtype": "state_enum", "capability_ids": ["entity_state"]},
+    {"match_subtype": "interface_contract", "capability_ids": ["event_hook"]}
+  ],
+  "assertion_templates": [
+    "输入序列 tick 单调递增且无缺口",
+    "每个 shared_state 必须存在于 feature-slices 的 shared_states 全集",
+    "期望状态序列与观测状态序列逐 tick 一致",
+    "同一 tick 不允许出现两个不同 shared_state",
+    "capability_ids 全部存在于 capabilities/vocabulary.json"
+  ]
+}

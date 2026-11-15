@@ -143,14 +143,22 @@ python tools/experiment.py --profile profiles/forge/1.20.1.json \
 
 详见 [执行报告](docs/06-m2-execution.md)、[ADR 0009](docs/adr/0009-cross-layer-slices-and-target-study.md)、`reports/m2-feature-slices.json`、`reports/m2-conversion.json`。
 
+## v0.8 · M3 harness 对接、M4 泛化验证与子 agent 闭环（ADR 0010）
+
+- **M3 修正了一半理解**：真读源码后确认官方 `mod_port_harness.py` 的 10 个 check 全是 **data/资产层 carry 对比，没有 Java 逻辑行为录制**。因此分两层：A 把我们的结论桥接成官方 `harness/result.json` 形状（让 `report.rs` 消费进 coverage），B 自建平台无关的 C1/C2 录制契约与逐 tick 差分断言。`diff-test-harness` 由 `specified` → `implemented`。实测 **23 个契约、PASS 68 项全绿、FAIL 精准抓到 3 类失配**（含「逻辑已换弹、动画还在装填」）。**离线 fixture 不等于真机 oracle 录制**，M3b 仍需可运行的 Java 与 26.3 实例。
+- **M4 泛化验证**：同一套 1.20.1 profile + 规则跑四个真实 mod（TaCZ / Farmer's Delight / Create / Iron's Spellbooks），阈值实验前写死 → **C6 与兜底全部为 0，verdict = generalizes**。过程修掉三个真实问题：单段许可证只判一个 scope（门禁广播，TaCZ 基线零变化）、泛型签名被误当类引用（四样本伪引用归零）、`CreateMixinPlugin` 新盲区 → **新增 R021 + golden 用例**，规则 20 → 21 条。
+- **子 agent 闭环实证**：3 个独立子 agent 各领 2 个任务，**真实执行命令并各自写 result**，主 agent 只做汇总裁决 → 7/7 COMPLETE、0 越界。抽查 5 项上报数值全部与真实产物一致，并修正 1 处字段类型歧义（`failures` 计数 vs 数组）——`collect-results` 查得了 hash 与越界，查不了语义漂移。
+
+详见 [执行报告](docs/07-m3-m4-execution.md)、[ADR 0010](docs/adr/0010-m3-harness-bridge-and-m4-generalization.md)、`mappings/harness-contract.json`、`reports/m4-generalization.json`。
+
 ## 状态与下一步
 
-**v0.7 — M2 已执行完毕**：22 个 skill、**67 项自检全绿**、SSH 持续推送。
+**v0.8 — M3 离线闭环 + M4 泛化验证完成**：23 个 skill、**90 项自检全绿**、SSH 持续推送。
 
 按 `docs/04-roadmap.md` 推进：
 
-- **M3 改为「对接」而非「自建」**：`horizon-port-pack/src/oracle.rs` / `report.rs` / `tools/mod_port_harness.py` 已实现 dev-only Java oracle 与 coverage，`diff-test-harness` 只产出录制契约与差分断言。
-- **M4**：换混淆或跨版本的第二个 mod，验证 C6 = 0 不是 TaCZ 过拟合，并检验 10 个锚点是否需扩展。
-- **并行化验证**：把 wave 2 的 7 个资产族真正分给独立子 agent，用 `input_hash` + `collect-results` 验证闭环与并行收益。
+- **M3b**：搭最小可运行 Java oracle，把 23 个契约的 `oracle.status` 从 `pending` 推到 `recorded → replayed → verified`。
+- **M4b**：换跨 MC 版本或混淆样本检验规则泛化，必要时新增 version profile。
+- 用实际耗时校准复杂度模型九信号权重（ADR 0007 复核条件）。
 
-三条边界保持诚实：C6 归零只是单一样本结果；`animation_driver` 仍 **unbound**（有逐部件静态姿态，无骨骼/蒙皮/关键帧插值）；`geometry_ir` / `bone_tracks` 只是可逆的中间表示，目标侧没有消费者。不用 workaround 冒充已解决。
+四条边界保持诚实：C6 = 0 只是「四个 mod / 同一版本 / 带调试信息」的样本结论；`animation_driver` 仍 **unbound**；`geometry_ir` / `bone_tracks` 只是可逆的中间表示，目标侧没有消费者；**离线 fixture 不等于真机录制**。不用 workaround 冒充已解决。

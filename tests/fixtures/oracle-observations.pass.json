@@ -1,0 +1,35 @@
+{
+  "source": "offline fixture (pass case)",
+  "fixture": true,
+  "observed_states": ["static_idle", "reload_tactical", "shoot", "inspect"],
+  "contracts": {
+    "rc-001": {
+      "input_sequence": [
+        {"tick": 0, "action": "equip", "capability_id": "tick"},
+        {"tick": 4, "action": "reload", "capability_id": "entity_state"}
+      ],
+      "state_sequence": [
+        {"tick": 0, "shared_state": "static_idle"},
+        {"tick": 4, "shared_state": "reload_tactical"},
+        {"tick": 9, "shared_state": "static_idle"}
+      ]
+    },
+    "rc-002": {
+      "input_sequence": [
+        {"tick": 0, "action": "shoot", "capability_id": "entity_state"}
+      ],
+      "state_sequence": [
+        {"tick": 0, "shared_state": "static_idle"},
+        {"tick": 1, "shared_state": "shoot"}
+      ]
+    },
+    "rc-003": {
+      "input_sequence": [
+        {"tick": 2, "action": "inspect", "capability_id": "event_hook"}
+      ],
+      "state_sequence": [
+        {"tick": 2, "shared_state": "inspect"}
+      ]
+    }
+  }
+}

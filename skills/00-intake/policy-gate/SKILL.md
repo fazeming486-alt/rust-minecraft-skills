@@ -1,13 +1,13 @@
 ---
 id: policy-gate
-version: 0.1.0
+version: 0.3.0
 stage: 00-intake
 execution: deterministic
 status: implemented
 reads: []
 writes: ["source.policy"]
 depends_on: ["fetch-mod-artifact"]
-acceptance: ["非标准 license 串按 scope 拆分", "解析失败强制 oracle-only + review_required", "下游解析器按 policy_mode 降级"]
+acceptance: ["非标准 license 串按 scope 拆分", "解析失败强制 oracle-only + review_required", "下游解析器按 policy_mode 降级", "单段许可证广播到所有 scope 且强制 review_required", "多段许可证不触发广播、基线判定零变化"]
 ---
 
 # policy-gate
@@ -38,6 +38,8 @@ TaCZ 实测：代码 `full-inspection / port / local-only`；资产 **`full-insp
 - 每段取最高优先级规则；同 scope 多段取**最严格**档。
 - **任何未匹配、缺失或冲突 → `default_deny`（`oracle-only`）+ `review_required: true`**。不追求自动判对 100%，靠人工兜底保证不越界。
 - 用户可用 `--override` 显式覆盖，但覆盖本身会置 `review_required`。
+- **v0.8 单段许可证广播**（`single_license_broadcast`）：许可证只覆盖整个作品时，规则库按 scope 标注会让未匹配的 scope 落到 `default_deny`。实测 `MIT` 的 assets 被误判 `oracle-only`、`All Rights Reserved` 的 code 最保守而 assets 却 `full-inspection` —— 第二样本根本没法解析。因此**单段且只命中一条规则**时，把该判定广播到其余 scope，并一律置 `review_required`（跨 scope 推断需人工确认）。`based_on` 会记 `single_license_broadcast`，输出新增同名布尔字段。
+- **明确分段的多段串不广播**：TaCZ 的 `GPL3 / CC BY-NC-ND 4.0` 两段各命中各 scope，判定零变化（已由回归检查锁死）。完全无匹配仍 `default_deny`。
 
 ## 输入输出
 

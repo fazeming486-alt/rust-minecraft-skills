@@ -105,39 +105,44 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 依赖 | M0（三维度门禁）、M1；政策断点已在 v0.7 修复（角色 `allowed_actions` 与策略白名单同步，并加 3 条回归检查） |
 | 风险 | **硬缺口未消除，只定位得更精确**：Horizon 有 `ModelPart` 逐部件静态姿态与变换栈，但**无骨骼/蒙皮/关键帧插值与动画驱动**；源码级全仓 0 命中证明无 Bedrock geometry / glTF / .bbmodel 读取器。0.5 为 Planned 未实现（`docs/modpacks.md:183`、`crates/horizon-mods/src/manifest.rs:20-22`），`roadmap.json:712` 的 set aside 只针对整包移植总目标。两阶段 workaround 见 `orchestration/slice-anchors.json#workaround_catalog`，**不得写成「已支持动画」**。`geometry_ir` / `bone_tracks` 标 `unbound`，只是中间表示 |
 
-### M3 · 对接官方 harness
+### M3 · 对接官方 harness（v0.8 离线闭环完成）
+
+> 详见 `docs/07-m3-m4-execution.md` 与 ADR 0010。
 
 | 项 | 内容 |
 |---|---|
-| 交付 | `diff-test-harness` **对接现成的** `horizon-port-pack` harness；产出录制契约、状态序列差分断言与视觉快照用例 |
-| 验收 | 至少一个 C1 单元完成「Java oracle 录制 → Rust 侧重放」闭环；差异可定位到 unit_id 与 tick |
-| 依赖 | M1、M2；需要可运行的 Horizon 实例（工作区已有 `undeadwar-horizon/bin`，D 盘） |
-| v0.7 修正 | **不重造 harness**：源码研读确认 `crates/horizon-port-pack/src/oracle.rs`(1027 行)、`report.rs`(816 行，含 `coverage.json`)、`tools/mod_port_harness.py` 已实现 dev-only Java oracle 与 coverage。本里程碑改为对接与产出断言格式 |
-| 风险 | Java oracle 需要 26.3 与 1.20.1 的行为差异对齐；先选不依赖版本语义的纯算法单元 |
+| 交付 | `mappings/harness-contract.json`（官方字段/路径/生命周期全表）；`schemas/recording-contract.schema.json`；`tools/build_recording_contract.py`；`tools/diff_assertions.py`；PASS/FAIL 两组离线 fixture；`diff-test-harness` 由 `specified` → `implemented` |
+| 验收 | 23 个真实 C1/C2 录制契约（`oracle.status=pending`、不编造观测）；PASS 68 项全绿；FAIL 抓到 3 类失配；产出官方形状 `result.json` 可被 `report.rs:283-306` 消费 |
+| v0.8 修正 | **官方 harness 只覆盖 data/资产层 carry 对比**（10 个 check），**没有 Java 逻辑行为录制**。所以 M3 分两层：A 桥接结论到官方 `result.json`，B 自建平台无关录制契约与逐 tick 差分。不得把 A 说成「已接入 Java oracle」 |
+| 关键坑 | `carry()` 每次删除旧 `harness/result.json`（`carry.rs:1000`），harness 必须在 carry 之后重跑；`report.rs:292` 动态遍历 `checks`，故自定义 check 可被消费 |
+| 风险 / 未决 | **真机端到端录制（M3b）未跑**：需 `tools/neoforge_oracle.py export`（1.20.1 NeoForge 实例）+ `cargo build -p horizon-client-lib --example mod_port_probe` + 26.3 客户端资源 + Java 侧行为录制 |
 
-### M4 · 第二样本与泛化验证
+### M4 · 第二样本与泛化验证（v0.8 完成）
 
 | 项 | 内容 |
 |---|---|
-| 交付 | 第二个真实 mod（优先混淆、或跨 MC 版本差异大）；新的 version profile；校准前后报告；过拟合分析 |
-| 验收 | 新样本不修改规则主体即可达到可接受 C6 占比；差异只落在 profile 与新增规则；`validate.py` 全绿 |
-| 依赖 | M0–M3 |
-| 价值 | 检验 v0.2 的「C6 = 0」是否只是 TaCZ 过拟合 |
+| 交付 | 三个形态差异大的真实 Forge 1.20.1 mod（Farmer's Delight / Create / Iron's Spellbooks）+ TaCZ 基线；`orchestration/m4-samples.json`；`verify-generalization` skill；`reports/m4-generalization.json` |
+| 验收 | 同一套 1.20.1 profile + 规则，阈值实验前写死（C6/兜底 ≤ 0.05）；四样本 **C6 = 0、兜底 = 0 → `generalizes`** |
+| 过程发现 | 修掉 3 个真实问题：① 单段许可证只判一个 scope（门禁广播修复，TaCZ 基线零变化）；② 泛型签名被误当类引用（TaCZ 1390 / Create 4829 个假包前缀，四样本归零）；③ `CreateMixinPlugin` 新盲区 → 新增 R021 + golden 用例，规则 20 → 21 条 |
+| 局限 | 四样本同为 1.20.1 且带调试信息，**跨版本与混淆样本未验证**；ARR 样本触发 `review_required`，结果仅作本地统计比较 |
 
 ## 4. 度量（每次里程碑后记录）
 
-| 指标 | 当前值（v0.7） | 目标 |
+| 指标 | 当前值（v0.8） | 目标 |
 |---|---|---|
-| C6 占比（源码/字节码） | 0 / 0（单一样本） | 第二样本上仍 < 0.05 |
+| C6 占比（源码/字节码） | 0 / 0（TaCZ） | 第二样本上仍 < 0.05 |
+| **M4 泛化** | **4 样本 C6 = 0、兜底 = 0 / verdict = generalizes** | 跨版本与混淆样本仍成立 |
 | 双轨一致率 | 0.8734 | 逐条归因后 ≥ 0.90 |
 | Horizon 能力缺口 | 1（`animation_driver`，源码级定位） | 明确临时方案，不假装已解决 |
-| policy 覆盖率 | 100% 样本过门禁 | 解析失败强制 review |
+| policy 覆盖率 | 100% 样本过门禁；单段广播 + review_required | 解析失败强制 review |
 | NeoForge → hook 映射 | 162 条 / 156 事件 | 随 Horizon 快照重生成 |
-| 子 agent 任务包 | **17（4 wave，17 完成 / COMPLETE）** | 下一轮真正分给独立子 agent 验证并行收益 |
+| 分类规则 | **21 条（R021 由 M4 新增，有 golden 用例）** | 新盲区必须附用例 |
+| 子 agent 任务包 | M2 17（COMPLETE）；**M3/M4 7（6 个由 3 个独立子 agent 真跑真写，COMPLETE）** | 用实际耗时校准并行收益 |
 | 跨层切片 | **10（157→110 状态，2 portable / 8 needs_workaround）** | 第二样本检验锚点是否需扩展 |
 | 格式等价转换 | **5 个转换器 / 3683 源文件 / roundtrip 全闭合 / 1 partial + 2 unbound + 2 bound** | 内容级转换需在可运行环境验证 |
 | 目标侧源码探针 | **3 路 / 25 文件 / 424 声明 / missing_files 全空** | 随 Horizon 快照重跑比对 |
-| `validate.py` 检查数 | **67** | 随里程碑递增，始终全绿 |
+| M3 harness 对接 | **离线闭环完成（23 契约 / PASS 68 项 / FAIL 抓 3 类失配）** | M3b 真机录制 |
+| `validate.py` 检查数 | **90** | 随里程碑递增，始终全绿 |
 
 **合规成本实测（M0，TaCZ 799 单元，同一套 20 条规则）**：
 
@@ -169,3 +174,4 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 0007 | 子 agent 分工：确定性复杂度 + 自包含任务包 |
 | 0008 | **合规模型三维度：技术性转换可做、分发受限（v0.6）** |
 | 0009 | **跨层特性切片、目标侧源码研读三路探针、真实格式等价转换与政策断点修复（v0.7）** |
+| 0010 | **M3 harness 对接分层、M4 第二样本泛化、单段许可证广播与独立子 agent 闭环实证（v0.8）** |

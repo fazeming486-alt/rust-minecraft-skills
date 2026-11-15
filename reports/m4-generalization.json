@@ -1,0 +1,508 @@
+{
+  "schema_version": "0.1.0",
+  "generated_by": "m4-generalize@0.1.0",
+  "profile": "profiles/forge/1.20.1.json",
+  "rules": "rules/classification.rules.json",
+  "primary_mode": "full-inspection",
+  "criteria": {
+    "c6_ratio_max": 0.05,
+    "fallback_ratio_max": 0.05,
+    "note": "阈值先于实验写死，不事后调参"
+  },
+  "samples": [
+    {
+      "id": "tacz-baseline",
+      "artifact": "tacz-forge-1.20.1-1.2.0.jar",
+      "baseline": true,
+      "license_raw": "GPL3 / CC BY-NC-ND 4.0",
+      "code_policy_mode": "full-inspection",
+      "single_license_broadcast": false,
+      "shape": {
+        "jar_bytes": 69001578,
+        "class_files": 1061,
+        "asset_files": 4436,
+        "data_files": 50,
+        "top_extensions": {
+          "ogg": 1712,
+          "json": 1626,
+          "png": 1081,
+          "class": 1061,
+          "lua": 66,
+          "jar": 6
+        }
+      },
+      "by_mode": {
+        "full-inspection": {
+          "policy_mode": "full-inspection",
+          "total_units": 1061,
+          "by_disposition": {
+            "C1": 41,
+            "C2": 3,
+            "C3": 499,
+            "C4": 187,
+            "C5": 331
+          },
+          "by_semantic": {
+            "api_contract": 3,
+            "artifact": 29,
+            "data_model": 187,
+            "domain_logic": 41,
+            "io_persistence": 31,
+            "platform_glue": 423,
+            "presentation": 242,
+            "registry": 105
+          },
+          "c6_ratio": 0.0,
+          "fallback_units": 0,
+          "fallback_ratio": 0.0,
+          "warnings": 914,
+          "low_confidence_units": [],
+          "rule_hits": {
+            "R001": 29,
+            "R003": 20,
+            "R004": 374,
+            "R005": 34,
+            "R006": 444,
+            "R007": 3,
+            "R008": 311,
+            "R011": 17,
+            "R012": 105,
+            "R013": 105,
+            "R014": 232,
+            "R015": 82,
+            "R016": 117,
+            "R017": 696,
+            "R018": 33,
+            "R019": 11,
+            "R021": 2
+          },
+          "fallback_top_packages": [],
+          "requested_mode": "full-inspection",
+          "effective_mode": "full-inspection"
+        },
+        "metadata-only": {
+          "policy_mode": "metadata-only",
+          "total_units": 1061,
+          "by_disposition": {
+            "C1": 37,
+            "C2": 3,
+            "C3": 475,
+            "C4": 183,
+            "C5": 363
+          },
+          "by_semantic": {
+            "api_contract": 3,
+            "artifact": 74,
+            "data_model": 183,
+            "domain_logic": 37,
+            "io_persistence": 16,
+            "platform_glue": 411,
+            "presentation": 232,
+            "registry": 105
+          },
+          "c6_ratio": 0.0,
+          "fallback_units": 0,
+          "fallback_ratio": 0.0,
+          "warnings": 926,
+          "low_confidence_units": [],
+          "rule_hits": {
+            "R001": 74,
+            "R003": 20,
+            "R004": 374,
+            "R005": 34,
+            "R006": 444,
+            "R008": 311,
+            "R011": 17,
+            "R012": 105,
+            "R013": 105,
+            "R014": 232,
+            "R015": 82,
+            "R016": 117,
+            "R017": 696,
+            "R018": 33,
+            "R019": 11,
+            "R021": 2
+          },
+          "fallback_top_packages": [],
+          "requested_mode": "metadata-only",
+          "effective_mode": "metadata-only"
+        }
+      }
+    },
+    {
+      "id": "farmers-delight",
+      "artifact": "FarmersDelight-1.20.1-1.3.4.jar",
+      "baseline": false,
+      "license_raw": "MIT License",
+      "code_policy_mode": "full-inspection",
+      "single_license_broadcast": true,
+      "shape": {
+        "jar_bytes": 3311051,
+        "class_files": 289,
+        "asset_files": 992,
+        "data_files": 908,
+        "top_extensions": {
+          "json": 1454,
+          "png": 426,
+          "class": 289,
+          "ogg": 14,
+          "nbt": 5,
+          "mcmeta": 3
+        }
+      },
+      "by_mode": {
+        "full-inspection": {
+          "policy_mode": "full-inspection",
+          "total_units": 289,
+          "by_disposition": {
+            "C1": 6,
+            "C3": 232,
+            "C4": 8,
+            "C5": 43
+          },
+          "by_semantic": {
+            "artifact": 10,
+            "data_model": 8,
+            "domain_logic": 6,
+            "platform_glue": 128,
+            "presentation": 19,
+            "registry": 118
+          },
+          "c6_ratio": 0.0,
+          "fallback_units": 0,
+          "fallback_ratio": 0.0,
+          "warnings": 208,
+          "low_confidence_units": [],
+          "rule_hits": {
+            "R001": 10,
+            "R003": 14,
+            "R004": 169,
+            "R005": 25,
+            "R006": 31,
+            "R007": 5,
+            "R008": 13,
+            "R011": 13,
+            "R012": 125,
+            "R015": 2,
+            "R017": 270,
+            "R018": 1
+          },
+          "fallback_top_packages": [],
+          "requested_mode": "full-inspection",
+          "effective_mode": "full-inspection"
+        },
+        "metadata-only": {
+          "policy_mode": "metadata-only",
+          "total_units": 289,
+          "by_disposition": {
+            "C1": 6,
+            "C3": 218,
+            "C4": 8,
+            "C5": 57
+          },
+          "by_semantic": {
+            "artifact": 24,
+            "data_model": 8,
+            "domain_logic": 6,
+            "platform_glue": 116,
+            "presentation": 19,
+            "registry": 116
+          },
+          "c6_ratio": 0.0,
+          "fallback_units": 0,
+          "fallback_ratio": 0.0,
+          "warnings": 218,
+          "low_confidence_units": [],
+          "rule_hits": {
+            "R001": 24,
+            "R003": 14,
+            "R004": 169,
+            "R005": 24,
+            "R006": 31,
+            "R008": 13,
+            "R011": 13,
+            "R012": 125,
+            "R015": 2,
+            "R017": 270,
+            "R018": 1
+          },
+          "fallback_top_packages": [],
+          "requested_mode": "metadata-only",
+          "effective_mode": "metadata-only"
+        }
+      }
+    },
+    {
+      "id": "create",
+      "artifact": "create-1.20.1-6.0.8.jar",
+      "baseline": false,
+      "license_raw": "MIT",
+      "code_policy_mode": "full-inspection",
+      "single_license_broadcast": true,
+      "shape": {
+        "jar_bytes": 19170905,
+        "class_files": 2687,
+        "asset_files": 5071,
+        "data_files": 3803,
+        "top_extensions": {
+          "json": 7205,
+          "class": 2687,
+          "png": 1291,
+          "nbt": 241,
+          "obj": 39,
+          "ogg": 38
+        }
+      },
+      "by_mode": {
+        "full-inspection": {
+          "policy_mode": "full-inspection",
+          "total_units": 2687,
+          "by_disposition": {
+            "C1": 172,
+            "C2": 18,
+            "C3": 2063,
+            "C4": 40,
+            "C5": 394
+          },
+          "by_semantic": {
+            "api_contract": 18,
+            "artifact": 55,
+            "data_model": 40,
+            "domain_logic": 172,
+            "platform_glue": 2090,
+            "presentation": 211,
+            "registry": 101
+          },
+          "c6_ratio": 0.0,
+          "fallback_units": 0,
+          "fallback_ratio": 0.0,
+          "warnings": 1371,
+          "low_confidence_units": [],
+          "rule_hits": {
+            "R001": 55,
+            "R003": 57,
+            "R004": 871,
+            "R005": 104,
+            "R006": 341,
+            "R007": 2,
+            "R008": 256,
+            "R011": 50,
+            "R012": 100,
+            "R016": 142,
+            "R017": 2390,
+            "R018": 88,
+            "R019": 21,
+            "R021": 1
+          },
+          "fallback_top_packages": [],
+          "requested_mode": "full-inspection",
+          "effective_mode": "full-inspection"
+        },
+        "metadata-only": {
+          "policy_mode": "metadata-only",
+          "total_units": 2687,
+          "by_disposition": {
+            "C1": 161,
+            "C2": 18,
+            "C3": 2032,
+            "C4": 38,
+            "C5": 438
+          },
+          "by_semantic": {
+            "api_contract": 18,
+            "artifact": 104,
+            "data_model": 38,
+            "domain_logic": 161,
+            "platform_glue": 2059,
+            "presentation": 207,
+            "registry": 100
+          },
+          "c6_ratio": 0.0,
+          "fallback_units": 0,
+          "fallback_ratio": 0.0,
+          "warnings": 1398,
+          "low_confidence_units": [],
+          "rule_hits": {
+            "R001": 104,
+            "R003": 57,
+            "R004": 871,
+            "R005": 104,
+            "R006": 341,
+            "R008": 256,
+            "R011": 50,
+            "R012": 100,
+            "R016": 142,
+            "R017": 2390,
+            "R018": 88,
+            "R019": 21,
+            "R021": 1
+          },
+          "fallback_top_packages": [],
+          "requested_mode": "metadata-only",
+          "effective_mode": "metadata-only"
+        }
+      }
+    },
+    {
+      "id": "irons-spellbooks",
+      "artifact": "irons_spellbooks-1.20.1-3.16.3.jar",
+      "baseline": false,
+      "license_raw": "All Rights Reserved",
+      "code_policy_mode": "full-inspection",
+      "single_license_broadcast": true,
+      "shape": {
+        "jar_bytes": 15570397,
+        "class_files": 1264,
+        "asset_files": 1832,
+        "data_files": 1056,
+        "top_extensions": {
+          "json": 1438,
+          "class": 1264,
+          "png": 942,
+          "ogg": 265,
+          "nbt": 236,
+          "mcmeta": 23
+        }
+      },
+      "by_mode": {
+        "full-inspection": {
+          "policy_mode": "full-inspection",
+          "total_units": 1264,
+          "by_disposition": {
+            "C1": 52,
+            "C2": 21,
+            "C3": 972,
+            "C4": 48,
+            "C5": 171
+          },
+          "by_semantic": {
+            "api_contract": 21,
+            "artifact": 20,
+            "data_model": 48,
+            "domain_logic": 52,
+            "io_persistence": 7,
+            "platform_glue": 612,
+            "presentation": 114,
+            "registry": 390
+          },
+          "c6_ratio": 0.0,
+          "fallback_units": 0,
+          "fallback_ratio": 0.0,
+          "warnings": 821,
+          "low_confidence_units": [],
+          "rule_hits": {
+            "R001": 20,
+            "R003": 34,
+            "R004": 588,
+            "R005": 70,
+            "R006": 172,
+            "R007": 1,
+            "R008": 91,
+            "R011": 33,
+            "R012": 396,
+            "R015": 51,
+            "R016": 2,
+            "R017": 1153,
+            "R018": 19,
+            "R019": 22,
+            "R021": 2
+          },
+          "fallback_top_packages": [],
+          "requested_mode": "full-inspection",
+          "effective_mode": "full-inspection"
+        },
+        "metadata-only": {
+          "policy_mode": "metadata-only",
+          "total_units": 1264,
+          "by_disposition": {
+            "C1": 47,
+            "C2": 21,
+            "C3": 908,
+            "C4": 35,
+            "C5": 253
+          },
+          "by_semantic": {
+            "api_contract": 21,
+            "artifact": 112,
+            "data_model": 35,
+            "domain_logic": 47,
+            "io_persistence": 7,
+            "platform_glue": 561,
+            "presentation": 104,
+            "registry": 377
+          },
+          "c6_ratio": 0.0,
+          "fallback_units": 0,
+          "fallback_ratio": 0.0,
+          "warnings": 859,
+          "low_confidence_units": [],
+          "rule_hits": {
+            "R001": 112,
+            "R003": 34,
+            "R004": 588,
+            "R005": 70,
+            "R006": 172,
+            "R008": 87,
+            "R011": 33,
+            "R012": 396,
+            "R015": 51,
+            "R016": 2,
+            "R017": 1153,
+            "R018": 19,
+            "R019": 22,
+            "R021": 2
+          },
+          "fallback_top_packages": [],
+          "requested_mode": "metadata-only",
+          "effective_mode": "metadata-only"
+        }
+      }
+    }
+  ],
+  "comparison": [
+    {
+      "id": "tacz-baseline",
+      "class_files": 1061,
+      "c6_full": 0.0,
+      "c6_metadata": 0.0,
+      "fallback_full": 0,
+      "warnings_full": 914,
+      "c1_full": 41
+    },
+    {
+      "id": "farmers-delight",
+      "class_files": 289,
+      "c6_full": 0.0,
+      "c6_metadata": 0.0,
+      "fallback_full": 0,
+      "warnings_full": 208,
+      "c1_full": 6
+    },
+    {
+      "id": "create",
+      "class_files": 2687,
+      "c6_full": 0.0,
+      "c6_metadata": 0.0,
+      "fallback_full": 0,
+      "warnings_full": 1371,
+      "c1_full": 172
+    },
+    {
+      "id": "irons-spellbooks",
+      "class_files": 1264,
+      "c6_full": 0.0,
+      "c6_metadata": 0.0,
+      "fallback_full": 0,
+      "warnings_full": 821,
+      "c1_full": 52
+    }
+  ],
+  "verdict": "generalizes",
+  "failures": [],
+  "findings": [],
+  "limitations": [
+    "所有样本同为 Forge 1.20.1，因此只检验「换 mod」的泛化，不检验跨版本",
+    "报告只含统计与包名计数；jar / 反编译产物只留 work/",
+    "ARR 样本触发 review_required，其 full-inspection 结果仅用于本地统计比较"
+  ]
+}
