@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5i · 实测 player_tick = 0.976 次/游戏 tick；推翻 M5h 的「2 倍速率」结论并回滚我的错误修正",
+  "verification_level": "fired_in_game",
+  "note": "M5h 把「按住打出 24 发/26 tick」归因为 player_tick 每 tick 两次。加了计数探针后实测是 0.976 次/tick —— 原因是我把 cooldown 改成了 interval-1。回滚后速率回到标称附近。",
+  "measurement": {
+    "probe": "on_tick 每 200 次调用打印一行 `[tacz_ak47_pilot] on_tick calls=N`",
+    "window": "horizon-ctl 脚本 `wait 200`，前后各读一次 `state.ticks`",
+    "calls_total": 200,
+    "game_ticks": 205,
+    "calls_per_game_tick": 0.976,
+    "conclusion": "player_tick 基本就是每游戏 tick 一次（0.976 的偏差来自测量窗口的边界），不存在「两个线程各调一次」",
+    "log": "work/m5/ctl-home/_run18.log",
+    "build": "work/m5/stage-j（含探针）"
+  },
+  "root_cause": {
+    "what": "M5h 里我把 `fire()` 的 `cooldown_ticks = FIRE_INTERVAL_TICKS` 改成了 `FIRE_INTERVAL_TICKS - 1`，理由是「tick 先减后判会拖成 3 tick」",
+    "why_wrong": "引擎是「先减、再判」，存 interval 本身正好得到 interval 个 tick 的间隔；存 interval-1 就变成每 tick 一发",
+    "evidence": "stage-i（错误的构建）按住 20 tick 打出 24 发；stage-k（回滚后）同条件有效窗口 16 tick 打出 7 发",
+    "reverted_in": "已回滚：skills/05-port/port-native-module/run.py 的 LIB_RS.fire()，并加注释写明不要再改成 interval-1"
+  },
+  "assertions_after_revert": {
+    "single_click_is_one_round": "单击 + 等 10 tick → 恰好 1 条 shot（_run19.log）",
+    "hold_rate": "按住 10 tick + 松开 10 tick，窗口 32 tick（含 ctl 往返）打出 7 发；有效射击窗口 10+6(tail)=16 tick → ≈8.8 发/秒，标称 10 发/秒",
+    "blocked_line_seen": "日志出现 `blocked: ... cooldown=2`，证明按压路径在冷却中确实被拒",
+    "engine_tests": "17/17（含 pull_trigger_waits_for_the_clock：1 tick 不够、2 tick 才发）"
+  },
+  "open_items": {
+    "rate_residual": "8.8 与 10 的差来自测量窗口：hold timeout 的尾部 6 tick 可能不足 6 发，且 `state.ticks` 的读取本身跨了 tick",
+    "heartbeat": "本次运行不足 200 次调用，日志里没有 heartbeat（探针保留，长窗口才打印）",
+    "reload": "仍然没有任何输入能触发 Input::Reload"
+  },
+  "not_verified": [
+    "换弹（52 tick 空仓 / 40 tick 战术）",
+    "弹药写回物品栈（研究结论：native_carried_stack 可写，见 docs/10）",
+    "子弹实体与命中（研究结论：无自定义弹射物 API，需 native_summon 或自写射线）",
+    "多人：进程级 GunState 会串"
+  ],
+  "next": [
+    "接换弹输入，验状态转移序列",
+    "用 native_carried_stack 把弹药落到物品栈（每 tick 对每个携带栈跑一次）",
+    "按 docs/10 的结论做射线命中 + native_hurt_entity"
+  ]
+}

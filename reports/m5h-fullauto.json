@@ -22,8 +22,16 @@
   },
   "stages": {
     "generate": "states=18 / engine tests 17/17 / hooks=3",
-    "apply": {"status": "ok", "seconds": 120.27, "stage": "work/m5/stage-i"},
-    "build": {"status": "ok", "seconds": 751, "note": "一次 10 分钟超时被中断，续编 4m22s 完成"},
+    "apply": {
+      "status": "ok",
+      "seconds": 120.27,
+      "stage": "work/m5/stage-i"
+    },
+    "build": {
+      "status": "ok",
+      "seconds": 751,
+      "note": "一次 10 分钟超时被中断，续编 4m22s 完成"
+    },
     "run": {
       "log": "work/m5/ctl-home/_run15.log",
       "log_bytes": 2031,
@@ -35,20 +43,20 @@
     "hold_fires_full_auto": "按住 20 tick（松开后再等 10 tick）→ 累计 24 发，全部是 `auto, ammo=` 行（run15）",
     "hold_empties_magazine": "按住 40 tick → 30 发打空（run13：27 auto + 3 press），日志出现 dry fire",
     "vanilla_repeat_baseline": "同一把枪在 M5g 版本（射速由游戏 4-tick 重复决定）按住 40 tick 只有 11 发（run11）",
-    "rate_is_about_twice_the_nominal": "run15 的窗口是 20+6(tail)=26 tick，打出 24 发 ≈ 1 发/tick ≈ 20/s，是 FIRE_INTERVAL_TICKS=2（10/s）的两倍"
+    "rate_is_about_twice_the_nominal": "【已推翻，见 M5i】本报告曾把 24 发/26 tick 归因为 player_tick 每 tick 两次；实测 0.976 次/tick，真实原因是我把 cooldown 改成了 interval-1。回滚后同条件有效窗口 16 tick 打出 7 发（约 8.8/s）"
   },
   "open_question": {
+    "status": "已由 M5i 解决（假设不成立）",
     "what": "为什么是 1 发/tick 而不是 1 发/2 tick",
-    "likely": "`player_tick` 在单机里每个游戏 tick 被调用不止一次（客户端线程 + 服务端线程各一次），tick_once 因而每 tick 走两步，把 2-tick 冷却吃掉",
-    "not_confirmed": "没有实测每次游戏 tick 的 on_tick 调用次数；要确认需在 on_tick 里累加计数并按 N 打印",
-    "how_to_settle": "下一次构建加一个「每 100 次调用打印一行」的探针，同时用 `wait 20` 对齐，即可得到 calls/tick"
+    "answered": "player_tick 实测 0.976 次/游戏 tick，不存在每 tick 两次；1 发/tick 来自 fire() 里 cooldown 存成了 interval-1，M5i 已回滚",
+    "report": "reports/m5i-hook-rate.json"
   },
   "correction_to_earlier": {
     "what": "M5g 的日志把自动射击漏打了：弹匣从 30 掉到 3，但只有 7 行 shot",
     "now": "on_tick 打印 `auto, ammo=N` 后，发数与弹匣变化对得上（run15：24 行 auto + 1 行 press = 25 行 vs ammo 30→5）"
   },
   "not_verified": [
-    "每次游戏 tick 的 on_tick 调用次数（决定速率是否要按 2 折算）",
+    "每次游戏 tick 的 on_tick 调用次数：已由 M5i 实测为 0.976 次/tick",
     "换弹：没有任何输入能触发 Input::Reload（没有 R 键绑定，也没有把 B/换弹键接进 helper）",
     "射速是否与 TaCZ 的 600 RPM 一致（当前观测到的是 2 倍）",
     "弹药仍在进程级 GunState，不是物品栈、不是每玩家",
@@ -58,5 +66,6 @@
     "加 on_tick 调用计数探针，确认 calls/tick，再决定冷却按 tick 还是按调用消耗",
     "接换弹：把 use_item 之外的输入（潜行/丢弃键或副手）映射成 Reload，验 52 tick 空仓换弹与 40 tick 战术换弹",
     "再做子弹与命中"
-  ]
+  ],
+  "superseded_by": "reports/m5i-hook-rate.json"
 }

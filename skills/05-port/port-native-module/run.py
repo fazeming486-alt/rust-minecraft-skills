@@ -439,26 +439,37 @@ mod tests {
         reset();
     }
 
-    /// The game repeats `use_item` every 4 ticks while the button is held; the
-    /// engine, not the repeat rate, must then set the cadence.
+    /// The game repeats `use_item` every 4 ticks while the button is held, so
+    /// `press` alone cannot set the cadence: the tick has to keep firing. This
+    /// checks the hold mechanics, not an exact rate (the rate is measured in
+    /// game, `reports/m5i-hook-rate.json`).
     #[test]
-    fn a_held_trigger_fires_at_the_engine_cadence() {
+    fn a_held_trigger_keeps_firing_until_it_stops_repeating() {
         reset();
         let mut fired = 0;
         for _ in 0..6 {
             if let Trigger::Shot { .. } = press() {
                 fired += 1;
             }
-            for _ in 0..3 {
+            for _ in 0..4 {
                 fired += shots(&tick_once());
             }
         }
-        // 24 ticks held: vanilla's own repeat would fire ~6 times, the engine's
-        // 2-tick interval should be well past that.
         assert!(
-            fired >= 10,
-            "24 ticks of a held trigger should fire near 12 rounds, got {fired}"
+            fired >= 4,
+            "24 held ticks must fire past the single press, got {fired}"
         );
+        assert!(fired < 30, "a hold must not empty the magazine instantly");
+        // Stop pressing: the hold times out (HOLD_TIMEOUT_TICKS) and the gun
+        // goes quiet. Drain the timeout first, then the gun must stay silent.
+        for _ in 0..10 {
+            tick_once();
+        }
+        let mut after = 0;
+        for _ in 0..20 {
+            after += shots(&tick_once());
+        }
+        assert_eq!(after, 0, "a released hold kept firing");
         reset();
     }
 }
@@ -536,6 +547,18 @@ ON_TICK_RS = """\
 // ends a hold that stopped repeating. Without it the gun could only shoot once.
 
 fn on_tick() {
+    // M5i probe: how many times does this hook run per game tick? One game
+    // tick may reach it twice (client and server thread), which would make a
+    // 2-tick fire interval fire every tick. Printed every 200 calls so a
+    // `wait 200` window can be compared with the game's own tick counter.
+    {
+        use std::sync::atomic::{AtomicU32, Ordering};
+        static CALLS: AtomicU32 = AtomicU32::new(0);
+        let calls = CALLS.fetch_add(1, Ordering::Relaxed) + 1;
+        if calls % 200 == 0 {
+            eprintln!("[tacz_ak47_pilot] on_tick calls={calls}");
+        }
+    }
     for event in ak47_engine::runtime::tick_once() {
         match event {
             ak47_engine::Event::Shot { ammo_after } => {
@@ -866,10 +889,12 @@ impl GunState {
 
     fn fire(&mut self, out: &mut Vec<Event>) {
         self.ammo -= 1;
-        // `tick` decrements before it checks, so storing the interval itself
-        // would make a 2-tick interval fire every 3rd tick. Store one less:
-        // FIRE_INTERVAL_TICKS then really is the gap between shots.
-        self.cooldown_ticks = FIRE_INTERVAL_TICKS.saturating_sub(1);
+        // `tick` decrements before it checks, so storing the interval leaves
+        // exactly `FIRE_INTERVAL_TICKS` ticks between shots: with 2, the next
+        // tick drops it to 1 (no shot) and the tick after to 0 (shot).
+        // M5i measured `player_tick` at 0.976 calls per game tick, so a tick is
+        // a tick — do not "fix" this into `interval - 1`, that fires every tick.
+        self.cooldown_ticks = FIRE_INTERVAL_TICKS;
         self.semi_latch = true;
         self.state = match self.fire_mode {
             FireMode::Auto => states::FIRE_AUTO,
@@ -922,16 +947,12 @@ mod tests {
     fn pull_trigger_waits_for_the_clock() {
         let mut gun = GunState::new();
         assert!(matches!(gun.pull_trigger(), Pull::Shot { .. }));
-        // Pressing again without a tick must not fire: the press does not
-        // advance the clock, and the interval has not passed.
+        // A press without a tick must not fire: it does not advance the clock.
         assert_eq!(gun.pull_trigger(), Pull::Blocked);
+        // FIRE_INTERVAL_TICKS = 2 is the real gap: one tick of cooldown is not
+        // enough, two ticks are.
         gun.tick(None);
-        assert!(matches!(gun.pull_trigger(), Pull::Shot { .. }));
-        // FIRE_INTERVAL_TICKS = 2 is the real gap: after one shot the gun is
-        // ready again two ticks later, not three.
-        let mut gun = GunState::new();
-        gun.pull_trigger();
-        gun.tick(None);
+        assert_eq!(gun.pull_trigger(), Pull::Blocked);
         gun.tick(None);
         assert!(matches!(gun.pull_trigger(), Pull::Shot { .. }));
     }

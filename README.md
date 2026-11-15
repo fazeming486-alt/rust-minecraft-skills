@@ -193,20 +193,22 @@ M5c 只做到「右键进了我们的代码」。M5e 把**扣弹与空仓拒绝*
 
 **全自动交给 `player_tick`（M5h）**：`use_item` 只扣扳机（`pull_trigger()` 不推进冷却），开火在 `on_tick` 里按 `FIRE_INTERVAL_TICKS` 走；顺手修掉引擎的 off-by-one（原先 2 tick 间隔实际 3 tick 才发一发）。游戏内：**单击恰好 1 发、没有残余连发**；按住 20 tick 打出 24 发，40 tick 打空 30 发——同一把枪在 M5g 版本按住 40 tick 只有 11 发（那时节奏是游戏自己的 4-tick 重复）。
 
-**但速率还是标称的 2 倍**：24 发落在 26 tick 窗口 ≈ 20/s，而数据是 10/s。最可能是 `player_tick` 在单机里每 tick 被调用两次（客户端 + 服务端），**这条没实测**，下次构建要加调用计数探针。也顺带更正了 M5g 的日志缺陷（自动射击当时根本没打印，日志 7 行而弹匣少了 27 发）。
+**速率那条是我的错，已回滚（M5i）**：加计数探针实测 `player_tick` = **0.976 次/游戏 tick**，根本不存在「每 tick 两次」。24 发/26 tick 的真实原因是我把 `fire()` 的 `cooldown` 写成了 `interval-1`（引擎先减再判，存 `interval` 才是 2 tick 一发）。回滚后：单击 1 发、按住有效窗口 16 tick 打出 7 发 ≈ **8.8/s**（标称 10/s），日志还能看到 `blocked: ... cooldown=2`。也顺带更正了 M5g 的日志缺陷（自动射击当时没打印，日志 7 行而弹匣少了 27 发）。
 
 **仍然不是真枪**：`GunState` 是进程级共享量，不是物品 NBT、不是每玩家；换弹、子弹、命中、伤害、音效全没有。
 
-详见 [08 · M5 执行报告](docs/08-m5-execution.md) 的 §8–12、`reports/m5e-ammo.json`、`reports/m5e-clean-apply.json`、`reports/m5f-combined-binary.json`、`reports/m5g-engine-driven-ammo.json`、`reports/m5h-fullauto.json`。
+详见 [08 · M5 执行报告](docs/08-m5-execution.md) 的 §8–12、`reports/m5e-ammo.json`、`reports/m5e-clean-apply.json`、`reports/m5f-combined-binary.json`、`reports/m5g-engine-driven-ammo.json`、`reports/m5h-fullauto.json`、`reports/m5i-hook-rate.json`。
+
+**两条研究线**（并行子 agent，含源码行号与置信度分级）：`docs/09-horizon-vs-java-world.md`（世界/生物）、`docs/10-horizon-vs-java-combat.md`（战斗/物品）。对下一步影响最大的三条：① 弹药能写回物品栈——`inventory_tick` 里的 `native_carried_stack(slot) -> Option<&mut ItemStack>`；② 没有自定义弹射物 API，要么 `native_summon` 一个雪球模板，要么自写 DDA 射线；③ 服务端读不到扳机/换弹键，必须走客户端 hook + `native_net_from_client` 上行。
 
 ## 状态与下一步
 
-**v0.10 — M5e–M5h 弹药闭环 + 单二进制 + 状态机接管弹匣与全自动**：28 个 skill、**143 项自检全绿**（本地提交，推送待恢复）。
+**v0.10 — M5e–M5i 弹药闭环 + 单二进制 + 状态机接管弹匣与全自动**：28 个 skill、**146 项自检全绿**（本地提交，推送待恢复）。
 
 按 `docs/04-roadmap.md` 推进：
 
-- **M5i**：给 `on_tick` 加调用计数探针，确认 calls/tick 后把冷却折算对。
-- **M5j**：接换弹输入（52 tick 空仓 / 40 tick 战术）；`player_tick` 补玩家绑定做每玩家 `GunState`；再做子弹 + 命中 + 伤害。
+- **M5j**：弹药写回物品栈（`native_carried_stack`），让弹匣跟着枪走而不是跟着进程。
+- **M5k**：按 `docs/10` 的结论做命中——自写 DDA 射线 + `native_hurt_entity`；换弹键要先解决「服务端读不到输入」。
 - **M3b**：搭最小可运行 Java oracle，把 23 个契约的 `oracle.status` 从 `pending` 推到 `recorded → replayed → verified`。
 - **M4b**：换跨 MC 版本或混淆样本检验规则泛化，必要时新增 version profile。
 

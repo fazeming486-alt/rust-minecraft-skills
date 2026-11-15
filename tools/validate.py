@@ -874,12 +874,26 @@ def main() -> int:
     check("M5h: 游戏内单击一发、按住连发（24 发）",
           "恰好 1 条" in m5h["assertions"]["single_click_is_one_round"]
           and "24 发" in m5h["assertions"]["hold_fires_full_auto"])
-    check("M5h: 如实记录速率约为标称 2 倍且原因未确认",
-          "两倍" in m5h["assertions"]["rate_is_about_twice_the_nominal"]
-          and "没有实测" in m5h["open_question"]["not_confirmed"])
+    check("M5h: 速率结论已标注被 M5i 推翻",
+          m5h["superseded_by"] == "reports/m5i-hook-rate.json"
+          and "已推翻" in m5h["assertions"]["rate_is_about_twice_the_nominal"])
     check("M5h: 更正 M5g 漏打自动射击日志的问题",
           "漏打" in m5h["correction_to_earlier"]["what"]
           and any("on_tick" in item for item in m5h["what_changed"]["helpers"]))
+
+    # 33. v0.10 · M5i 钩子调用率实测 + 回滚错误修正
+    m5i = load("reports/m5i-hook-rate.json")
+    check("M5i: on_tick 实测约 1 次/游戏 tick（0.976）",
+          abs(m5i["measurement"]["calls_per_game_tick"] - 0.976) < 0.01
+          and m5i["measurement"]["calls_total"] == 200
+          and m5i["measurement"]["game_ticks"] == 205)
+    check("M5i: 说明 2 倍速率的真实原因并已回滚",
+          "interval" in m5i["root_cause"]["why_wrong"]
+          and "回滚" in m5i["root_cause"]["reverted_in"])
+    check("M5i: 回滚后单击一发、按住约 8.8/s",
+          "恰好 1 条" in m5i["assertions_after_revert"]["single_click_is_one_round"]
+          and "8.8" in m5i["assertions_after_revert"]["hold_rate"]
+          and "cooldown=2" in m5i["assertions_after_revert"]["blocked_line_seen"])
 
 
     print("=" * 68)
