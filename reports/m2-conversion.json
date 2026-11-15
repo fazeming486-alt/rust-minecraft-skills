@@ -1,0 +1,102 @@
+{
+  "schema_version": "0.1.0",
+  "generated_by": "technical-convert-assets@0.1.0",
+  "source_artifact": "tacz-forge-1.20.1-1.2.0.jar",
+  "policy": {
+    "inspection": "full-inspection",
+    "transformation": "technical-only",
+    "distribution": "local-only"
+  },
+  "output_dir": "work/converted",
+  "converters": [
+    {
+      "id": "shared_states",
+      "source_files": 73,
+      "output_files": 1,
+      "roundtrip_closed": true,
+      "schema_status": "partial",
+      "stats": {
+        "raw_states": 157,
+        "canonical_states": 110,
+        "compression_ratio": 0.2994,
+        "parameters": [
+          "magazine_level",
+          "stage_index"
+        ]
+      }
+    },
+    {
+      "id": "bone_tracks",
+      "source_files": 73,
+      "output_files": 1,
+      "roundtrip_closed": true,
+      "schema_status": "unbound",
+      "stats": {
+        "states": 157,
+        "distinct_bones": 365,
+        "channel_kinds": {
+          "rotation": 6116,
+          "position": 5038,
+          "scale": 3136,
+          "relative_to": 9
+        }
+      }
+    },
+    {
+      "id": "geometry_ir",
+      "source_files": 327,
+      "output_files": 1,
+      "roundtrip_closed": true,
+      "schema_status": "unbound",
+      "stats": {
+        "geometry_files": 327,
+        "bones_total": 8086
+      }
+    },
+    {
+      "id": "namespace_rewrite",
+      "source_files": 417,
+      "output_files": 418,
+      "roundtrip_closed": true,
+      "schema_status": "bound",
+      "stats": {
+        "by_kind": {
+          "display": 163,
+          "lang": 42,
+          "index": 212
+        }
+      }
+    },
+    {
+      "id": "binary_carry",
+      "source_files": 2793,
+      "output_files": 2794,
+      "roundtrip_closed": true,
+      "schema_status": "bound",
+      "stats": {
+        "by_ext": {
+          ".ogg": 1712,
+          ".png": 1081
+        },
+        "total_bytes": 59077215
+      }
+    }
+  ],
+  "totals": {
+    "converters": 5,
+    "source_files": 3683,
+    "output_files": 3215,
+    "all_roundtrip_closed": true,
+    "schema_status": {
+      "partial": 1,
+      "unbound": 2,
+      "bound": 2
+    }
+  },
+  "limitations": [
+    "geometry_ir / bone_tracks 是中间表示：Horizon 26.3 无 Bedrock geometry 与骨骼关键帧消费者，不得声称已转换完成",
+    "shared_states 仅 partial：Custom 仅布尔，第三方 property 会被 item_model/foreign.rs:12-79 静默降级",
+    "所有产物只留 work/，不发布、不商用、不重绘（ADR 0008 工程政策判断，非法律意见）"
+  ],
+  "closed": true
+}

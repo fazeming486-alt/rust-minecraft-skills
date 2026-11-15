@@ -1,0 +1,56 @@
+{
+  "id": "asset-schema",
+  "title": "Horizon 资产模型 / 动画元数据 / item model 条件系统",
+  "note": "重点取证 ConditionProperty::Custom 的布尔限制、foreign.rs 的静默降级、AnimationClip 的精灵帧语义，以及 Bedrock geometry / glTF 读取器缺席。",
+  "files": [
+    {
+      "path": "crates/horizon-assets/src/animation.rs",
+      "declarations": ["AnimationFrame", "AnimationMetadata", "ClipMode", "ModeInputs", "AnimationClip", "AnimationSample"],
+      "patterns": ["pub fn sample", "interpolate", "frame_time", "Expression", "sprite", "mcmeta"],
+      "absence_patterns": ["bone", "skeleton", "skinning", "gltf"]
+    },
+    {
+      "path": "crates/horizon-assets/src/item_model.rs",
+      "declarations": ["ItemModelNode", "ConditionProperty", "SelectProperty", "NumericProperty", "DisplayContext", "ClientItem", "ModelLeaf", "SwitchCase"],
+      "patterns": ["ConditionProperty::Custom", "minecraft:condition", "minecraft:select", "range_dispatch", "item_model_property", "boolean"],
+      "absence_patterns": ["bedrock geometry", "gltf"]
+    },
+    {
+      "path": "crates/horizon-assets/src/item_model/foreign.rs",
+      "declarations": [],
+      "patterns": ["on_false", "fallback", "unknown", "foreign", "degrade"],
+      "absence_patterns": []
+    },
+    {
+      "path": "crates/horizon-assets/src/item_model/component_predicate.rs",
+      "declarations": [],
+      "patterns": ["predicate", "component", "condition"],
+      "absence_patterns": []
+    },
+    {
+      "path": "crates/horizon-assets/src/model.rs",
+      "declarations": ["ModelPart", "ModelDefinition"],
+      "patterns": ["cuboid", "element", "rotation", "pivot", "parent"],
+      "absence_patterns": ["bone", "gltf", "bedrock"]
+    },
+    {
+      "path": "crates/horizon-assets/src/obj.rs",
+      "declarations": [],
+      "patterns": ["obj", "mtl", "vertex"],
+      "absence_patterns": ["gltf", "bedrock"]
+    },
+    {
+      "path": "crates/horizon-assets/src/bake/transform.rs",
+      "declarations": [],
+      "patterns": ["translate", "rotate", "scale", "matrix"],
+      "absence_patterns": ["bone"]
+    }
+  ],
+  "tree_globs": ["crates/horizon-assets/**/*.rs"],
+  "tree_keywords": ["BedrockGeometry|bedrock[_ ]geometry", "gltf|GLTFLoader", "\\.bbmodel|BlockbenchModel", "bone_hierarchy|joint_matrices|skin_weights", "minecraft:condition|range_dispatch"],
+  "acceptance": [
+    "AnimationClip 被判定为贴图精灵帧动画而非骨骼动画，附声明行号",
+    "ConditionProperty::Custom 的布尔限制与 foreign.rs 降级规则有行号证据",
+    "tree_keywords 证明无 Bedrock geometry / glTF / .bbmodel 读取器"
+  ]
+}

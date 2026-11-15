@@ -1,0 +1,1363 @@
+{
+  "schema_version": "0.1.0",
+  "probe_id": "render-pipeline",
+  "title": "Horizon 客户端渲染 / 第一人称手部 / 姿态管线",
+  "horizon_root": "D:/RUST重写mc项目/third_party/horizon",
+  "source_kind": "rust-source",
+  "files": [
+    {
+      "path": "crates/horizon-client/src/game/native_hooks.rs",
+      "exists": true,
+      "lines": 12781,
+      "declarations": [
+        {
+          "line": 1088,
+          "kind": "impl",
+          "name": "GameLevel",
+          "signature": "impl GameLevel<'_> {"
+        },
+        {
+          "line": 1875,
+          "kind": "struct",
+          "name": "OpenNativeScreen",
+          "signature": "pub(super) struct OpenNativeScreen {"
+        },
+        {
+          "line": 1884,
+          "kind": "impl",
+          "name": "OpenNativeScreen",
+          "signature": "impl OpenNativeScreen {"
+        },
+        {
+          "line": 1913,
+          "kind": "struct",
+          "name": "NativePlayer",
+          "signature": "pub struct NativePlayer {"
+        },
+        {
+          "line": 1926,
+          "kind": "struct",
+          "name": "NativeClock",
+          "signature": "pub struct NativeClock {"
+        },
+        {
+          "line": 2090,
+          "kind": "impl",
+          "name": "Game",
+          "signature": "impl Game<'_> {"
+        },
+        {
+          "line": 9753,
+          "kind": "impl",
+          "name": "Game",
+          "signature": "impl Game<'_> {"
+        },
+        {
+          "line": 10111,
+          "kind": "impl",
+          "name": "GameLevel",
+          "signature": "impl GameLevel<'_> {"
+        },
+        {
+          "line": 10290,
+          "kind": "impl",
+          "name": "Game",
+          "signature": "impl Game<'_> {"
+        },
+        {
+          "line": 11789,
+          "kind": "impl",
+          "name": "Game",
+          "signature": "impl Game<'_> {"
+        }
+      ],
+      "pattern_hits": {
+        "render_hand": {
+          "count": 6,
+          "lines": [
+            108,
+            708,
+            2941,
+            2950,
+            2965,
+            2980
+          ]
+        },
+        "render_hand_pose": {
+          "count": 3,
+          "lines": [
+            108,
+            2965,
+            2980
+          ]
+        },
+        "hand_drawn": {
+          "count": 1,
+          "lines": [
+            118
+          ]
+        },
+        "item_model_property": {
+          "count": 3,
+          "lines": [
+            72,
+            2187,
+            2193
+          ]
+        },
+        "standalone_models": {
+          "count": 3,
+          "lines": [
+            551,
+            3150,
+            3151
+          ]
+        },
+        "ModelPart": {
+          "count": 1,
+          "lines": [
+            3158
+          ]
+        },
+        "PoseStack": {
+          "count": 0,
+          "lines": []
+        },
+        "cancel": {
+          "count": 537,
+          "lines": [
+            33,
+            50,
+            52,
+            54,
+            58,
+            60,
+            64,
+            66,
+            124,
+            130,
+            132,
+            204
+          ]
+        }
+      },
+      "absence_hits": {
+        "skeleton": {
+          "count": 1,
+          "lines": [
+            5997
+          ]
+        },
+        "skinning": {
+          "count": 0,
+          "lines": []
+        },
+        "gltf": {
+          "count": 0,
+          "lines": []
+        },
+        "bedrock geometry": {
+          "count": 0,
+          "lines": []
+        },
+        "keyframe": {
+          "count": 0,
+          "lines": []
+        }
+      }
+    },
+    {
+      "path": "crates/horizon-client/src/game/item_draw.rs",
+      "exists": true,
+      "lines": 843,
+      "declarations": [
+        {
+          "line": 26,
+          "kind": "struct",
+          "name": "IconPainter",
+          "signature": "pub(super) struct IconPainter<'g, 'a> {"
+        },
+        {
+          "line": 65,
+          "kind": "impl",
+          "name": "ItemEnv",
+          "signature": "impl ItemEnv for Env<'_, '_> {"
+        },
+        {
+          "line": 193,
+          "kind": "impl",
+          "name": "SpecialHost",
+          "signature": "impl SpecialHost for Host<'_> {"
+        },
+        {
+          "line": 255,
+          "kind": "impl",
+          "name": "Game",
+          "signature": "impl Game<'_> {"
+        }
+      ],
+      "pattern_hits": {
+        "hand": {
+          "count": 10,
+          "lines": [
+            3,
+            13,
+            318,
+            355,
+            368,
+            369,
+            370,
+            376,
+            388,
+            390
+          ]
+        },
+        "pose": {
+          "count": 26,
+          "lines": [
+            3,
+            465,
+            470,
+            475,
+            478,
+            482,
+            498,
+            506,
+            521,
+            525,
+            531,
+            539
+          ]
+        },
+        "model": {
+          "count": 22,
+          "lines": [
+            1,
+            7,
+            24,
+            35,
+            66,
+            72,
+            100,
+            144,
+            239,
+            240,
+            243,
+            267
+          ]
+        },
+        "item_model_property": {
+          "count": 2,
+          "lines": [
+            66,
+            72
+          ]
+        }
+      },
+      "absence_hits": {
+        "skeleton": {
+          "count": 0,
+          "lines": []
+        },
+        "skinning": {
+          "count": 2,
+          "lines": [
+            620,
+            728
+          ]
+        }
+      }
+    },
+    {
+      "path": "crates/horizon-client/src/game/frame_geometry.rs",
+      "exists": true,
+      "lines": 569,
+      "declarations": [
+        {
+          "line": 6,
+          "kind": "impl",
+          "name": "Game",
+          "signature": "impl Game<'_> {"
+        }
+      ],
+      "pattern_hits": {
+        "item_model_property": {
+          "count": 0,
+          "lines": []
+        },
+        "standalone_models": {
+          "count": 0,
+          "lines": []
+        }
+      },
+      "absence_hits": {
+        "skeleton": {
+          "count": 0,
+          "lines": []
+        }
+      }
+    },
+    {
+      "path": "crates/horizon-client-render/src/models.rs",
+      "exists": true,
+      "lines": 209,
+      "declarations": [
+        {
+          "line": 21,
+          "kind": "fn",
+          "name": "register_standalone",
+          "signature": "pub fn register_standalone(mut names: Vec<String>) -> bool {"
+        },
+        {
+          "line": 32,
+          "kind": "fn",
+          "name": "standalone",
+          "signature": "pub fn standalone() -> &'static [String] {"
+        },
+        {
+          "line": 65,
+          "kind": "struct",
+          "name": "ModelInstance",
+          "signature": "pub struct ModelInstance {"
+        },
+        {
+          "line": 72,
+          "kind": "struct",
+          "name": "PreparedModels",
+          "signature": "pub struct PreparedModels {"
+        },
+        {
+          "line": 77,
+          "kind": "fn",
+          "name": "prepare",
+          "signature": "pub fn prepare("
+        },
+        {
+          "line": 139,
+          "kind": "fn",
+          "name": "instance",
+          "signature": "pub fn instance(face: &catalog::BakedFace, position: BlockPos) -> ModelInstance {"
+        },
+        {
+          "line": 152,
+          "kind": "fn",
+          "name": "load_visibility",
+          "signature": "pub fn load_visibility("
+        }
+      ],
+      "pattern_hits": {
+        "ModelPart": {
+          "count": 0,
+          "lines": []
+        },
+        "x_rot": {
+          "count": 0,
+          "lines": []
+        },
+        "y_rot": {
+          "count": 0,
+          "lines": []
+        },
+        "z_rot": {
+          "count": 0,
+          "lines": []
+        },
+        "children": {
+          "count": 0,
+          "lines": []
+        },
+        "scale": {
+          "count": 0,
+          "lines": []
+        }
+      },
+      "absence_hits": {
+        "bone": {
+          "count": 0,
+          "lines": []
+        },
+        "skeleton": {
+          "count": 0,
+          "lines": []
+        },
+        "skinning": {
+          "count": 0,
+          "lines": []
+        },
+        "gltf": {
+          "count": 0,
+          "lines": []
+        }
+      }
+    },
+    {
+      "path": "crates/horizon-client-render/src/models/catalog.rs",
+      "exists": true,
+      "lines": 755,
+      "declarations": [
+        {
+          "line": 36,
+          "kind": "struct",
+          "name": "QuadShape",
+          "signature": "pub struct QuadShape {"
+        },
+        {
+          "line": 43,
+          "kind": "impl",
+          "name": "QuadShape",
+          "signature": "impl QuadShape {"
+        },
+        {
+          "line": 44,
+          "kind": "fn",
+          "name": "new",
+          "signature": "pub fn new(positions: &[[f32; 3]; 4], face: Direction, full: bool) -> Self {"
+        },
+        {
+          "line": 46,
+          "kind": "const",
+          "name": "DOWN",
+          "signature": "const DOWN: usize = 0;"
+        },
+        {
+          "line": 47,
+          "kind": "const",
+          "name": "UP",
+          "signature": "const UP: usize = 1;"
+        },
+        {
+          "line": 48,
+          "kind": "const",
+          "name": "NORTH",
+          "signature": "const NORTH: usize = 2;"
+        },
+        {
+          "line": 49,
+          "kind": "const",
+          "name": "SOUTH",
+          "signature": "const SOUTH: usize = 3;"
+        },
+        {
+          "line": 50,
+          "kind": "const",
+          "name": "WEST",
+          "signature": "const WEST: usize = 4;"
+        },
+        {
+          "line": 51,
+          "kind": "const",
+          "name": "EAST",
+          "signature": "const EAST: usize = 5;"
+        },
+        {
+          "line": 89,
+          "kind": "struct",
+          "name": "BakedFace",
+          "signature": "pub struct BakedFace {"
+        },
+        {
+          "line": 107,
+          "kind": "impl",
+          "name": "BakedFace",
+          "signature": "impl BakedFace {"
+        },
+        {
+          "line": 108,
+          "kind": "fn",
+          "name": "new",
+          "signature": "pub fn new("
+        },
+        {
+          "line": 128,
+          "kind": "struct",
+          "name": "BakedModel",
+          "signature": "pub struct BakedModel {"
+        },
+        {
+          "line": 135,
+          "kind": "type",
+          "name": "VariantKey",
+          "signature": "type VariantKey = (String, [u8; 3], bool);"
+        },
+        {
+          "line": 139,
+          "kind": "struct",
+          "name": "StateModels",
+          "signature": "pub struct StateModels {"
+        },
+        {
+          "line": 152,
+          "kind": "fn",
+          "name": "key",
+          "signature": "fn key(variant: &Variant) -> VariantKey {"
+        },
+        {
+          "line": 156,
+          "kind": "fn",
+          "name": "bake_variant",
+          "signature": "fn bake_variant("
+        },
+        {
+          "line": 167,
+          "kind": "fn",
+          "name": "bake_resolved",
+          "signature": "fn bake_resolved("
+        },
+        {
+          "line": 206,
+          "kind": "fn",
+          "name": "definition_layers",
+          "signature": "fn definition_layers(text: &str) -> std::result::Result<Vec<String>, String> {"
+        },
+        {
+          "line": 220,
+          "kind": "fn",
+          "name": "topmost",
+          "signature": "fn topmost(layers: Vec<Vec<Option<SelectedModels>>>) -> Vec<Option<(usize, SelectedModels)>> {"
+        },
+        {
+          "line": 232,
+          "kind": "impl",
+          "name": "StateModels",
+          "signature": "impl StateModels {"
+        },
+        {
+          "line": 233,
+          "kind": "fn",
+          "name": "load",
+          "signature": "pub fn load("
+        },
+        {
+          "line": 244,
+          "kind": "fn",
+          "name": "from_facts",
+          "signature": "pub fn from_facts("
+        },
+        {
+          "line": 260,
+          "kind": "fn",
+          "name": "from_facts_with_models",
+          "signature": "pub(crate) fn from_facts_with_models("
+        },
+        {
+          "line": 465,
+          "kind": "fn",
+          "name": "bake_standalone",
+          "signature": "pub(crate) fn bake_standalone("
+        },
+        {
+          "line": 504,
+          "kind": "fn",
+          "name": "models_mut",
+          "signature": "pub fn models_mut(&mut self) -> impl Iterator<Item = (&Variant, &mut BakedModel)> {"
+        },
+        {
+          "line": 511,
+          "kind": "fn",
+          "name": "standalone",
+          "signature": "pub fn standalone(&self, name: &str) -> Option<&BakedModel> {"
+        },
+        {
+          "line": 515,
+          "kind": "fn",
+          "name": "collect",
+          "signature": "pub fn collect("
+        },
+        {
+          "line": 525,
+          "kind": "fn",
+          "name": "particle",
+          "signature": "pub fn particle(&self, state: BlockStateId) -> Option<u32> {"
+        },
+        {
+          "line": 533,
+          "kind": "fn",
+          "name": "render_bounds",
+          "signature": "pub fn render_bounds(&self, state: BlockStateId) -> Option<[[f32; 3]; 2]> {"
+        },
+        {
+          "line": 561,
+          "kind": "fn",
+          "name": "collect_seeded",
+          "signature": "pub fn collect_seeded("
+        },
+        {
+          "line": 574,
+          "kind": "fn",
+          "name": "models_at",
+          "signature": "pub fn models_at<'a>("
+        },
+        {
+          "line": 587,
+          "kind": "fn",
+          "name": "each_seeded",
+          "signature": "fn each_seeded<'a>("
+        },
+        {
+          "line": 600,
+          "kind": "fn",
+          "name": "state",
+          "signature": "fn state(&self, state: BlockStateId) -> Option<&(usize, SelectedModels)> {"
+        },
+        {
+          "line": 605,
+          "kind": "fn",
+          "name": "descriptor",
+          "signature": "pub fn descriptor(name: &str, overrides: &[(&str, &str)]) -> BlockState {"
+        },
+        {
+          "line": 616,
+          "kind": "mod",
+          "name": "tests",
+          "signature": "mod tests {"
+        },
+        {
+          "line": 625,
+          "kind": "fn",
+          "name": "a_partial_pack_blockstate_keeps_vanilla_for_the_other_states",
+          "signature": "fn a_partial_pack_blockstate_keeps_vanilla_for_the_other_states() {"
+        },
+        {
+          "line": 658,
+          "kind": "struct",
+          "name": "Fixture",
+          "signature": "struct Fixture(std::path::PathBuf);"
+        },
+        {
+          "line": 659,
+          "kind": "impl",
+          "name": "Fixture",
+          "signature": "impl Fixture {"
+        },
+        {
+          "line": 660,
+          "kind": "fn",
+          "name": "write",
+          "signature": "fn write(&self, name: &str, json: &str) {"
+        },
+        {
+          "line": 669,
+          "kind": "impl",
+          "name": "Drop",
+          "signature": "impl Drop for Fixture {"
+        },
+        {
+          "line": 670,
+          "kind": "fn",
+          "name": "drop",
+          "signature": "fn drop(&mut self) {"
+        },
+        {
+          "line": 676,
+          "kind": "fn",
+          "name": "standalone_models_bake_once_and_skip_what_does_not_read",
+          "signature": "fn standalone_models_bake_once_and_skip_what_does_not_read() -> Result<()> {"
+        },
+        {
+          "line": 724,
+          "kind": "fn",
+          "name": "a_standalone_model_a_state_bakes_unturned_is_shared",
+          "signature": "fn a_standalone_model_a_state_bakes_unturned_is_shared() -> Result<()> {"
+        },
+        {
+          "line": 755,
+          "kind": "mod",
+          "name": "bounds_tests",
+          "signature": "mod bounds_tests;"
+        }
+      ],
+      "pattern_hits": {
+        "item_model_property": {
+          "count": 0,
+          "lines": []
+        },
+        "standalone_models": {
+          "count": 1,
+          "lines": [
+            676
+          ]
+        },
+        "ModelPart": {
+          "count": 0,
+          "lines": []
+        }
+      },
+      "absence_hits": {
+        "bone": {
+          "count": 0,
+          "lines": []
+        },
+        "gltf": {
+          "count": 0,
+          "lines": []
+        }
+      }
+    },
+    {
+      "path": "crates/horizon-hooks/src/lib.rs",
+      "exists": true,
+      "lines": 599,
+      "declarations": [
+        {
+          "line": 20,
+          "kind": "mod",
+          "name": "hud",
+          "signature": "pub mod hud;"
+        },
+        {
+          "line": 21,
+          "kind": "mod",
+          "name": "lang",
+          "signature": "pub mod lang;"
+        },
+        {
+          "line": 22,
+          "kind": "mod",
+          "name": "pages",
+          "signature": "pub mod pages;"
+        },
+        {
+          "line": 23,
+          "kind": "mod",
+          "name": "players",
+          "signature": "pub mod players;"
+        },
+        {
+          "line": 24,
+          "kind": "mod",
+          "name": "registry",
+          "signature": "mod registry;"
+        },
+        {
+          "line": 25,
+          "kind": "mod",
+          "name": "settings",
+          "signature": "pub mod settings;"
+        },
+        {
+          "line": 26,
+          "kind": "mod",
+          "name": "tunnel",
+          "signature": "pub mod tunnel;"
+        },
+        {
+          "line": 35,
+          "kind": "trait",
+          "name": "Hooks",
+          "signature": "pub trait Hooks: Sync {"
+        },
+        {
+          "line": 39,
+          "kind": "fn",
+          "name": "started",
+          "signature": "fn started(&self, _game: &Started<'_>) {}"
+        },
+        {
+          "line": 43,
+          "kind": "fn",
+          "name": "published",
+          "signature": "fn published(&self, _open: bool) {}"
+        },
+        {
+          "line": 46,
+          "kind": "fn",
+          "name": "shutdown",
+          "signature": "fn shutdown(&self) {}"
+        },
+        {
+          "line": 52,
+          "kind": "fn",
+          "name": "frame",
+          "signature": "fn frame(&self, _frame: &players::Frame, _sprites: &mut dyn players::SpriteStore) {}"
+        },
+        {
+          "line": 55,
+          "kind": "fn",
+          "name": "tick",
+          "signature": "fn tick(&self, _models: &mut dyn players::PlayerModels) {}"
+        },
+        {
+          "line": 59,
+          "kind": "fn",
+          "name": "name_decoration",
+          "signature": "fn name_decoration("
+        },
+        {
+          "line": 69,
+          "kind": "fn",
+          "name": "player_mark",
+          "signature": "fn player_mark(&self, _uuid: u128) -> Option<players::Mark> {"
+        },
+        {
+          "line": 74,
+          "kind": "fn",
+          "name": "camera",
+          "signature": "fn camera(&self, _own: &players::CameraView) -> Option<players::CameraOverride> {"
+        },
+        {
+          "line": 79,
+          "kind": "fn",
+          "name": "player_layers",
+          "signature": "fn player_layers(&self, _model: &players::PlayerModel, _draw: &mut dyn players::PlayerDraw) {}"
+        },
+        {
+          "line": 83,
+          "kind": "fn",
+          "name": "first_person",
+          "signature": "fn first_person(&self, _own: &players::PlayerModel, _draw: &mut dyn players::PlayerDraw) {}"
+        },
+        {
+          "line": 88,
+          "kind": "fn",
+          "name": "tunnel",
+          "signature": "fn tunnel(&self) -> Option<&dyn tunnel::Resolver> {"
+        },
+        {
+          "line": 94,
+          "kind": "fn",
+          "name": "client_started",
+          "signature": "fn client_started(&self, _client: &Client) {}"
+        },
+        {
+          "line": 98,
+          "kind": "fn",
+          "name": "activity",
+          "signature": "fn activity(&self, _now: Activity) {}"
+        },
+        {
+          "line": 103,
+          "kind": "struct",
+          "name": "Client",
+          "signature": "pub struct Client {"
+        },
+        {
+          "line": 108,
+          "kind": "impl",
+          "name": "Client",
+          "signature": "impl Client {"
+        },
+        {
+          "line": 109,
+          "kind": "fn",
+          "name": "new",
+          "signature": "pub fn new(automated: bool) -> Self {"
+        },
+        {
+          "line": 117,
+          "kind": "enum",
+          "name": "Activity",
+          "signature": "pub enum Activity {"
+        },
+        {
+          "line": 129,
+          "kind": "enum",
+          "name": "Play",
+          "signature": "pub enum Play {"
+        },
+        {
+          "line": 142,
+          "kind": "enum",
+          "name": "Dimension",
+          "signature": "pub enum Dimension {"
+        },
+        {
+          "line": 149,
+          "kind": "enum",
+          "name": "GameMode",
+          "signature": "pub enum GameMode {"
+        },
+        {
+          "line": 158,
+          "kind": "struct",
+          "name": "Started",
+          "signature": "pub struct Started<'a> {"
+        },
+        {
+          "line": 167,
+          "kind": "fn",
+          "name": "new",
+          "signature": "pub fn new(version: &'a str, game_dir: &'a std::path::Path) -> Self {"
+        },
+        {
+          "line": 172,
+          "kind": "static",
+          "name": "HOOKS",
+          "signature": "static HOOKS: Registry<dyn Hooks> = Registry::new();"
+        },
+        {
+          "line": 176,
+          "kind": "struct",
+          "name": "TooLate",
+          "signature": "pub struct TooLate;"
+        },
+        {
+          "line": 178,
+          "kind": "impl",
+          "name": "std",
+          "signature": "impl std::fmt::Display for TooLate {"
+        },
+        {
+          "line": 179,
+          "kind": "fn",
+          "name": "fmt",
+          "signature": "fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {"
+        },
+        {
+          "line": 184,
+          "kind": "impl",
+          "name": "std",
+          "signature": "impl std::error::Error for TooLate {}"
+        },
+        {
+          "line": 189,
+          "kind": "fn",
+          "name": "register",
+          "signature": "pub fn register(hooks: &'static dyn Hooks) -> Result<(), TooLate> {"
+        },
+        {
+          "line": 194,
+          "kind": "fn",
+          "name": "all",
+          "signature": "fn all() -> &'static [&'static dyn Hooks] {"
+        },
+        {
+          "line": 199,
+          "kind": "static",
+          "name": "SEAT",
+          "signature": "static SEAT: Cell<usize> = const { Cell::new(0) };"
+        },
+        {
+          "line": 206,
+          "kind": "fn",
+          "name": "seat",
+          "signature": "pub fn seat() -> usize {"
+        },
+        {
+          "line": 211,
+          "kind": "mod",
+          "name": "engine",
+          "signature": "pub mod engine {"
+        },
+        {
+          "line": 215,
+          "kind": "fn",
+          "name": "set_seat",
+          "signature": "pub fn set_seat(seat: usize) {"
+        },
+        {
+          "line": 221,
+          "kind": "fn",
+          "name": "seal",
+          "signature": "pub fn seal() {"
+        },
+        {
+          "line": 230,
+          "kind": "fn",
+          "name": "started",
+          "signature": "pub fn started(game: &Started<'_>) {"
+        },
+        {
+          "line": 237,
+          "kind": "static",
+          "name": "PUBLISHED",
+          "signature": "static PUBLISHED: AtomicBool = AtomicBool::new(false);"
+        },
+        {
+          "line": 241,
+          "kind": "fn",
+          "name": "published",
+          "signature": "pub fn published(open: bool) {"
+        },
+        {
+          "line": 251,
+          "kind": "fn",
+          "name": "client_started",
+          "signature": "pub fn client_started(client: &Client) {"
+        },
+        {
+          "line": 258,
+          "kind": "static",
+          "name": "ACTIVITY",
+          "signature": "static ACTIVITY: std::sync::Mutex<Option<Activity>> = std::sync::Mutex::new(None);"
+        },
+        {
+          "line": 262,
+          "kind": "fn",
+          "name": "activity",
+          "signature": "pub fn activity(now: Activity) {"
+        },
+        {
+          "line": 277,
+          "kind": "fn",
+          "name": "shutdown",
+          "signature": "pub fn shutdown() {"
+        },
+        {
+          "line": 284,
+          "kind": "fn",
+          "name": "any",
+          "signature": "pub fn any() -> bool {"
+        },
+        {
+          "line": 289,
+          "kind": "fn",
+          "name": "frame",
+          "signature": "pub fn frame(frame: &players::Frame, sprites: &mut dyn players::SpriteStore) {"
+        },
+        {
+          "line": 296,
+          "kind": "fn",
+          "name": "name_decoration",
+          "signature": "pub fn name_decoration("
+        },
+        {
+          "line": 304,
+          "kind": "fn",
+          "name": "player_mark",
+          "signature": "pub fn player_mark(uuid: u128) -> Option<players::Mark> {"
+        },
+        {
+          "line": 309,
+          "kind": "fn",
+          "name": "player_layers",
+          "signature": "pub fn player_layers(model: &players::PlayerModel, draw: &mut dyn players::PlayerDraw) {"
+        },
+        {
+          "line": 316,
+          "kind": "fn",
+          "name": "first_person",
+          "signature": "pub fn first_person(own: &players::PlayerModel, draw: &mut dyn players::PlayerDraw) {"
+        },
+        {
+          "line": 323,
+          "kind": "fn",
+          "name": "camera",
+          "signature": "pub fn camera(own: &players::CameraView) -> Option<players::CameraOverride> {"
+        },
+        {
+          "line": 328,
+          "kind": "fn",
+          "name": "tick",
+          "signature": "pub fn tick(models: &mut dyn players::PlayerModels) {"
+        },
+        {
+          "line": 335,
+          "kind": "fn",
+          "name": "tunnel",
+          "signature": "pub fn tunnel() -> Option<&'static dyn tunnel::Resolver> {"
+        },
+        {
+          "line": 341,
+          "kind": "mod",
+          "name": "tests",
+          "signature": "mod tests {"
+        },
+        {
+          "line": 348,
+          "kind": "struct",
+          "name": "Recorder",
+          "signature": "struct Recorder(StdMutex<Vec<String>>);"
+        },
+        {
+          "line": 350,
+          "kind": "impl",
+          "name": "Hooks",
+          "signature": "impl Hooks for Recorder {"
+        },
+        {
+          "line": 351,
+          "kind": "fn",
+          "name": "started",
+          "signature": "fn started(&self, game: &Started<'_>) {"
+        },
+        {
+          "line": 357,
+          "kind": "fn",
+          "name": "published",
+          "signature": "fn published(&self, open: bool) {"
+        },
+        {
+          "line": 360,
+          "kind": "fn",
+          "name": "activity",
+          "signature": "fn activity(&self, now: Activity) {"
+        },
+        {
+          "line": 363,
+          "kind": "fn",
+          "name": "frame",
+          "signature": "fn frame(&self, frame: &players::Frame, sprites: &mut dyn players::SpriteStore) {"
+        },
+        {
+          "line": 372,
+          "kind": "fn",
+          "name": "name_decoration",
+          "signature": "fn name_decoration("
+        },
+        {
+          "line": 381,
+          "kind": "fn",
+          "name": "player_mark",
+          "signature": "fn player_mark(&self, uuid: u128) -> Option<players::Mark> {"
+        },
+        {
+          "line": 384,
+          "kind": "fn",
+          "name": "camera",
+          "signature": "fn camera(&self, own: &players::CameraView) -> Option<players::CameraOverride> {"
+        },
+        {
+          "line": 388,
+          "kind": "fn",
+          "name": "player_layers",
+          "signature": "fn player_layers(&self, _: &players::PlayerModel, draw: &mut dyn players::PlayerDraw) {"
+        },
+        {
+          "line": 397,
+          "kind": "fn",
+          "name": "first_person",
+          "signature": "fn first_person(&self, _: &players::PlayerModel, draw: &mut dyn players::PlayerDraw) {"
+        },
+        {
+          "line": 402,
+          "kind": "fn",
+          "name": "tick",
+          "signature": "fn tick(&self, models: &mut dyn players::PlayerModels) {"
+        },
+        {
+          "line": 412,
+          "kind": "struct",
+          "name": "Still",
+          "signature": "struct Still;"
+        },
+        {
+          "line": 413,
+          "kind": "impl",
+          "name": "players",
+          "signature": "impl players::BodyPose for Still {"
+        },
+        {
+          "line": 414,
+          "kind": "fn",
+          "name": "pose",
+          "signature": "fn pose(&self, _: f32, _: &[[f32; 9]; 6], _: &mut [[f32; 9]; 6]) -> bool {"
+        },
+        {
+          "line": 420,
+          "kind": "struct",
+          "name": "Two",
+          "signature": "struct Two(std::collections::BTreeMap<u32, std::sync::Arc<dyn players::BodyPose>>);"
+        },
+        {
+          "line": 421,
+          "kind": "impl",
+          "name": "players",
+          "signature": "impl players::PlayerModels for Two {"
+        },
+        {
+          "line": 422,
+          "kind": "fn",
+          "name": "connection",
+          "signature": "fn connection(&self) -> u64 {"
+        },
+        {
+          "line": 425,
+          "kind": "fn",
+          "name": "for_each",
+          "signature": "fn for_each(&self, f: &mut dyn FnMut(players::PlayerModel)) {"
+        },
+        {
+          "line": 436,
+          "kind": "fn",
+          "name": "body_pose",
+          "signature": "fn body_pose(&self, id: u32) -> Option<&std::sync::Arc<dyn players::BodyPose>> {"
+        },
+        {
+          "line": 439,
+          "kind": "fn",
+          "name": "set_body_pose",
+          "signature": "fn set_body_pose(&mut self, id: u32, pose: Option<std::sync::Arc<dyn players::BodyPose>>) {"
+        }
+      ],
+      "pattern_hits": {
+        "hook": {
+          "count": 66,
+          "lines": [
+            2,
+            3,
+            5,
+            8,
+            11,
+            33,
+            35,
+            51,
+            58,
+            68,
+            73,
+            85
+          ]
+        },
+        "contract": {
+          "count": 0,
+          "lines": []
+        }
+      },
+      "absence_hits": {}
+    }
+  ],
+  "declared_symbols": [
+    "ACTIVITY",
+    "Activity",
+    "BakedFace",
+    "BakedModel",
+    "Client",
+    "DOWN",
+    "Dimension",
+    "Drop",
+    "EAST",
+    "Fixture",
+    "Game",
+    "GameLevel",
+    "GameMode",
+    "HOOKS",
+    "Hooks",
+    "IconPainter",
+    "ItemEnv",
+    "ModelInstance",
+    "NORTH",
+    "NativeClock",
+    "NativePlayer",
+    "OpenNativeScreen",
+    "PUBLISHED",
+    "Play",
+    "PreparedModels",
+    "QuadShape",
+    "Recorder",
+    "SEAT",
+    "SOUTH",
+    "SpecialHost",
+    "Started",
+    "StateModels",
+    "Still",
+    "TooLate",
+    "Two",
+    "UP",
+    "VariantKey",
+    "WEST",
+    "a_partial_pack_blockstate_keeps_vanilla_for_the_other_states",
+    "a_standalone_model_a_state_bakes_unturned_is_shared",
+    "activity",
+    "all",
+    "any",
+    "bake_resolved",
+    "bake_standalone",
+    "bake_variant",
+    "body_pose",
+    "bounds_tests",
+    "camera",
+    "client_started",
+    "collect",
+    "collect_seeded",
+    "connection",
+    "definition_layers",
+    "descriptor",
+    "drop",
+    "each_seeded",
+    "engine",
+    "first_person",
+    "fmt",
+    "for_each",
+    "frame",
+    "from_facts",
+    "from_facts_with_models",
+    "hud",
+    "instance",
+    "key",
+    "lang",
+    "load",
+    "load_visibility",
+    "models_at",
+    "models_mut",
+    "name_decoration",
+    "new",
+    "pages",
+    "particle",
+    "player_layers",
+    "player_mark",
+    "players",
+    "pose",
+    "prepare",
+    "published",
+    "register",
+    "register_standalone",
+    "registry",
+    "render_bounds",
+    "seal",
+    "seat",
+    "set_body_pose",
+    "set_seat",
+    "settings",
+    "shutdown",
+    "standalone",
+    "standalone_models_bake_once_and_skip_what_does_not_read",
+    "started",
+    "state",
+    "std",
+    "tests",
+    "tick",
+    "topmost",
+    "tunnel",
+    "write"
+  ],
+  "missing_files": [],
+  "tree_scan": {
+    "files_scanned": 917,
+    "keywords": {
+      "gltf|GLTFLoader": {
+        "matching_files_sample": [],
+        "sample_size": 0
+      },
+      "BedrockGeometry|bedrock[_ ]geometry": {
+        "matching_files_sample": [],
+        "sample_size": 0
+      },
+      "bone_hierarchy|skeleton_model|joint_matrices|skin_weights": {
+        "matching_files_sample": [],
+        "sample_size": 0
+      },
+      "skinning|keyframe_interpolat": {
+        "matching_files_sample": [
+          "crates/horizon-client/src/game/armor_stands.rs",
+          "crates/horizon-client/src/game/creatures.rs",
+          "crates/horizon-client/src/game/frames.rs",
+          "crates/horizon-client/src/game/item_draw.rs",
+          "crates/horizon-client/src/game/shader_packs.rs",
+          "crates/horizon-client-render/examples/standard_pack_gpu_entities.rs",
+          "crates/horizon-client-render/src/gfx/entity_skin.rs",
+          "crates/horizon-client-render/src/gfx.rs"
+        ],
+        "sample_size": 8
+      },
+      "ModelPart": {
+        "matching_files_sample": [
+          "crates/horizon-client/src/game/native_block_entity_draw.rs",
+          "crates/horizon-client/src/game/native_hooks.rs",
+          "crates/horizon-client/src/game/remote.rs",
+          "crates/horizon-client-render/src/block_entity_cem.rs",
+          "crates/horizon-client-render/src/block_entity_render.rs",
+          "crates/horizon-client-render/src/block_entity_render_tests.rs",
+          "crates/horizon-client-render/src/options_file.rs",
+          "crates/horizon-client-render/src/options_ui.rs",
+          "crates/horizon-client-render/src/settings.rs"
+        ],
+        "sample_size": 9
+      }
+    },
+    "note": "tree_keywords 按正则大小写不敏感匹配；命中只说明该词出现，是否为目标能力需结合 files[].pattern_hits 与人工判读。skeleton 一类词可能指 vanilla 骷髅生物，不能据此认定存在骨骼动画。"
+  },
+  "invariants": [
+    "只记录行号与 <=160 字符短签名，不复制源码正文",
+    "absence_patterns / tree_keywords 用于证明能力缺席，命中数必须如实记录",
+    "换 Horizon 快照后重跑即可对比，禁止手工编辑本报告"
+  ]
+}

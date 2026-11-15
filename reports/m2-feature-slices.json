@@ -1,0 +1,2072 @@
+{
+  "schema_version": "0.1.0",
+  "generated_by": "build-feature-slices@0.1.0",
+  "source_artifact": "tacz-forge-1.20.1-1.2.0.jar",
+  "policy": {
+    "inspection": "full-inspection",
+    "transformation": "technical-only",
+    "distribution": "local-only"
+  },
+  "summary": {
+    "slice_count": 10,
+    "raw_state_count": 157,
+    "canonical_state_count": 110,
+    "parameter_compression_ratio": 0.2994,
+    "bone_name_count": 365,
+    "animation_file_count": 73,
+    "code_unit_count": 286,
+    "verdicts": {
+      "needs_workaround": 8,
+      "portable": 2
+    }
+  },
+  "slices": [
+    {
+      "slice_id": "reload",
+      "anchor": "reload",
+      "summary": "换弹：服务端权威的弹药状态机 + 客户端分段动画 + 音效",
+      "shared_states": [
+        "cylinder_out",
+        "reload_all",
+        "reload_empty",
+        "reload_empty_2",
+        "reload_empty_3",
+        "reload_empty_all",
+        "reload_empty_clip",
+        "reload_empty_easter",
+        "reload_empty_intro",
+        "reload_empty_intro_semi",
+        "reload_empty_pump",
+        "reload_empty_pump_xmag_1",
+        "reload_empty_pump_xmag_2",
+        "reload_empty_xmag",
+        "reload_empty_xmag_1",
+        "reload_empty_xmag_2",
+        "reload_empty_xmag_23",
+        "reload_empty_xmag_3",
+        "reload_end",
+        "reload_end_empty",
+        "reload_end_semi",
+        "reload_intro",
+        "reload_intro_empty",
+        "reload_intro_empty_all",
+        "reload_intro_empty_easter",
+        "reload_intro_semi",
+        "reload_loop",
+        "reload_loop_1_load",
+        "reload_loop_2",
+        "reload_loop_end",
+        "reload_loop_intro",
+        "reload_loop_next",
+        "reload_loop_semi",
+        "reload_tactical",
+        "reload_tactical_2",
+        "reload_tactical_3",
+        "reload_tactical_easter",
+        "reload_tactical_xmag",
+        "reload_tactical_xmag_1",
+        "reload_tactical_xmag_2",
+        "reload_tactical_xmag_23",
+        "reload_tactical_xmag_3"
+      ],
+      "state_parameters": {
+        "raw_count": 42,
+        "canonical_count": 20,
+        "parameters": [
+          "magazine_level",
+          "stage_index"
+        ],
+        "roundtrip_closed": true
+      },
+      "layers": {
+        "assets": {
+          "animation_files": 70,
+          "animation_states": [
+            "cylinder_out",
+            "reload_all",
+            "reload_empty",
+            "reload_empty_2",
+            "reload_empty_3",
+            "reload_empty_all",
+            "reload_empty_clip",
+            "reload_empty_easter",
+            "reload_empty_intro",
+            "reload_empty_intro_semi",
+            "reload_empty_pump",
+            "reload_empty_pump_xmag_1",
+            "reload_empty_pump_xmag_2",
+            "reload_empty_xmag",
+            "reload_empty_xmag_1",
+            "reload_empty_xmag_2",
+            "reload_empty_xmag_23",
+            "reload_empty_xmag_3",
+            "reload_end",
+            "reload_end_empty",
+            "reload_end_semi",
+            "reload_intro",
+            "reload_intro_empty",
+            "reload_intro_empty_all",
+            "reload_intro_empty_easter",
+            "reload_intro_semi",
+            "reload_loop",
+            "reload_loop_1_load",
+            "reload_loop_2",
+            "reload_loop_end",
+            "reload_loop_intro",
+            "reload_loop_next",
+            "reload_loop_semi",
+            "reload_tactical",
+            "reload_tactical_2",
+            "reload_tactical_3",
+            "reload_tactical_easter",
+            "reload_tactical_xmag",
+            "reload_tactical_xmag_1",
+            "reload_tactical_xmag_2",
+            "reload_tactical_xmag_23",
+            "reload_tactical_xmag_3"
+          ],
+          "bone_names": [
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "2",
+            "3",
+            "4",
+            "416d_bolt",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "9mm2",
+            "Bolt",
+            "CR",
+            "Db",
+            "Deagle",
+            "Deagle_golden",
+            "G3_bolt",
+            "G3_default_body",
+            "L",
+            "MagazineCatch",
+            "Mp5",
+            "R",
+            "Release",
+            "Rotate",
+            "Safety",
+            "add_belt_1",
+            "add_belt_2",
+            "add_belt_3",
+            "add_belt_4",
+            "add_belt_5",
+            "add_belt_6",
+            "add_belt_7",
+            "add_belt_8",
+            "add_bullet_belt_1"
+          ],
+          "geometry_files": 63,
+          "display_files": 70,
+          "index_files": 69,
+          "sound_events": [
+            "reload"
+          ]
+        },
+        "code": {
+          "unit_count": 75,
+          "units": [
+            "cls:com/tacz/guns/api/entity/ReloadState",
+            "cls:com/tacz/guns/api/event/common/GunFinishReloadEvent",
+            "cls:com/tacz/guns/api/event/common/GunReloadEvent",
+            "cls:com/tacz/guns/api/event/server/AmmoHitBlockEvent",
+            "cls:com/tacz/guns/api/item/IAmmo",
+            "cls:com/tacz/guns/api/item/IAmmoBox",
+            "cls:com/tacz/guns/api/item/builder/AmmoItemBuilder",
+            "cls:com/tacz/guns/api/item/nbt/AmmoBoxItemDataAccessor",
+            "cls:com/tacz/guns/api/item/nbt/AmmoItemDataAccessor",
+            "cls:com/tacz/guns/block/AmmoStorageBlock",
+            "cls:com/tacz/guns/block/entity/AmmoStorageBlockEntity",
+            "cls:com/tacz/guns/client/event/InventoryEvent",
+            "cls:com/tacz/guns/client/event/ReloadResourceEvent",
+            "cls:com/tacz/guns/client/gameplay/ClientAmmoCount",
+            "cls:com/tacz/guns/client/gameplay/LocalPlayerReload",
+            "cls:com/tacz/guns/client/gui/AmmoStorageScreen",
+            "cls:com/tacz/guns/client/gui/components/refit/InventoryAttachmentSlot",
+            "cls:com/tacz/guns/client/input/ReloadKey",
+            "cls:com/tacz/guns/client/model/BedrockAmmoModel",
+            "cls:com/tacz/guns/client/model/listener/model/ModelAdditionalMagazineListener",
+            "cls:com/tacz/guns/client/model/papi/AmmoCountPapi",
+            "cls:com/tacz/guns/client/particle/AmmoParticleSpawner",
+            "cls:com/tacz/guns/client/renderer/item/AmmoItemRenderer",
+            "cls:com/tacz/guns/client/resource/index/ClientAmmoIndex",
+            "cls:com/tacz/guns/client/resource/pojo/display/ammo/AmmoDisplay",
+            "cls:com/tacz/guns/client/resource/pojo/display/ammo/AmmoEntityDisplay",
+            "cls:com/tacz/guns/client/resource/pojo/display/ammo/AmmoParticle",
+            "cls:com/tacz/guns/client/resource/pojo/display/ammo/AmmoTransform",
+            "cls:com/tacz/guns/client/resource/pojo/display/gun/AmmoCountStyle",
+            "cls:com/tacz/guns/client/resource/pojo/display/gun/GunAmmo",
+            "cls:com/tacz/guns/client/sound/GunSoundPreload",
+            "cls:com/tacz/guns/client/tooltip/ClientAmmoBoxTooltip",
+            "cls:com/tacz/guns/client/tooltip/ClientAmmoStorageTooltip",
+            "cls:com/tacz/guns/command/sub/DummyAmmoCommand",
+            "cls:com/tacz/guns/command/sub/ReloadCommand",
+            "cls:com/tacz/guns/compat/cloth/common/AmmoClothConfig",
+            "cls:com/tacz/guns/compat/jei/category/AmmoQueryCategory",
+            "cls:com/tacz/guns/compat/jei/category/GunAmmoQueryCategory",
+            "cls:com/tacz/guns/compat/jei/entry/AmmoQueryEntry",
+            "cls:com/tacz/guns/compat/jei/entry/GunAmmoQueryEntry",
+            "cls:com/tacz/guns/compat/kubejs/util/AmmoNbtFactory",
+            "cls:com/tacz/guns/config/PreLoadConfig",
+            "cls:com/tacz/guns/config/PreLoadModConfig",
+            "cls:com/tacz/guns/config/common/AmmoConfig",
+            "cls:com/tacz/guns/config/util/AmmoBlockConfigRead",
+            "cls:com/tacz/guns/crafting/AmmoStorageUpgradeRecipe",
+            "cls:com/tacz/guns/entity/shooter/LivingEntityAmmoCheck",
+            "cls:com/tacz/guns/entity/shooter/LivingEntityReload",
+            "cls:com/tacz/guns/event/AmmoStorageInteractionEvent",
+            "cls:com/tacz/guns/inventory/AmmoStorageEntry",
+            "cls:com/tacz/guns/inventory/AmmoStorageInventory",
+            "cls:com/tacz/guns/inventory/AmmoStorageMenu",
+            "cls:com/tacz/guns/inventory/tooltip/AmmoBoxTooltip",
+            "cls:com/tacz/guns/inventory/tooltip/AmmoStorageTooltip",
+            "cls:com/tacz/guns/item/AmmoBoxItem",
+            "cls:com/tacz/guns/item/AmmoItem",
+            "cls:com/tacz/guns/item/AmmoStorageBlockItem",
+            "cls:com/tacz/guns/mixin/client/CreativeModeInventoryScreenMixin",
+            "cls:com/tacz/guns/network/message/ClientMessageAmmoStorageClick",
+            "cls:com/tacz/guns/network/message/ClientMessageAmmoStorageInteract"
+          ],
+          "by_disposition": {
+            "C1": 1,
+            "C3": 44,
+            "C4": 12,
+            "C5": 18
+          },
+          "state_machine_units": [
+            "cls:com/tacz/guns/api/client/animation/AnimationController",
+            "cls:com/tacz/guns/api/client/animation/AnimationPlan",
+            "cls:com/tacz/guns/api/client/animation/ObjectAnimationRunner",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateContext",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaStateMachineFactory",
+            "cls:com/tacz/guns/client/animation/statemachine/GunAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ItemAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ThrowableAnimationStateContext"
+          ]
+        },
+        "target": {
+          "hooks": [
+            "player_tick",
+            "living_entity_use_item_finish",
+            "living_entity_use_item_tick",
+            "input_key",
+            "mouse_button_pre",
+            "frame"
+          ],
+          "helpers": [
+            "held",
+            "count_items",
+            "carried_stack",
+            "take_items"
+          ],
+          "capability_ids": [
+            "animation_driver"
+          ],
+          "api_tier": "logic",
+          "capability_gap": [
+            "animation_driver"
+          ],
+          "workaround": {
+            "target_reality": "Horizon 26.3 源码实测：物品/枪械模型无骨骼；ModelPart 只支持逐部件静态姿态(x/y/z, x_rot/y_rot/z_rot, scale, children)，关键帧插值仅存在于 cosmetics emote 与 vanilla CEM；全仓无 Bedrock geometry / glTF 读取器",
+            "phase_a": "离散状态优先：minecraft:condition(Custom 仅布尔) / minecraft:select(枚举) / range_dispatch(数值) + standalone_models 静态注册，保证逻辑闭环",
+            "phase_b": "render_hand(cancel) 屏蔽原手 → render_hand_pose 取 PoseStack(整手 7 个 f32) → ModelPart 逐部件姿态 + hand_drawn/world_drawn 自绘逼近时序",
+            "limitations": [
+              "无骨骼 / 蒙皮 / 关键帧插值，不能宣称已支持动画",
+              "render_hand cancel 后引擎不提供替身，必须自绘整枪",
+              "ConditionProperty::Custom 仅布尔，枚举需 select 嵌套",
+              "0.5 'Bedrock geometry + animations' 仅声明未实现",
+              "第三方自定义 property / item model type 会被 item_model/foreign.rs:12-79 静默降级：condition→on_false、select→fallback、range_dispatch→按 0 求值、special→base；mod 自身逻辑不执行",
+              "Bedrock geometry 的 bones/parent/pivot/rotation 无法无损表达为 Java cuboid model；只能按部件近似并显式标有损"
+            ],
+            "evidence": [
+              "crates/horizon-assets/src/item_model.rs:660 ConditionProperty::Custom",
+              "crates/horizon-assets/src/item_model.rs:409 range_dispatch / :470 condition",
+              "crates/horizon-client/src/game/native_hooks.rs ModelPart / native_layer_definitions",
+              "crates/horizon-mods/src/manifest.rs:20-22 APIS 止于 0.1/0.2/0.3",
+              "docs/modpacks.md:183 0.5 Bedrock geometry + animations 为 planned"
+            ]
+          }
+        },
+        "contract": {
+          "authority": "server",
+          "sync_boundary": "只同步弹药数与阶段；客户端不得自行推进换弹阶段",
+          "presentation": [
+            "skeletal_animation",
+            "sound",
+            "hud"
+          ],
+          "requires_animation_driver": true
+        }
+      },
+      "verdict": "needs_workaround",
+      "gaps": [
+        "animation_driver"
+      ],
+      "evidence": [
+        "jar:73 个 .animation.json",
+        "锚点规则:orchestration/slice-anchors.json#reload",
+        "index:work/index.source.json (unit_id 类名匹配)",
+        "delta:work/delta.source.json (disposition)",
+        "horizon:native-hooks.json (hook/helper 名称校验)",
+        "target/horizon.capabilities.json (unbound: animation_driver, block_query, collision_query, cooldown, entity_query, entity_state, network_sync, particle_emit, persistent_data, random_source, scheduled_task)"
+      ]
+    },
+    {
+      "slice_id": "shoot",
+      "anchor": "shoot",
+      "summary": "射击：输入 → 服务端弹道/伤害 → 客户端后坐与枪口表现",
+      "shared_states": [
+        "cocked_shoot",
+        "over_heat",
+        "shoot",
+        "shoot_burst",
+        "shoot_gunparts",
+        "shoot_last",
+        "shoot_pump",
+        "shoot_pump_hammer",
+        "shoot_pump_last",
+        "shoot_scope",
+        "shoot_semi",
+        "shoot_semi_last"
+      ],
+      "state_parameters": {
+        "raw_count": 12,
+        "canonical_count": 12,
+        "parameters": [],
+        "roundtrip_closed": true
+      },
+      "layers": {
+        "assets": {
+          "animation_files": 71,
+          "animation_states": [
+            "cocked_shoot",
+            "over_heat",
+            "shoot",
+            "shoot_burst",
+            "shoot_gunparts",
+            "shoot_last",
+            "shoot_pump",
+            "shoot_pump_hammer",
+            "shoot_pump_last",
+            "shoot_scope",
+            "shoot_semi",
+            "shoot_semi_last"
+          ],
+          "bone_names": [
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "2",
+            "3",
+            "4",
+            "416d_bolt",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "9mm2",
+            "Bolt",
+            "CR",
+            "Db",
+            "Deagle",
+            "Deagle_golden",
+            "G3_bolt",
+            "G3_default_body",
+            "L",
+            "MagazineCatch",
+            "Mp5",
+            "R",
+            "Release",
+            "Rotate",
+            "Safety",
+            "add_belt_1",
+            "add_belt_2",
+            "add_belt_3",
+            "add_belt_4",
+            "add_belt_5",
+            "add_belt_6",
+            "add_belt_7",
+            "add_belt_8",
+            "add_bullet_belt_1"
+          ],
+          "geometry_files": 64,
+          "display_files": 71,
+          "index_files": 70,
+          "sound_events": [
+            "shoot"
+          ]
+        },
+        "code": {
+          "unit_count": 34,
+          "units": [
+            "cls:com/tacz/guns/api/entity/ShootResult",
+            "cls:com/tacz/guns/api/event/common/GunDamageSourcePart",
+            "cls:com/tacz/guns/api/event/common/GunFireEvent",
+            "cls:com/tacz/guns/api/event/common/GunFirePostEvent",
+            "cls:com/tacz/guns/api/event/common/GunFireSelectEvent",
+            "cls:com/tacz/guns/api/event/common/GunShootEvent",
+            "cls:com/tacz/guns/api/item/gun/FireMode",
+            "cls:com/tacz/guns/client/gameplay/LocalPlayerFireSelect",
+            "cls:com/tacz/guns/client/gameplay/LocalPlayerShoot",
+            "cls:com/tacz/guns/client/input/FireSelectKey",
+            "cls:com/tacz/guns/client/input/ShootKey",
+            "cls:com/tacz/guns/client/resource/pojo/display/gun/DamageStyle",
+            "cls:com/tacz/guns/entity/shooter/LivingEntityFireSelect",
+            "cls:com/tacz/guns/entity/shooter/LivingEntityShoot",
+            "cls:com/tacz/guns/entity/shooter/ShooterDataHolder",
+            "cls:com/tacz/guns/event/EntityDamageEvent",
+            "cls:com/tacz/guns/init/ModDamageTypes",
+            "cls:com/tacz/guns/network/message/ClientMessagePlayerFireSelect",
+            "cls:com/tacz/guns/network/message/ClientMessagePlayerShoot",
+            "cls:com/tacz/guns/network/message/event/ServerMessageGunFire",
+            "cls:com/tacz/guns/network/message/event/ServerMessageGunFirePost",
+            "cls:com/tacz/guns/network/message/event/ServerMessageGunFireSelect",
+            "cls:com/tacz/guns/network/message/event/ServerMessageGunShoot",
+            "cls:com/tacz/guns/resource/modifier/custom/DamageModifier",
+            "cls:com/tacz/guns/resource/modifier/custom/RecoilModifier",
+            "cls:com/tacz/guns/resource/modifier/custom/RecoilPushModifier",
+            "cls:com/tacz/guns/resource/pojo/data/gun/ExtraDamage",
+            "cls:com/tacz/guns/resource/pojo/data/gun/FireSound",
+            "cls:com/tacz/guns/resource/pojo/data/gun/GunFireModeAdjustData",
+            "cls:com/tacz/guns/resource/pojo/data/gun/GunRecoil",
+            "cls:com/tacz/guns/resource/pojo/data/gun/GunRecoilKeyFrame",
+            "cls:com/tacz/guns/resource/pojo/data/gun/GunRecoilPushData",
+            "cls:com/tacz/guns/resource/serialize/DistanceDamagePairSerializer",
+            "cls:com/tacz/guns/util/block/ProjectileExplosion"
+          ],
+          "by_disposition": {
+            "C1": 2,
+            "C3": 22,
+            "C4": 10
+          },
+          "state_machine_units": [
+            "cls:com/tacz/guns/api/client/animation/AnimationController",
+            "cls:com/tacz/guns/api/client/animation/AnimationPlan",
+            "cls:com/tacz/guns/api/client/animation/ObjectAnimationRunner",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateContext",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaStateMachineFactory",
+            "cls:com/tacz/guns/client/animation/statemachine/GunAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ItemAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ThrowableAnimationStateContext"
+          ]
+        },
+        "target": {
+          "hooks": [
+            "mouse_button_pre",
+            "input_key",
+            "arrow_loose",
+            "arrow_nock",
+            "living_incoming_damage",
+            "critical_hit",
+            "living_get_projectile"
+          ],
+          "helpers": [
+            "held",
+            "flame_particle",
+            "draw_quad"
+          ],
+          "capability_ids": [
+            "animation_driver"
+          ],
+          "api_tier": "logic",
+          "capability_gap": [
+            "animation_driver"
+          ],
+          "workaround": {
+            "target_reality": "Horizon 26.3 源码实测：物品/枪械模型无骨骼；ModelPart 只支持逐部件静态姿态(x/y/z, x_rot/y_rot/z_rot, scale, children)，关键帧插值仅存在于 cosmetics emote 与 vanilla CEM；全仓无 Bedrock geometry / glTF 读取器",
+            "phase_a": "离散状态优先：minecraft:condition(Custom 仅布尔) / minecraft:select(枚举) / range_dispatch(数值) + standalone_models 静态注册，保证逻辑闭环",
+            "phase_b": "render_hand(cancel) 屏蔽原手 → render_hand_pose 取 PoseStack(整手 7 个 f32) → ModelPart 逐部件姿态 + hand_drawn/world_drawn 自绘逼近时序",
+            "limitations": [
+              "无骨骼 / 蒙皮 / 关键帧插值，不能宣称已支持动画",
+              "render_hand cancel 后引擎不提供替身，必须自绘整枪",
+              "ConditionProperty::Custom 仅布尔，枚举需 select 嵌套",
+              "0.5 'Bedrock geometry + animations' 仅声明未实现",
+              "第三方自定义 property / item model type 会被 item_model/foreign.rs:12-79 静默降级：condition→on_false、select→fallback、range_dispatch→按 0 求值、special→base；mod 自身逻辑不执行",
+              "Bedrock geometry 的 bones/parent/pivot/rotation 无法无损表达为 Java cuboid model；只能按部件近似并显式标有损"
+            ],
+            "evidence": [
+              "crates/horizon-assets/src/item_model.rs:660 ConditionProperty::Custom",
+              "crates/horizon-assets/src/item_model.rs:409 range_dispatch / :470 condition",
+              "crates/horizon-client/src/game/native_hooks.rs ModelPart / native_layer_definitions",
+              "crates/horizon-mods/src/manifest.rs:20-22 APIS 止于 0.1/0.2/0.3",
+              "docs/modpacks.md:183 0.5 Bedrock geometry + animations 为 planned"
+            ]
+          }
+        },
+        "contract": {
+          "authority": "server",
+          "sync_boundary": "命中判定与伤害服务端权威；后坐/粒子/音效可由客户端按事件重放",
+          "presentation": [
+            "skeletal_animation",
+            "particle",
+            "sound",
+            "camera_pose"
+          ],
+          "requires_animation_driver": true
+        }
+      },
+      "verdict": "needs_workaround",
+      "gaps": [
+        "animation_driver"
+      ],
+      "evidence": [
+        "jar:73 个 .animation.json",
+        "锚点规则:orchestration/slice-anchors.json#shoot",
+        "index:work/index.source.json (unit_id 类名匹配)",
+        "delta:work/delta.source.json (disposition)",
+        "horizon:native-hooks.json (hook/helper 名称校验)",
+        "target/horizon.capabilities.json (unbound: animation_driver, block_query, collision_query, cooldown, entity_query, entity_state, network_sync, particle_emit, persistent_data, random_source, scheduled_task)"
+      ]
+    },
+    {
+      "slice_id": "aim",
+      "anchor": "aim",
+      "summary": "瞄准：FOV / 相机 / 移动减速与 ADS 姿态联动",
+      "shared_states": [
+        "ADS_down",
+        "ADS_up",
+        "aim",
+        "aim_end",
+        "aim_start",
+        "sight_off",
+        "sight_on",
+        "walk_aiming",
+        "walk_aiming_2"
+      ],
+      "state_parameters": {
+        "raw_count": 9,
+        "canonical_count": 7,
+        "parameters": [
+          "stage_index"
+        ],
+        "roundtrip_closed": true
+      },
+      "layers": {
+        "assets": {
+          "animation_files": 4,
+          "animation_states": [
+            "ADS_down",
+            "ADS_up",
+            "aim",
+            "aim_end",
+            "aim_start",
+            "sight_off",
+            "sight_on",
+            "walk_aiming",
+            "walk_aiming_2"
+          ],
+          "bone_names": [
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "2",
+            "3",
+            "4",
+            "416d_bolt",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "9mm2",
+            "Bolt",
+            "CR",
+            "Db",
+            "Deagle",
+            "Deagle_golden",
+            "G3_bolt",
+            "G3_default_body",
+            "L",
+            "MagazineCatch",
+            "Mp5",
+            "R",
+            "Release",
+            "Rotate",
+            "Safety",
+            "add_belt_1",
+            "add_belt_2",
+            "add_belt_3",
+            "add_belt_4",
+            "add_belt_5",
+            "add_belt_6",
+            "add_belt_7",
+            "add_belt_8",
+            "add_bullet_belt_1"
+          ],
+          "geometry_files": 2,
+          "display_files": 2,
+          "index_files": 2,
+          "sound_events": []
+        },
+        "code": {
+          "unit_count": 15,
+          "units": [
+            "cls:com/tacz/guns/client/gameplay/LocalPlayerAim",
+            "cls:com/tacz/guns/client/input/AimKey",
+            "cls:com/tacz/guns/client/input/ZoomKey",
+            "cls:com/tacz/guns/client/renderer/scope/ScopeLensContour",
+            "cls:com/tacz/guns/client/renderer/scope/ScopeLensRenderer",
+            "cls:com/tacz/guns/client/renderer/scope/ScopeThermalRenderer",
+            "cls:com/tacz/guns/client/renderer/scope/ScopeVisionMode",
+            "cls:com/tacz/guns/client/resource/pojo/display/attachment/ScopeLensConfig",
+            "cls:com/tacz/guns/client/resource/pojo/display/gun/AdsFov",
+            "cls:com/tacz/guns/compat/cloth/client/ZoomClothConfig",
+            "cls:com/tacz/guns/config/client/ZoomConfig",
+            "cls:com/tacz/guns/entity/shooter/LivingEntityAim",
+            "cls:com/tacz/guns/network/message/ClientMessagePlayerAim",
+            "cls:com/tacz/guns/network/message/ClientMessagePlayerZoom",
+            "cls:com/tacz/guns/resource/modifier/custom/AimInaccuracyModifier"
+          ],
+          "by_disposition": {
+            "C3": 10,
+            "C4": 1,
+            "C5": 4
+          },
+          "state_machine_units": [
+            "cls:com/tacz/guns/api/client/animation/AnimationController",
+            "cls:com/tacz/guns/api/client/animation/AnimationPlan",
+            "cls:com/tacz/guns/api/client/animation/ObjectAnimationRunner",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateContext",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaStateMachineFactory",
+            "cls:com/tacz/guns/client/animation/statemachine/GunAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ItemAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ThrowableAnimationStateContext"
+          ]
+        },
+        "target": {
+          "hooks": [
+            "mouse_button_pre",
+            "movement_input",
+            "compute_fov",
+            "compute_fov_modifier",
+            "camera_pose",
+            "frame"
+          ],
+          "helpers": [
+            "held"
+          ],
+          "capability_ids": [
+            "animation_driver"
+          ],
+          "api_tier": "client",
+          "capability_gap": [
+            "animation_driver"
+          ],
+          "workaround": {
+            "target_reality": "Horizon 26.3 源码实测：物品/枪械模型无骨骼；ModelPart 只支持逐部件静态姿态(x/y/z, x_rot/y_rot/z_rot, scale, children)，关键帧插值仅存在于 cosmetics emote 与 vanilla CEM；全仓无 Bedrock geometry / glTF 读取器",
+            "phase_a": "离散状态优先：minecraft:condition(Custom 仅布尔) / minecraft:select(枚举) / range_dispatch(数值) + standalone_models 静态注册，保证逻辑闭环",
+            "phase_b": "render_hand(cancel) 屏蔽原手 → render_hand_pose 取 PoseStack(整手 7 个 f32) → ModelPart 逐部件姿态 + hand_drawn/world_drawn 自绘逼近时序",
+            "limitations": [
+              "无骨骼 / 蒙皮 / 关键帧插值，不能宣称已支持动画",
+              "render_hand cancel 后引擎不提供替身，必须自绘整枪",
+              "ConditionProperty::Custom 仅布尔，枚举需 select 嵌套",
+              "0.5 'Bedrock geometry + animations' 仅声明未实现",
+              "第三方自定义 property / item model type 会被 item_model/foreign.rs:12-79 静默降级：condition→on_false、select→fallback、range_dispatch→按 0 求值、special→base；mod 自身逻辑不执行",
+              "Bedrock geometry 的 bones/parent/pivot/rotation 无法无损表达为 Java cuboid model；只能按部件近似并显式标有损"
+            ],
+            "evidence": [
+              "crates/horizon-assets/src/item_model.rs:660 ConditionProperty::Custom",
+              "crates/horizon-assets/src/item_model.rs:409 range_dispatch / :470 condition",
+              "crates/horizon-client/src/game/native_hooks.rs ModelPart / native_layer_definitions",
+              "crates/horizon-mods/src/manifest.rs:20-22 APIS 止于 0.1/0.2/0.3",
+              "docs/modpacks.md:183 0.5 Bedrock geometry + animations 为 planned"
+            ]
+          }
+        },
+        "contract": {
+          "authority": "client_with_server_validation",
+          "sync_boundary": "瞄准状态影响命中散布，需把布尔/数值状态上报服务端；FOV 与相机纯客户端",
+          "presentation": [
+            "fov",
+            "camera",
+            "skeletal_animation"
+          ],
+          "requires_animation_driver": true
+        }
+      },
+      "verdict": "needs_workaround",
+      "gaps": [
+        "animation_driver"
+      ],
+      "evidence": [
+        "jar:73 个 .animation.json",
+        "锚点规则:orchestration/slice-anchors.json#aim",
+        "index:work/index.source.json (unit_id 类名匹配)",
+        "delta:work/delta.source.json (disposition)",
+        "horizon:native-hooks.json (hook/helper 名称校验)",
+        "target/horizon.capabilities.json (unbound: animation_driver, block_query, collision_query, cooldown, entity_query, entity_state, network_sync, particle_emit, persistent_data, random_source, scheduled_task)"
+      ]
+    },
+    {
+      "slice_id": "bolt",
+      "anchor": "bolt",
+      "summary": "拉栓 / 上膛：短时序机械动作 + 弹壳与音效",
+      "shared_states": [
+        "bolt",
+        "bolt_add_1",
+        "bolt_add_2",
+        "bolt_add_3",
+        "bolt_add_4",
+        "bolt_add_5",
+        "bolt_fast",
+        "bolt_hammer",
+        "bolt_scope",
+        "charge_in",
+        "charge_out",
+        "charging",
+        "cock",
+        "handle_off",
+        "handle_on",
+        "static_bolt_caught",
+        "static_bolt_caught_pump",
+        "static_pump"
+      ],
+      "state_parameters": {
+        "raw_count": 18,
+        "canonical_count": 14,
+        "parameters": [
+          "stage_index"
+        ],
+        "roundtrip_closed": true
+      },
+      "layers": {
+        "assets": {
+          "animation_files": 58,
+          "animation_states": [
+            "bolt",
+            "bolt_add_1",
+            "bolt_add_2",
+            "bolt_add_3",
+            "bolt_add_4",
+            "bolt_add_5",
+            "bolt_fast",
+            "bolt_hammer",
+            "bolt_scope",
+            "charge_in",
+            "charge_out",
+            "charging",
+            "cock",
+            "handle_off",
+            "handle_on",
+            "static_bolt_caught",
+            "static_bolt_caught_pump",
+            "static_pump"
+          ],
+          "bone_names": [
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "2",
+            "3",
+            "4",
+            "416d_bolt",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "9mm2",
+            "Bolt",
+            "CR",
+            "Db",
+            "Deagle",
+            "Deagle_golden",
+            "G3_bolt",
+            "G3_default_body",
+            "L",
+            "MagazineCatch",
+            "Mp5",
+            "R",
+            "Release",
+            "Rotate",
+            "Safety",
+            "add_belt_1",
+            "add_belt_2",
+            "add_belt_3",
+            "add_belt_4",
+            "add_belt_5",
+            "add_belt_6",
+            "add_belt_7",
+            "add_belt_8",
+            "add_bullet_belt_1"
+          ],
+          "geometry_files": 51,
+          "display_files": 58,
+          "index_files": 57,
+          "sound_events": [
+            "bolt"
+          ]
+        },
+        "code": {
+          "unit_count": 13,
+          "units": [
+            "cls:com/tacz/guns/client/gameplay/LocalPlayerBolt",
+            "cls:com/tacz/guns/client/input/GunInputHandler",
+            "cls:com/tacz/guns/client/particle/HitBlockEffectHandler",
+            "cls:com/tacz/guns/compat/jei/transfer/GunSmithTableTransferHandler",
+            "cls:com/tacz/guns/entity/shooter/LivingEntityBolt",
+            "cls:com/tacz/guns/mixin/client/MouseHandlerMixin",
+            "cls:com/tacz/guns/mixin/common/ServerPlayNetHandlerMixin",
+            "cls:com/tacz/guns/network/NetworkHandler",
+            "cls:com/tacz/guns/network/message/ClientMessagePlayerBoltGun",
+            "cls:com/tacz/guns/resource/pojo/data/gun/Bolt",
+            "cls:com/tacz/guns/resource/pojo/data/gun/ChargeData",
+            "cls:com/tacz/guns/resource/pojo/data/gun/ChargeType",
+            "cls:com/tacz/guns/util/PathHandler"
+          ],
+          "by_disposition": {
+            "C1": 1,
+            "C3": 4,
+            "C4": 3,
+            "C5": 5
+          },
+          "state_machine_units": [
+            "cls:com/tacz/guns/api/client/animation/AnimationController",
+            "cls:com/tacz/guns/api/client/animation/AnimationPlan",
+            "cls:com/tacz/guns/api/client/animation/ObjectAnimationRunner",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateContext",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaStateMachineFactory",
+            "cls:com/tacz/guns/client/animation/statemachine/GunAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ItemAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ThrowableAnimationStateContext"
+          ]
+        },
+        "target": {
+          "hooks": [
+            "player_tick",
+            "living_entity_use_item_tick",
+            "input_key",
+            "frame"
+          ],
+          "helpers": [
+            "held",
+            "flame_particle"
+          ],
+          "capability_ids": [
+            "animation_driver"
+          ],
+          "api_tier": "logic",
+          "capability_gap": [
+            "animation_driver"
+          ],
+          "workaround": {
+            "target_reality": "Horizon 26.3 源码实测：物品/枪械模型无骨骼；ModelPart 只支持逐部件静态姿态(x/y/z, x_rot/y_rot/z_rot, scale, children)，关键帧插值仅存在于 cosmetics emote 与 vanilla CEM；全仓无 Bedrock geometry / glTF 读取器",
+            "phase_a": "离散状态优先：minecraft:condition(Custom 仅布尔) / minecraft:select(枚举) / range_dispatch(数值) + standalone_models 静态注册，保证逻辑闭环",
+            "phase_b": "render_hand(cancel) 屏蔽原手 → render_hand_pose 取 PoseStack(整手 7 个 f32) → ModelPart 逐部件姿态 + hand_drawn/world_drawn 自绘逼近时序",
+            "limitations": [
+              "无骨骼 / 蒙皮 / 关键帧插值，不能宣称已支持动画",
+              "render_hand cancel 后引擎不提供替身，必须自绘整枪",
+              "ConditionProperty::Custom 仅布尔，枚举需 select 嵌套",
+              "0.5 'Bedrock geometry + animations' 仅声明未实现",
+              "第三方自定义 property / item model type 会被 item_model/foreign.rs:12-79 静默降级：condition→on_false、select→fallback、range_dispatch→按 0 求值、special→base；mod 自身逻辑不执行",
+              "Bedrock geometry 的 bones/parent/pivot/rotation 无法无损表达为 Java cuboid model；只能按部件近似并显式标有损"
+            ],
+            "evidence": [
+              "crates/horizon-assets/src/item_model.rs:660 ConditionProperty::Custom",
+              "crates/horizon-assets/src/item_model.rs:409 range_dispatch / :470 condition",
+              "crates/horizon-client/src/game/native_hooks.rs ModelPart / native_layer_definitions",
+              "crates/horizon-mods/src/manifest.rs:20-22 APIS 止于 0.1/0.2/0.3",
+              "docs/modpacks.md:183 0.5 Bedrock geometry + animations 为 planned"
+            ]
+          }
+        },
+        "contract": {
+          "authority": "server",
+          "sync_boundary": "上膛完成事件服务端权威；动画可按事件重放",
+          "presentation": [
+            "skeletal_animation",
+            "sound",
+            "particle"
+          ],
+          "requires_animation_driver": true
+        }
+      },
+      "verdict": "needs_workaround",
+      "gaps": [
+        "animation_driver"
+      ],
+      "evidence": [
+        "jar:73 个 .animation.json",
+        "锚点规则:orchestration/slice-anchors.json#bolt",
+        "index:work/index.source.json (unit_id 类名匹配)",
+        "delta:work/delta.source.json (disposition)",
+        "horizon:native-hooks.json (hook/helper 名称校验)",
+        "target/horizon.capabilities.json (unbound: animation_driver, block_query, collision_query, cooldown, entity_query, entity_state, network_sync, particle_emit, persistent_data, random_source, scheduled_task)"
+      ]
+    },
+    {
+      "slice_id": "inspect",
+      "anchor": "inspect",
+      "summary": "检视：纯表现动画，不改权威状态",
+      "shared_states": [
+        "inspect",
+        "inspect_01",
+        "inspect_1",
+        "inspect_1_semi",
+        "inspect_empty",
+        "inspect_empty_pump",
+        "inspect_empty_semi",
+        "inspect_empty_xmag",
+        "inspect_empty_xmag_1",
+        "inspect_empty_xmag_12",
+        "inspect_empty_xmag_2",
+        "inspect_empty_xmag_23",
+        "inspect_empty_xmag_3",
+        "inspect_pump",
+        "inspect_semi",
+        "inspect_xmag",
+        "inspect_xmag_1",
+        "inspect_xmag_12",
+        "inspect_xmag_2",
+        "inspect_xmag_23",
+        "inspect_xmag_3",
+        "melee_push",
+        "spin"
+      ],
+      "state_parameters": {
+        "raw_count": 23,
+        "canonical_count": 9,
+        "parameters": [
+          "magazine_level",
+          "stage_index"
+        ],
+        "roundtrip_closed": true
+      },
+      "layers": {
+        "assets": {
+          "animation_files": 72,
+          "animation_states": [
+            "inspect",
+            "inspect_01",
+            "inspect_1",
+            "inspect_1_semi",
+            "inspect_empty",
+            "inspect_empty_pump",
+            "inspect_empty_semi",
+            "inspect_empty_xmag",
+            "inspect_empty_xmag_1",
+            "inspect_empty_xmag_12",
+            "inspect_empty_xmag_2",
+            "inspect_empty_xmag_23",
+            "inspect_empty_xmag_3",
+            "inspect_pump",
+            "inspect_semi",
+            "inspect_xmag",
+            "inspect_xmag_1",
+            "inspect_xmag_12",
+            "inspect_xmag_2",
+            "inspect_xmag_23",
+            "inspect_xmag_3",
+            "melee_push",
+            "spin"
+          ],
+          "bone_names": [
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "2",
+            "3",
+            "4",
+            "416d_bolt",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "9mm2",
+            "Bolt",
+            "CR",
+            "Db",
+            "Deagle",
+            "Deagle_golden",
+            "G3_bolt",
+            "G3_default_body",
+            "L",
+            "MagazineCatch",
+            "Mp5",
+            "R",
+            "Release",
+            "Rotate",
+            "Safety",
+            "add_belt_1",
+            "add_belt_2",
+            "add_belt_3",
+            "add_belt_4",
+            "add_belt_5",
+            "add_belt_6",
+            "add_belt_7",
+            "add_belt_8",
+            "add_bullet_belt_1"
+          ],
+          "geometry_files": 64,
+          "display_files": 71,
+          "index_files": 70,
+          "sound_events": [
+            "inspect"
+          ]
+        },
+        "code": {
+          "unit_count": 2,
+          "units": [
+            "cls:com/tacz/guns/client/gameplay/LocalPlayerInspect",
+            "cls:com/tacz/guns/client/input/InspectKey"
+          ],
+          "by_disposition": {
+            "C3": 2
+          },
+          "state_machine_units": [
+            "cls:com/tacz/guns/api/client/animation/AnimationController",
+            "cls:com/tacz/guns/api/client/animation/AnimationPlan",
+            "cls:com/tacz/guns/api/client/animation/ObjectAnimationRunner",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateContext",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaStateMachineFactory",
+            "cls:com/tacz/guns/client/animation/statemachine/GunAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ItemAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ThrowableAnimationStateContext"
+          ]
+        },
+        "target": {
+          "hooks": [
+            "input_key",
+            "frame",
+            "render_hand_pose"
+          ],
+          "helpers": [
+            "held"
+          ],
+          "capability_ids": [
+            "animation_driver"
+          ],
+          "api_tier": "client",
+          "capability_gap": [
+            "animation_driver"
+          ],
+          "workaround": {
+            "target_reality": "Horizon 26.3 源码实测：物品/枪械模型无骨骼；ModelPart 只支持逐部件静态姿态(x/y/z, x_rot/y_rot/z_rot, scale, children)，关键帧插值仅存在于 cosmetics emote 与 vanilla CEM；全仓无 Bedrock geometry / glTF 读取器",
+            "phase_a": "离散状态优先：minecraft:condition(Custom 仅布尔) / minecraft:select(枚举) / range_dispatch(数值) + standalone_models 静态注册，保证逻辑闭环",
+            "phase_b": "render_hand(cancel) 屏蔽原手 → render_hand_pose 取 PoseStack(整手 7 个 f32) → ModelPart 逐部件姿态 + hand_drawn/world_drawn 自绘逼近时序",
+            "limitations": [
+              "无骨骼 / 蒙皮 / 关键帧插值，不能宣称已支持动画",
+              "render_hand cancel 后引擎不提供替身，必须自绘整枪",
+              "ConditionProperty::Custom 仅布尔，枚举需 select 嵌套",
+              "0.5 'Bedrock geometry + animations' 仅声明未实现",
+              "第三方自定义 property / item model type 会被 item_model/foreign.rs:12-79 静默降级：condition→on_false、select→fallback、range_dispatch→按 0 求值、special→base；mod 自身逻辑不执行",
+              "Bedrock geometry 的 bones/parent/pivot/rotation 无法无损表达为 Java cuboid model；只能按部件近似并显式标有损"
+            ],
+            "evidence": [
+              "crates/horizon-assets/src/item_model.rs:660 ConditionProperty::Custom",
+              "crates/horizon-assets/src/item_model.rs:409 range_dispatch / :470 condition",
+              "crates/horizon-client/src/game/native_hooks.rs ModelPart / native_layer_definitions",
+              "crates/horizon-mods/src/manifest.rs:20-22 APIS 止于 0.1/0.2/0.3",
+              "docs/modpacks.md:183 0.5 Bedrock geometry + animations 为 planned"
+            ]
+          }
+        },
+        "contract": {
+          "authority": "client",
+          "sync_boundary": "纯客户端表现，禁止进入服务端权威状态",
+          "presentation": [
+            "skeletal_animation",
+            "sound"
+          ],
+          "requires_animation_driver": true
+        }
+      },
+      "verdict": "needs_workaround",
+      "gaps": [
+        "animation_driver"
+      ],
+      "evidence": [
+        "jar:73 个 .animation.json",
+        "锚点规则:orchestration/slice-anchors.json#inspect",
+        "index:work/index.source.json (unit_id 类名匹配)",
+        "delta:work/delta.source.json (disposition)",
+        "horizon:native-hooks.json (hook/helper 名称校验)",
+        "target/horizon.capabilities.json (unbound: animation_driver, block_query, collision_query, cooldown, entity_query, entity_state, network_sync, particle_emit, persistent_data, random_source, scheduled_task)"
+      ]
+    },
+    {
+      "slice_id": "equip",
+      "anchor": "equip",
+      "summary": "切出 / 收起：物品切换触发的模型与动画切换",
+      "shared_states": [
+        "draw",
+        "draw_semi",
+        "draw_semi_caught",
+        "put_away",
+        "put_away_semi",
+        "put_away_semi_caught",
+        "put_down"
+      ],
+      "state_parameters": {
+        "raw_count": 7,
+        "canonical_count": 7,
+        "parameters": [],
+        "roundtrip_closed": true
+      },
+      "layers": {
+        "assets": {
+          "animation_files": 72,
+          "animation_states": [
+            "draw",
+            "draw_semi",
+            "draw_semi_caught",
+            "put_away",
+            "put_away_semi",
+            "put_away_semi_caught",
+            "put_down"
+          ],
+          "bone_names": [
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "2",
+            "3",
+            "4",
+            "416d_bolt",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "9mm2",
+            "Bolt",
+            "CR",
+            "Db",
+            "Deagle",
+            "Deagle_golden",
+            "G3_bolt",
+            "G3_default_body",
+            "L",
+            "MagazineCatch",
+            "Mp5",
+            "R",
+            "Release",
+            "Rotate",
+            "Safety",
+            "add_belt_1",
+            "add_belt_2",
+            "add_belt_3",
+            "add_belt_4",
+            "add_belt_5",
+            "add_belt_6",
+            "add_belt_7",
+            "add_belt_8",
+            "add_bullet_belt_1"
+          ],
+          "geometry_files": 63,
+          "display_files": 70,
+          "index_files": 69,
+          "sound_events": [
+            "draw"
+          ]
+        },
+        "code": {
+          "unit_count": 5,
+          "units": [
+            "cls:com/tacz/guns/api/event/common/GunDrawEvent",
+            "cls:com/tacz/guns/client/gameplay/LocalPlayerDraw",
+            "cls:com/tacz/guns/entity/shooter/LivingEntityDrawGun",
+            "cls:com/tacz/guns/network/message/ClientMessagePlayerDrawGun",
+            "cls:com/tacz/guns/network/message/event/ServerMessageGunDraw"
+          ],
+          "by_disposition": {
+            "C3": 5
+          },
+          "state_machine_units": [
+            "cls:com/tacz/guns/api/client/animation/AnimationController",
+            "cls:com/tacz/guns/api/client/animation/AnimationPlan",
+            "cls:com/tacz/guns/api/client/animation/ObjectAnimationRunner",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateContext",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaStateMachineFactory",
+            "cls:com/tacz/guns/client/animation/statemachine/GunAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ItemAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ThrowableAnimationStateContext"
+          ]
+        },
+        "target": {
+          "hooks": [
+            "item_model_property",
+            "standalone_models",
+            "render_hand",
+            "hand_drawn",
+            "frame"
+          ],
+          "helpers": [
+            "held",
+            "carried_stack"
+          ],
+          "capability_ids": [
+            "animation_driver"
+          ],
+          "api_tier": "data",
+          "capability_gap": [
+            "animation_driver"
+          ],
+          "workaround": {
+            "target_reality": "Horizon 26.3 源码实测：物品/枪械模型无骨骼；ModelPart 只支持逐部件静态姿态(x/y/z, x_rot/y_rot/z_rot, scale, children)，关键帧插值仅存在于 cosmetics emote 与 vanilla CEM；全仓无 Bedrock geometry / glTF 读取器",
+            "phase_a": "离散状态优先：minecraft:condition(Custom 仅布尔) / minecraft:select(枚举) / range_dispatch(数值) + standalone_models 静态注册，保证逻辑闭环",
+            "phase_b": "render_hand(cancel) 屏蔽原手 → render_hand_pose 取 PoseStack(整手 7 个 f32) → ModelPart 逐部件姿态 + hand_drawn/world_drawn 自绘逼近时序",
+            "limitations": [
+              "无骨骼 / 蒙皮 / 关键帧插值，不能宣称已支持动画",
+              "render_hand cancel 后引擎不提供替身，必须自绘整枪",
+              "ConditionProperty::Custom 仅布尔，枚举需 select 嵌套",
+              "0.5 'Bedrock geometry + animations' 仅声明未实现",
+              "第三方自定义 property / item model type 会被 item_model/foreign.rs:12-79 静默降级：condition→on_false、select→fallback、range_dispatch→按 0 求值、special→base；mod 自身逻辑不执行",
+              "Bedrock geometry 的 bones/parent/pivot/rotation 无法无损表达为 Java cuboid model；只能按部件近似并显式标有损"
+            ],
+            "evidence": [
+              "crates/horizon-assets/src/item_model.rs:660 ConditionProperty::Custom",
+              "crates/horizon-assets/src/item_model.rs:409 range_dispatch / :470 condition",
+              "crates/horizon-client/src/game/native_hooks.rs ModelPart / native_layer_definitions",
+              "crates/horizon-mods/src/manifest.rs:20-22 APIS 止于 0.1/0.2/0.3",
+              "docs/modpacks.md:183 0.5 Bedrock geometry + animations 为 planned"
+            ]
+          }
+        },
+        "contract": {
+          "authority": "server",
+          "sync_boundary": "手持物品服务端权威；模型条件属性由客户端按组件状态求值",
+          "presentation": [
+            "item_model",
+            "skeletal_animation",
+            "sound"
+          ],
+          "requires_animation_driver": true
+        }
+      },
+      "verdict": "needs_workaround",
+      "gaps": [
+        "animation_driver"
+      ],
+      "evidence": [
+        "jar:73 个 .animation.json",
+        "锚点规则:orchestration/slice-anchors.json#equip",
+        "index:work/index.source.json (unit_id 类名匹配)",
+        "delta:work/delta.source.json (disposition)",
+        "horizon:native-hooks.json (hook/helper 名称校验)",
+        "target/horizon.capabilities.json (unbound: animation_driver, block_query, collision_query, cooldown, entity_query, entity_state, network_sync, particle_emit, persistent_data, random_source, scheduled_task)"
+      ]
+    },
+    {
+      "slice_id": "fire_mode",
+      "anchor": "fire_mode",
+      "summary": "射击模式 / 保险 / 配件切换：离散状态驱动静态模型分支",
+      "shared_states": [
+        "static_AFG",
+        "static_VG",
+        "static_auto",
+        "static_burst",
+        "static_semi",
+        "switch_auto",
+        "switch_burst",
+        "switch_pump",
+        "switch_pump_empty",
+        "switch_semi",
+        "switch_semi_empty"
+      ],
+      "state_parameters": {
+        "raw_count": 11,
+        "canonical_count": 11,
+        "parameters": [],
+        "roundtrip_closed": true
+      },
+      "layers": {
+        "assets": {
+          "animation_files": 26,
+          "animation_states": [
+            "static_AFG",
+            "static_VG",
+            "static_auto",
+            "static_burst",
+            "static_semi",
+            "switch_auto",
+            "switch_burst",
+            "switch_pump",
+            "switch_pump_empty",
+            "switch_semi",
+            "switch_semi_empty"
+          ],
+          "bone_names": [
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "2",
+            "3",
+            "4",
+            "416d_bolt",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "9mm2",
+            "Bolt",
+            "CR",
+            "Db",
+            "Deagle",
+            "Deagle_golden",
+            "G3_bolt",
+            "G3_default_body",
+            "L",
+            "MagazineCatch",
+            "Mp5",
+            "R",
+            "Release",
+            "Rotate",
+            "Safety",
+            "add_belt_1",
+            "add_belt_2",
+            "add_belt_3",
+            "add_belt_4",
+            "add_belt_5",
+            "add_belt_6",
+            "add_belt_7",
+            "add_belt_8",
+            "add_bullet_belt_1"
+          ],
+          "geometry_files": 22,
+          "display_files": 25,
+          "index_files": 25,
+          "sound_events": []
+        },
+        "code": {
+          "unit_count": 91,
+          "units": [
+            "cls:com/tacz/guns/api/client/animation/gltf/AccessorModel",
+            "cls:com/tacz/guns/api/client/animation/gltf/AnimationModel",
+            "cls:com/tacz/guns/api/client/animation/gltf/BufferModel",
+            "cls:com/tacz/guns/api/client/animation/gltf/BufferViewModel",
+            "cls:com/tacz/guns/api/client/animation/gltf/NodeModel",
+            "cls:com/tacz/guns/api/client/other/GunModelTypeManager",
+            "cls:com/tacz/guns/api/event/common/AttachmentPropertyEvent",
+            "cls:com/tacz/guns/api/item/IAttachment",
+            "cls:com/tacz/guns/api/item/attachment/AttachmentType",
+            "cls:com/tacz/guns/api/item/builder/AttachmentItemBuilder",
+            "cls:com/tacz/guns/api/item/gun/FireMode",
+            "cls:com/tacz/guns/api/item/nbt/AttachmentItemDataAccessor",
+            "cls:com/tacz/guns/api/modifier/IAttachmentModifier",
+            "cls:com/tacz/guns/client/animation/third/PlayerModelRenderState",
+            "cls:com/tacz/guns/client/gui/components/refit/GunAttachmentSlot",
+            "cls:com/tacz/guns/client/gui/components/refit/InventoryAttachmentSlot",
+            "cls:com/tacz/guns/client/init/ModEntitiesRender",
+            "cls:com/tacz/guns/client/model/BedrockAmmoModel",
+            "cls:com/tacz/guns/client/model/BedrockAnimatedModel",
+            "cls:com/tacz/guns/client/model/BedrockAttachmentModel",
+            "cls:com/tacz/guns/client/model/BedrockGunModel",
+            "cls:com/tacz/guns/client/model/DisplayGunModelInstance",
+            "cls:com/tacz/guns/client/model/ExternalGunModel",
+            "cls:com/tacz/guns/client/model/GunModelConstant",
+            "cls:com/tacz/guns/client/model/SlotModel",
+            "cls:com/tacz/guns/client/model/bedrock/BedrockModel",
+            "cls:com/tacz/guns/client/model/bedrock/ModelRendererWrapper",
+            "cls:com/tacz/guns/client/model/functional/AttachmentRender",
+            "cls:com/tacz/guns/client/model/listener/model/ModelAdditionalMagazineListener",
+            "cls:com/tacz/guns/client/model/listener/model/ModelRotateListener",
+            "cls:com/tacz/guns/client/model/listener/model/ModelScaleListener",
+            "cls:com/tacz/guns/client/model/listener/model/ModelTranslateListener",
+            "cls:com/tacz/guns/client/renderer/item/AttachmentItemRenderer",
+            "cls:com/tacz/guns/client/renderer/scope/ScopeVisionMode",
+            "cls:com/tacz/guns/client/resource/ExternalModelAssets",
+            "cls:com/tacz/guns/client/resource/index/ClientAttachmentIndex",
+            "cls:com/tacz/guns/client/resource/index/ClientAttachmentSkinIndex",
+            "cls:com/tacz/guns/client/resource/index/ClientAttachmentVariantIndex",
+            "cls:com/tacz/guns/client/resource/index/ClientSlotAdapterIndex",
+            "cls:com/tacz/guns/client/resource/pojo/display/attachment/AttachmentDisplay",
+            "cls:com/tacz/guns/client/resource/pojo/display/attachment/AttachmentLod",
+            "cls:com/tacz/guns/client/resource/pojo/model/BedrockModelPOJO",
+            "cls:com/tacz/guns/client/resource/pojo/model/GeometryModelLegacy",
+            "cls:com/tacz/guns/client/resource/pojo/model/GeometryModelNew",
+            "cls:com/tacz/guns/client/resource/pojo/skin/attachment/AttachmentSkin",
+            "cls:com/tacz/guns/client/tooltip/ClientAttachmentItemTooltip",
+            "cls:com/tacz/guns/command/sub/AttachmentLockCommand",
+            "cls:com/tacz/guns/compat/ar/BedrockPartLightingMode",
+            "cls:com/tacz/guns/compat/jei/category/AttachmentQueryCategory",
+            "cls:com/tacz/guns/compat/jei/category/GunAttachmentQueryCategory",
+            "cls:com/tacz/guns/compat/jei/entry/AttachmentQueryData",
+            "cls:com/tacz/guns/compat/jei/entry/AttachmentQueryEntry",
+            "cls:com/tacz/guns/compat/jei/entry/GunAttachmentQueryEntry",
+            "cls:com/tacz/guns/compat/kubejs/util/AttachmentNbtFactory",
+            "cls:com/tacz/guns/compat/playeranimator/animation/PlayerAnimatorModelState",
+            "cls:com/tacz/guns/init/ModEntities",
+            "cls:com/tacz/guns/inventory/tooltip/AttachmentItemTooltip",
+            "cls:com/tacz/guns/item/AttachmentItem",
+            "cls:com/tacz/guns/item/ModernKineticGunItem",
+            "cls:com/tacz/guns/item/ModernKineticGunScriptAPI"
+          ],
+          "by_disposition": {
+            "C3": 23,
+            "C4": 25,
+            "C5": 43
+          },
+          "state_machine_units": [
+            "cls:com/tacz/guns/api/client/animation/AnimationController",
+            "cls:com/tacz/guns/api/client/animation/AnimationPlan",
+            "cls:com/tacz/guns/api/client/animation/ObjectAnimationRunner",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateContext",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaStateMachineFactory",
+            "cls:com/tacz/guns/client/animation/statemachine/GunAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ItemAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ThrowableAnimationStateContext"
+          ]
+        },
+        "target": {
+          "hooks": [
+            "item_model_property",
+            "standalone_models",
+            "input_key",
+            "mouse_scrolling"
+          ],
+          "helpers": [
+            "held",
+            "attachments"
+          ],
+          "capability_ids": [
+            "animation_driver"
+          ],
+          "api_tier": "data",
+          "capability_gap": []
+        },
+        "contract": {
+          "authority": "server",
+          "sync_boundary": "模式位可编码进物品组件，由 minecraft:condition 在客户端求值",
+          "presentation": [
+            "item_model",
+            "hud"
+          ],
+          "requires_animation_driver": false
+        }
+      },
+      "verdict": "portable",
+      "gaps": [],
+      "evidence": [
+        "jar:73 个 .animation.json",
+        "锚点规则:orchestration/slice-anchors.json#fire_mode",
+        "index:work/index.source.json (unit_id 类名匹配)",
+        "delta:work/delta.source.json (disposition)",
+        "horizon:native-hooks.json (hook/helper 名称校验)",
+        "target/horizon.capabilities.json (unbound: animation_driver, block_query, collision_query, cooldown, entity_query, entity_state, network_sync, particle_emit, persistent_data, random_source, scheduled_task)"
+      ]
+    },
+    {
+      "slice_id": "static_pose",
+      "anchor": "static_pose",
+      "summary": "静态待机姿态与持枪骨架：最接近可直接映射的一组",
+      "shared_states": [
+        "idle",
+        "idle_AFG",
+        "idle_VG",
+        "new",
+        "static_ammo_display",
+        "static_angled_foregrip",
+        "static_belt_display",
+        "static_hammer",
+        "static_idle",
+        "static_idle_semi",
+        "static_idle_semi_caught",
+        "static_state",
+        "static_verticle_grip"
+      ],
+      "state_parameters": {
+        "raw_count": 13,
+        "canonical_count": 13,
+        "parameters": [],
+        "roundtrip_closed": true
+      },
+      "layers": {
+        "assets": {
+          "animation_files": 73,
+          "animation_states": [
+            "idle",
+            "idle_AFG",
+            "idle_VG",
+            "new",
+            "static_ammo_display",
+            "static_angled_foregrip",
+            "static_belt_display",
+            "static_hammer",
+            "static_idle",
+            "static_idle_semi",
+            "static_idle_semi_caught",
+            "static_state",
+            "static_verticle_grip"
+          ],
+          "bone_names": [
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "2",
+            "3",
+            "4",
+            "416d_bolt",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "9mm2",
+            "Bolt",
+            "CR",
+            "Db",
+            "Deagle",
+            "Deagle_golden",
+            "G3_bolt",
+            "G3_default_body",
+            "L",
+            "MagazineCatch",
+            "Mp5",
+            "R",
+            "Release",
+            "Rotate",
+            "Safety",
+            "add_belt_1",
+            "add_belt_2",
+            "add_belt_3",
+            "add_belt_4",
+            "add_belt_5",
+            "add_belt_6",
+            "add_belt_7",
+            "add_belt_8",
+            "add_bullet_belt_1"
+          ],
+          "geometry_files": 64,
+          "display_files": 71,
+          "index_files": 70,
+          "sound_events": []
+        },
+        "code": {
+          "unit_count": 30,
+          "units": [
+            "cls:com/tacz/guns/api/client/animation/gltf/AccessorModel",
+            "cls:com/tacz/guns/api/client/animation/gltf/AnimationModel",
+            "cls:com/tacz/guns/api/client/animation/gltf/AnimationStructure",
+            "cls:com/tacz/guns/api/client/animation/gltf/BufferModel",
+            "cls:com/tacz/guns/api/client/animation/gltf/BufferViewModel",
+            "cls:com/tacz/guns/api/client/animation/gltf/NodeModel",
+            "cls:com/tacz/guns/api/client/other/GunModelTypeManager",
+            "cls:com/tacz/guns/client/animation/third/PlayerModelRenderState",
+            "cls:com/tacz/guns/client/model/BedrockAmmoModel",
+            "cls:com/tacz/guns/client/model/BedrockAnimatedModel",
+            "cls:com/tacz/guns/client/model/BedrockAttachmentModel",
+            "cls:com/tacz/guns/client/model/BedrockGunModel",
+            "cls:com/tacz/guns/client/model/DisplayGunModelInstance",
+            "cls:com/tacz/guns/client/model/ExternalGunModel",
+            "cls:com/tacz/guns/client/model/GunModelConstant",
+            "cls:com/tacz/guns/client/model/SlotModel",
+            "cls:com/tacz/guns/client/model/bedrock/BedrockModel",
+            "cls:com/tacz/guns/client/model/bedrock/ModelRendererWrapper",
+            "cls:com/tacz/guns/client/model/listener/model/ModelAdditionalMagazineListener",
+            "cls:com/tacz/guns/client/model/listener/model/ModelRotateListener",
+            "cls:com/tacz/guns/client/model/listener/model/ModelScaleListener",
+            "cls:com/tacz/guns/client/model/listener/model/ModelTranslateListener",
+            "cls:com/tacz/guns/client/resource/ExternalModelAssets",
+            "cls:com/tacz/guns/client/resource/pojo/animation/gltf/RawAnimationStructure",
+            "cls:com/tacz/guns/client/resource/pojo/model/BedrockModelPOJO",
+            "cls:com/tacz/guns/client/resource/pojo/model/GeometryModelLegacy",
+            "cls:com/tacz/guns/client/resource/pojo/model/GeometryModelNew",
+            "cls:com/tacz/guns/compat/playeranimator/animation/PlayerAnimatorModelState",
+            "cls:com/tacz/guns/mixin/client/HumanoidModelMixin",
+            "cls:com/tacz/guns/mixin/client/PlayerModelMixin"
+          ],
+          "by_disposition": {
+            "C4": 4,
+            "C5": 26
+          },
+          "state_machine_units": [
+            "cls:com/tacz/guns/api/client/animation/AnimationController",
+            "cls:com/tacz/guns/api/client/animation/AnimationPlan",
+            "cls:com/tacz/guns/api/client/animation/ObjectAnimationRunner",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateContext",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaStateMachineFactory",
+            "cls:com/tacz/guns/client/animation/statemachine/GunAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ItemAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ThrowableAnimationStateContext"
+          ]
+        },
+        "target": {
+          "hooks": [
+            "standalone_models",
+            "item_model_property",
+            "render_hand_pose",
+            "camera_pose"
+          ],
+          "helpers": [
+            "draw_item",
+            "draw_cube"
+          ],
+          "capability_ids": [
+            "animation_driver"
+          ],
+          "api_tier": "data",
+          "capability_gap": []
+        },
+        "contract": {
+          "authority": "server",
+          "sync_boundary": "静态姿态由物品组件 + 条件属性决定，不需要逐帧同步",
+          "presentation": [
+            "item_model"
+          ],
+          "requires_animation_driver": false
+        }
+      },
+      "verdict": "portable",
+      "gaps": [],
+      "evidence": [
+        "jar:73 个 .animation.json",
+        "锚点规则:orchestration/slice-anchors.json#static_pose",
+        "index:work/index.source.json (unit_id 类名匹配)",
+        "delta:work/delta.source.json (disposition)",
+        "horizon:native-hooks.json (hook/helper 名称校验)",
+        "target/horizon.capabilities.json (unbound: animation_driver, block_query, collision_query, cooldown, entity_query, entity_state, network_sync, particle_emit, persistent_data, random_source, scheduled_task)"
+      ]
+    },
+    {
+      "slice_id": "locomotion",
+      "anchor": "locomotion",
+      "summary": "移动相关：跑 / 走 / 匍匐 / 滑铲的姿态混合",
+      "shared_states": [
+        "crawl",
+        "crawl_bipod",
+        "crawl_bipod_end",
+        "crawl_bolt",
+        "crawl_end",
+        "crawl_handdown",
+        "crawl_handup",
+        "crawl_start",
+        "run",
+        "run_end",
+        "run_hold",
+        "run_start",
+        "slide",
+        "slide_back",
+        "slide_idle",
+        "walk_backward",
+        "walk_forward",
+        "walk_sideway"
+      ],
+      "state_parameters": {
+        "raw_count": 18,
+        "canonical_count": 15,
+        "parameters": [
+          "stage_index"
+        ],
+        "roundtrip_closed": true
+      },
+      "layers": {
+        "assets": {
+          "animation_files": 15,
+          "animation_states": [
+            "crawl",
+            "crawl_bipod",
+            "crawl_bipod_end",
+            "crawl_bolt",
+            "crawl_end",
+            "crawl_handdown",
+            "crawl_handup",
+            "crawl_start",
+            "run",
+            "run_end",
+            "run_hold",
+            "run_start",
+            "slide",
+            "slide_back",
+            "slide_idle",
+            "walk_backward",
+            "walk_forward",
+            "walk_sideway"
+          ],
+          "bone_names": [
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "2",
+            "3",
+            "4",
+            "416d_bolt",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "9mm2",
+            "Bolt",
+            "CR",
+            "Db",
+            "Deagle",
+            "Deagle_golden",
+            "G3_bolt",
+            "G3_default_body",
+            "L",
+            "MagazineCatch",
+            "Mp5",
+            "R",
+            "Release",
+            "Rotate",
+            "Safety",
+            "add_belt_1",
+            "add_belt_2",
+            "add_belt_3",
+            "add_belt_4",
+            "add_belt_5",
+            "add_belt_6",
+            "add_belt_7",
+            "add_belt_8",
+            "add_bullet_belt_1"
+          ],
+          "geometry_files": 12,
+          "display_files": 13,
+          "index_files": 13,
+          "sound_events": [
+            "bolt"
+          ]
+        },
+        "code": {
+          "unit_count": 9,
+          "units": [
+            "cls:com/tacz/guns/client/gameplay/LocalPlayerCrawl",
+            "cls:com/tacz/guns/client/gameplay/LocalPlayerSprint",
+            "cls:com/tacz/guns/client/gui/components/refit/HSVSliderGroup",
+            "cls:com/tacz/guns/client/input/CrawlKey",
+            "cls:com/tacz/guns/entity/shooter/LivingEntityCrawl",
+            "cls:com/tacz/guns/entity/shooter/LivingEntitySprint",
+            "cls:com/tacz/guns/network/message/ClientMessagePlayerCrawl",
+            "cls:com/tacz/guns/resource/modifier/custom/ExtraMovementModifier",
+            "cls:com/tacz/guns/resource/pojo/data/gun/MoveSpeed"
+          ],
+          "by_disposition": {
+            "C3": 5,
+            "C4": 2,
+            "C5": 2
+          },
+          "state_machine_units": [
+            "cls:com/tacz/guns/api/client/animation/AnimationController",
+            "cls:com/tacz/guns/api/client/animation/AnimationPlan",
+            "cls:com/tacz/guns/api/client/animation/ObjectAnimationRunner",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateContext",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaStateMachineFactory",
+            "cls:com/tacz/guns/client/animation/statemachine/GunAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ItemAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ThrowableAnimationStateContext"
+          ]
+        },
+        "target": {
+          "hooks": [
+            "movement_input",
+            "player_tick",
+            "living_jump",
+            "frame",
+            "camera_pose"
+          ],
+          "helpers": [
+            "held"
+          ],
+          "capability_ids": [
+            "animation_driver"
+          ],
+          "api_tier": "client",
+          "capability_gap": [
+            "animation_driver"
+          ],
+          "workaround": {
+            "target_reality": "Horizon 26.3 源码实测：物品/枪械模型无骨骼；ModelPart 只支持逐部件静态姿态(x/y/z, x_rot/y_rot/z_rot, scale, children)，关键帧插值仅存在于 cosmetics emote 与 vanilla CEM；全仓无 Bedrock geometry / glTF 读取器",
+            "phase_a": "离散状态优先：minecraft:condition(Custom 仅布尔) / minecraft:select(枚举) / range_dispatch(数值) + standalone_models 静态注册，保证逻辑闭环",
+            "phase_b": "render_hand(cancel) 屏蔽原手 → render_hand_pose 取 PoseStack(整手 7 个 f32) → ModelPart 逐部件姿态 + hand_drawn/world_drawn 自绘逼近时序",
+            "limitations": [
+              "无骨骼 / 蒙皮 / 关键帧插值，不能宣称已支持动画",
+              "render_hand cancel 后引擎不提供替身，必须自绘整枪",
+              "ConditionProperty::Custom 仅布尔，枚举需 select 嵌套",
+              "0.5 'Bedrock geometry + animations' 仅声明未实现",
+              "第三方自定义 property / item model type 会被 item_model/foreign.rs:12-79 静默降级：condition→on_false、select→fallback、range_dispatch→按 0 求值、special→base；mod 自身逻辑不执行",
+              "Bedrock geometry 的 bones/parent/pivot/rotation 无法无损表达为 Java cuboid model；只能按部件近似并显式标有损"
+            ],
+            "evidence": [
+              "crates/horizon-assets/src/item_model.rs:660 ConditionProperty::Custom",
+              "crates/horizon-assets/src/item_model.rs:409 range_dispatch / :470 condition",
+              "crates/horizon-client/src/game/native_hooks.rs ModelPart / native_layer_definitions",
+              "crates/horizon-mods/src/manifest.rs:20-22 APIS 止于 0.1/0.2/0.3",
+              "docs/modpacks.md:183 0.5 Bedrock geometry + animations 为 planned"
+            ]
+          }
+        },
+        "contract": {
+          "authority": "server",
+          "sync_boundary": "移动状态由服务端位置/姿态推导；客户端只做表现混合",
+          "presentation": [
+            "skeletal_animation",
+            "camera"
+          ],
+          "requires_animation_driver": true
+        }
+      },
+      "verdict": "needs_workaround",
+      "gaps": [
+        "animation_driver"
+      ],
+      "evidence": [
+        "jar:73 个 .animation.json",
+        "锚点规则:orchestration/slice-anchors.json#locomotion",
+        "index:work/index.source.json (unit_id 类名匹配)",
+        "delta:work/delta.source.json (disposition)",
+        "horizon:native-hooks.json (hook/helper 名称校验)",
+        "target/horizon.capabilities.json (unbound: animation_driver, block_query, collision_query, cooldown, entity_query, entity_state, network_sync, particle_emit, persistent_data, random_source, scheduled_task)"
+      ]
+    },
+    {
+      "slice_id": "melee",
+      "anchor": "melee",
+      "summary": "近战 / 刺刀：伤害事件与动画同步",
+      "shared_states": [
+        "melee_bayonet_1",
+        "melee_bayonet_2",
+        "melee_bayonet_3",
+        "melee_stock"
+      ],
+      "state_parameters": {
+        "raw_count": 4,
+        "canonical_count": 2,
+        "parameters": [
+          "stage_index"
+        ],
+        "roundtrip_closed": true
+      },
+      "layers": {
+        "assets": {
+          "animation_files": 1,
+          "animation_states": [
+            "melee_bayonet_1",
+            "melee_bayonet_2",
+            "melee_bayonet_3",
+            "melee_stock"
+          ],
+          "bone_names": [
+            "1",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "2",
+            "3",
+            "4",
+            "416d_bolt",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "9mm2",
+            "Bolt",
+            "CR",
+            "Db",
+            "Deagle",
+            "Deagle_golden",
+            "G3_bolt",
+            "G3_default_body",
+            "L",
+            "MagazineCatch",
+            "Mp5",
+            "R",
+            "Release",
+            "Rotate",
+            "Safety",
+            "add_belt_1",
+            "add_belt_2",
+            "add_belt_3",
+            "add_belt_4",
+            "add_belt_5",
+            "add_belt_6",
+            "add_belt_7",
+            "add_belt_8",
+            "add_bullet_belt_1"
+          ],
+          "geometry_files": 0,
+          "display_files": 0,
+          "index_files": 0,
+          "sound_events": []
+        },
+        "code": {
+          "unit_count": 12,
+          "units": [
+            "cls:com/tacz/guns/api/event/common/GunMeleeEvent",
+            "cls:com/tacz/guns/client/gameplay/LocalPlayerMelee",
+            "cls:com/tacz/guns/client/input/MeleeKey",
+            "cls:com/tacz/guns/debug/GunMeleeDebug",
+            "cls:com/tacz/guns/entity/shooter/LivingEntityMelee",
+            "cls:com/tacz/guns/network/message/ClientMessagePlayerMelee",
+            "cls:com/tacz/guns/network/message/event/ServerMessageGunMelee",
+            "cls:com/tacz/guns/resource/modifier/custom/RecoilPushModifier",
+            "cls:com/tacz/guns/resource/pojo/data/attachment/MeleeData",
+            "cls:com/tacz/guns/resource/pojo/data/gun/GunDefaultMeleeData",
+            "cls:com/tacz/guns/resource/pojo/data/gun/GunMeleeData",
+            "cls:com/tacz/guns/resource/pojo/data/gun/GunRecoilPushData"
+          ],
+          "by_disposition": {
+            "C3": 7,
+            "C4": 5
+          },
+          "state_machine_units": [
+            "cls:com/tacz/guns/api/client/animation/AnimationController",
+            "cls:com/tacz/guns/api/client/animation/AnimationPlan",
+            "cls:com/tacz/guns/api/client/animation/ObjectAnimationRunner",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateContext",
+            "cls:com/tacz/guns/api/client/animation/statemachine/AnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationState",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaAnimationStateMachine",
+            "cls:com/tacz/guns/api/client/animation/statemachine/LuaStateMachineFactory",
+            "cls:com/tacz/guns/client/animation/statemachine/GunAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ItemAnimationStateContext",
+            "cls:com/tacz/guns/client/animation/statemachine/ThrowableAnimationStateContext"
+          ]
+        },
+        "target": {
+          "hooks": [
+            "attack_entity",
+            "left_click_block",
+            "use_item",
+            "frame"
+          ],
+          "helpers": [
+            "held"
+          ],
+          "capability_ids": [
+            "animation_driver"
+          ],
+          "api_tier": "logic",
+          "capability_gap": [
+            "animation_driver"
+          ],
+          "workaround": {
+            "target_reality": "Horizon 26.3 源码实测：物品/枪械模型无骨骼；ModelPart 只支持逐部件静态姿态(x/y/z, x_rot/y_rot/z_rot, scale, children)，关键帧插值仅存在于 cosmetics emote 与 vanilla CEM；全仓无 Bedrock geometry / glTF 读取器",
+            "phase_a": "离散状态优先：minecraft:condition(Custom 仅布尔) / minecraft:select(枚举) / range_dispatch(数值) + standalone_models 静态注册，保证逻辑闭环",
+            "phase_b": "render_hand(cancel) 屏蔽原手 → render_hand_pose 取 PoseStack(整手 7 个 f32) → ModelPart 逐部件姿态 + hand_drawn/world_drawn 自绘逼近时序",
+            "limitations": [
+              "无骨骼 / 蒙皮 / 关键帧插值，不能宣称已支持动画",
+              "render_hand cancel 后引擎不提供替身，必须自绘整枪",
+              "ConditionProperty::Custom 仅布尔，枚举需 select 嵌套",
+              "0.5 'Bedrock geometry + animations' 仅声明未实现",
+              "第三方自定义 property / item model type 会被 item_model/foreign.rs:12-79 静默降级：condition→on_false、select→fallback、range_dispatch→按 0 求值、special→base；mod 自身逻辑不执行",
+              "Bedrock geometry 的 bones/parent/pivot/rotation 无法无损表达为 Java cuboid model；只能按部件近似并显式标有损"
+            ],
+            "evidence": [
+              "crates/horizon-assets/src/item_model.rs:660 ConditionProperty::Custom",
+              "crates/horizon-assets/src/item_model.rs:409 range_dispatch / :470 condition",
+              "crates/horizon-client/src/game/native_hooks.rs ModelPart / native_layer_definitions",
+              "crates/horizon-mods/src/manifest.rs:20-22 APIS 止于 0.1/0.2/0.3",
+              "docs/modpacks.md:183 0.5 Bedrock geometry + animations 为 planned"
+            ]
+          }
+        },
+        "contract": {
+          "authority": "server",
+          "sync_boundary": "命中判定服务端权威；动画按事件重放",
+          "presentation": [
+            "skeletal_animation",
+            "sound"
+          ],
+          "requires_animation_driver": true
+        }
+      },
+      "verdict": "needs_workaround",
+      "gaps": [
+        "animation_driver"
+      ],
+      "evidence": [
+        "jar:73 个 .animation.json",
+        "锚点规则:orchestration/slice-anchors.json#melee",
+        "index:work/index.source.json (unit_id 类名匹配)",
+        "delta:work/delta.source.json (disposition)",
+        "horizon:native-hooks.json (hook/helper 名称校验)",
+        "target/horizon.capabilities.json (unbound: animation_driver, block_query, collision_query, cooldown, entity_query, entity_state, network_sync, particle_emit, persistent_data, random_source, scheduled_task)"
+      ]
+    }
+  ],
+  "unmatched_states": [],
+  "validation": {
+    "target_symbols_resolved": true,
+    "unknown_hooks": [],
+    "unknown_helpers": [],
+    "closed": true
+  }
+}

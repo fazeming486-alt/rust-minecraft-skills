@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1.0",
   "version": "0.1.0",
-  "note": "C1–C6 处置标签 → Horizon API tier 与落地形态。由 ADR 0005 决策 2 定义；本表是路由数据，不改五维分类本身。",
+  "note": "C1–C6 处置标签 → Horizon API tier 与落地形态。由 ADR 0005 决策 2 定义；本表是路由数据，不改五维分类本身。v0.7 源码校准：tier(data/logic/machines/deep/client) 来自 docs/modpacks.md 的移植分层，由 crates/horizon-port-pack/src/classify.rs 消费；native-hooks.json 的 mod_api 没有 tier 字段（434 条全为 None），不要把两者混为一谈。routes[].typical_hooks 全部经 native-hooks.json 校验存在。",
   "tiers": {
     "data": {"api": "0.2", "shape": "content mod .hmod", "status": "implemented"},
     "logic": {"api": "0.3", "shape": "native mod .hnmod + hooks", "status": "implemented"},
@@ -56,6 +56,6 @@
     }
   },
   "known_gaps": [
-    {"capability": "animation_driver", "affects": ["C4", "C5"], "status": "unbound", "plan": "docs/04-roadmap.md M2"}
+    {"capability": "animation_driver", "affects": ["C4", "C5"], "status": "unbound", "plan": "docs/06-m2-execution.md；两阶段 workaround 见 orchestration/slice-anchors.json#workaround_catalog.skeletal_animation；跨层切片 verdict 见 reports/m2-feature-slices.json"}
   ]
 }

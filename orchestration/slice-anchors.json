@@ -1,0 +1,171 @@
+{
+  "schema_version": "0.1.0",
+  "version": "0.1.0",
+  "note": "跨层特性切片的锚点规则源。锚点 = 一个用户可感知的行为特性；构建脚本以 state_prefixes 从动画资产侧、code_tokens 从 Java 单元侧、target_hooks/helpers 从 Horizon 侧做确定性关联。规则与实现分离，换 mod 只改本文件。注意：anchor.api_tier 是 docs/modpacks.md 的移植分层建议(data/logic/machines/deep/client)，不是 native-hooks.json 的字段——实测 434 条 hook 的 mod_api 都没有 tier 字段。",
+  "invariants": [
+    "锚点按数组顺序匹配，一个动画状态只归入首个命中的锚点",
+    "未命中任何锚点的状态必须计入 unmatched，不得静默丢弃",
+    "target_hooks / target_helpers 必须存在于 Horizon native-hooks.json，否则构建期报错",
+    "shared_states 是契约的唯一来源；代码侧与目标侧都只能引用它，不得各自定义状态"
+  ],
+  "workaround_catalog": {
+    "skeletal_animation": {
+      "target_reality": "Horizon 26.3 源码实测：物品/枪械模型无骨骼；ModelPart 只支持逐部件静态姿态(x/y/z, x_rot/y_rot/z_rot, scale, children)，关键帧插值仅存在于 cosmetics emote 与 vanilla CEM；全仓无 Bedrock geometry / glTF 读取器",
+      "phase_a": "离散状态优先：minecraft:condition(Custom 仅布尔) / minecraft:select(枚举) / range_dispatch(数值) + standalone_models 静态注册，保证逻辑闭环",
+      "phase_b": "render_hand(cancel) 屏蔽原手 → render_hand_pose 取 PoseStack(整手 7 个 f32) → ModelPart 逐部件姿态 + hand_drawn/world_drawn 自绘逼近时序",
+      "limitations": [
+        "无骨骼 / 蒙皮 / 关键帧插值，不能宣称已支持动画",
+        "render_hand cancel 后引擎不提供替身，必须自绘整枪",
+        "ConditionProperty::Custom 仅布尔，枚举需 select 嵌套",
+        "0.5 'Bedrock geometry + animations' 仅声明未实现",
+        "第三方自定义 property / item model type 会被 item_model/foreign.rs:12-79 静默降级：condition→on_false、select→fallback、range_dispatch→按 0 求值、special→base；mod 自身逻辑不执行",
+        "Bedrock geometry 的 bones/parent/pivot/rotation 无法无损表达为 Java cuboid model；只能按部件近似并显式标有损"
+      ],
+      "evidence": [
+        "crates/horizon-assets/src/item_model.rs:660 ConditionProperty::Custom",
+        "crates/horizon-assets/src/item_model.rs:409 range_dispatch / :470 condition",
+        "crates/horizon-client/src/game/native_hooks.rs ModelPart / native_layer_definitions",
+        "crates/horizon-mods/src/manifest.rs:20-22 APIS 止于 0.1/0.2/0.3",
+        "docs/modpacks.md:183 0.5 Bedrock geometry + animations 为 planned"
+      ]
+    }
+  },
+  "state_parameter_rules": [
+    {
+      "id": "magazine_level",
+      "pattern": "_xmag(?:_(\\d+))?$",
+      "parameter": "magazine_level",
+      "default": 1,
+      "note": "扩展弹匣等级把 reload_tactical_xmag_1..23 这类状态折叠为参数，而不是 23 个独立状态"
+    },
+    {
+      "id": "stage_suffix",
+      "pattern": "_(intro|loop|end)(?:_|$)|_(\\d+)$",
+      "parameter": "stage_index",
+      "default": 0,
+      "note": "分段动画（reload_intro / reload_loop / reload_end）折叠为同一状态的分段索引"
+    }
+  ],
+  "anchors": [
+    {
+      "id": "reload",
+      "summary": "换弹：服务端权威的弹药状态机 + 客户端分段动画 + 音效",
+      "state_prefixes": ["reload", "cylinder"],
+      "code_tokens": ["Reload", "Magazine", "Ammo", "Inventory"],
+      "target_hooks": ["player_tick", "living_entity_use_item_finish", "living_entity_use_item_tick", "input_key", "mouse_button_pre", "frame"],
+      "target_helpers": ["held", "count_items", "carried_stack", "take_items"],
+      "presentation": ["skeletal_animation", "sound", "hud"],
+      "authority": "server",
+      "sync_boundary": "只同步弹药数与阶段；客户端不得自行推进换弹阶段",
+      "api_tier": "logic"
+    },
+    {
+      "id": "shoot",
+      "summary": "射击：输入 → 服务端弹道/伤害 → 客户端后坐与枪口表现",
+      "state_prefixes": ["shoot", "cocked_shoot", "over_heat"],
+      "code_tokens": ["Shoot", "Fire", "Recoil", "Projectile", "Damage"],
+      "target_hooks": ["mouse_button_pre", "input_key", "arrow_loose", "arrow_nock", "living_incoming_damage", "critical_hit", "living_get_projectile"],
+      "target_helpers": ["held", "flame_particle", "draw_quad"],
+      "presentation": ["skeletal_animation", "particle", "sound", "camera_pose"],
+      "authority": "server",
+      "sync_boundary": "命中判定与伤害服务端权威；后坐/粒子/音效可由客户端按事件重放",
+      "api_tier": "logic"
+    },
+    {
+      "id": "aim",
+      "summary": "瞄准：FOV / 相机 / 移动减速与 ADS 姿态联动",
+      "state_prefixes": ["aim", "ADS", "sight", "walk_aiming"],
+      "code_tokens": ["Aim", "Scope", "Fov", "Zoom", "Sight"],
+      "target_hooks": ["mouse_button_pre", "movement_input", "compute_fov", "compute_fov_modifier", "camera_pose", "frame"],
+      "target_helpers": ["held"],
+      "presentation": ["fov", "camera", "skeletal_animation"],
+      "authority": "client_with_server_validation",
+      "sync_boundary": "瞄准状态影响命中散布，需把布尔/数值状态上报服务端；FOV 与相机纯客户端",
+      "api_tier": "client"
+    },
+    {
+      "id": "bolt",
+      "summary": "拉栓 / 上膛：短时序机械动作 + 弹壳与音效",
+      "state_prefixes": ["bolt", "cock", "charge", "charg", "static_bolt", "static_pump", "handle"],
+      "code_tokens": ["Bolt", "Cock", "Charge", "Pump", "Handle"],
+      "target_hooks": ["player_tick", "living_entity_use_item_tick", "input_key", "frame"],
+      "target_helpers": ["held", "flame_particle"],
+      "presentation": ["skeletal_animation", "sound", "particle"],
+      "authority": "server",
+      "sync_boundary": "上膛完成事件服务端权威；动画可按事件重放",
+      "api_tier": "logic"
+    },
+    {
+      "id": "inspect",
+      "summary": "检视：纯表现动画，不改权威状态",
+      "state_prefixes": ["inspect", "spin", "melee_push"],
+      "code_tokens": ["Inspect", "Spin"],
+      "target_hooks": ["input_key", "frame", "render_hand_pose"],
+      "target_helpers": ["held"],
+      "presentation": ["skeletal_animation", "sound"],
+      "authority": "client",
+      "sync_boundary": "纯客户端表现，禁止进入服务端权威状态",
+      "api_tier": "client"
+    },
+    {
+      "id": "equip",
+      "summary": "切出 / 收起：物品切换触发的模型与动画切换",
+      "state_prefixes": ["draw", "put_away", "put_down"],
+      "code_tokens": ["Draw", "PutAway", "Equip", "Switch"],
+      "target_hooks": ["item_model_property", "standalone_models", "render_hand", "hand_drawn", "frame"],
+      "target_helpers": ["held", "carried_stack"],
+      "presentation": ["item_model", "skeletal_animation", "sound"],
+      "authority": "server",
+      "sync_boundary": "手持物品服务端权威；模型条件属性由客户端按组件状态求值",
+      "api_tier": "data"
+    },
+    {
+      "id": "fire_mode",
+      "summary": "射击模式 / 保险 / 配件切换：离散状态驱动静态模型分支",
+      "state_prefixes": ["switch", "static_semi", "static_auto", "static_burst", "static_VG", "static_AFG", "sight_on", "sight_off", "handle_on", "handle_off"],
+      "code_tokens": ["FireMode", "Switch", "Attachment", "Adapter", "Mode"],
+      "target_hooks": ["item_model_property", "standalone_models", "input_key", "mouse_scrolling"],
+      "target_helpers": ["held", "attachments"],
+      "presentation": ["item_model", "hud"],
+      "authority": "server",
+      "sync_boundary": "模式位可编码进物品组件，由 minecraft:condition 在客户端求值",
+      "api_tier": "data"
+    },
+    {
+      "id": "static_pose",
+      "summary": "静态待机姿态与持枪骨架：最接近可直接映射的一组",
+      "state_prefixes": ["static", "idle", "new", "static_state"],
+      "code_tokens": ["Model", "Pose", "AnimationModel", "AnimationStructure"],
+      "target_hooks": ["standalone_models", "item_model_property", "render_hand_pose", "camera_pose"],
+      "target_helpers": ["draw_item", "draw_cube"],
+      "presentation": ["item_model"],
+      "authority": "server",
+      "sync_boundary": "静态姿态由物品组件 + 条件属性决定，不需要逐帧同步",
+      "api_tier": "data"
+    },
+    {
+      "id": "locomotion",
+      "summary": "移动相关：跑 / 走 / 匍匐 / 滑铲的姿态混合",
+      "state_prefixes": ["run", "walk", "crawl", "slide"],
+      "code_tokens": ["Move", "Sprint", "Crawl", "Slide", "Walk", "Locomotion"],
+      "target_hooks": ["movement_input", "player_tick", "living_jump", "frame", "camera_pose"],
+      "target_helpers": ["held"],
+      "presentation": ["skeletal_animation", "camera"],
+      "authority": "server",
+      "sync_boundary": "移动状态由服务端位置/姿态推导；客户端只做表现混合",
+      "api_tier": "client"
+    },
+    {
+      "id": "melee",
+      "summary": "近战 / 刺刀：伤害事件与动画同步",
+      "state_prefixes": ["melee", "push"],
+      "code_tokens": ["Melee", "Bayonet", "Push", "Attack"],
+      "target_hooks": ["attack_entity", "left_click_block", "use_item", "frame"],
+      "target_helpers": ["held"],
+      "presentation": ["skeletal_animation", "sound"],
+      "authority": "server",
+      "sync_boundary": "命中判定服务端权威；动画按事件重放",
+      "api_tier": "logic"
+    }
+  ]
+}

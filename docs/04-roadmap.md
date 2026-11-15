@@ -96,22 +96,23 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 
 ### M2 · 美术链与 `animation_driver` 缺口
 
-> **v0.5 状态：规划完成**，详见 `docs/05-m2-plan.md`。12 个任务包已生成，2 个调研任务已完成、10 个待派发；分工机制见 ADR 0007。
+> **v0.7 状态：已执行并闭合**，详见 `docs/06-m2-execution.md` 与 `docs/adr/0009`。17 个任务包 / 4 wave 全部完成，`collect-results` verdict = **COMPLETE**（0 缺失 / 0 越界）。
 
 | 项 | 内容 |
 |---|---|
-| 交付 | TaCZ 资产清单与格式差异报告（Bedrock geometry / glTF 动画 / 贴图通道 / 音效）；`art-asset-classify` 执行层；0.5 落地前的两阶段渲染方案；跨层契约 `shared_states` 用例 |
-| 验收 | 资产完整性清单闭合；逻辑状态机与动画状态机状态枚举一致；产出「不依赖 0.5」的最小可玩表现路径 |
-| 依赖 | M0（三维度门禁：`technical-only` + `local-only`）、M1 |
-| 风险 | **全项目最大技术风险**：当前 Horizon 无任何骨骼动画 hook/helper；0.5 为 Planned 未实现（`docs/modpacks.md:183`），`roadmap.json:712` 的 set aside 只针对整包移植总目标，不可据此判定 0.5 状态（M2 子 agent 复核纠正，见 ADR 0007）。不赌排期，先做 `item_model_property` + `standalone_models` 压缩姿态，再用 `render_hand`/`render_hand_pose`/draw-list 自建插值 |
+| 交付 | 三路 Horizon Rust 源码探针 skill（`06-target-study`）；`build-feature-slices`（10 个四层切片）；`technical-convert-assets`（5 个 roundtrip 闭合的转换器 / 3683 源文件 → 3215 输出）；`reports/m2-feature-slices.json`、`reports/m2-conversion.json`；ADR 0009 与执行报告 |
+| 验收 | 切片四层齐全、`unmatched = 0`、roundtrip 闭合、目标侧符号全解析；5 个转换器全部 roundtrip 闭合；产物只留 `work/`；`validate.py` 67 项全绿 |
+| 依赖 | M0（三维度门禁）、M1；政策断点已在 v0.7 修复（角色 `allowed_actions` 与策略白名单同步，并加 3 条回归检查） |
+| 风险 | **硬缺口未消除，只定位得更精确**：Horizon 有 `ModelPart` 逐部件静态姿态与变换栈，但**无骨骼/蒙皮/关键帧插值与动画驱动**；源码级全仓 0 命中证明无 Bedrock geometry / glTF / .bbmodel 读取器。0.5 为 Planned 未实现（`docs/modpacks.md:183`、`crates/horizon-mods/src/manifest.rs:20-22`），`roadmap.json:712` 的 set aside 只针对整包移植总目标。两阶段 workaround 见 `orchestration/slice-anchors.json#workaround_catalog`，**不得写成「已支持动画」**。`geometry_ir` / `bone_tracks` 标 `unbound`，只是中间表示 |
 
 ### M3 · 对接官方 harness
 
 | 项 | 内容 |
 |---|---|
-| 交付 | `diff-test-harness` 接入 `horizon-ctl`；dev-only Java oracle 录制格式；状态序列重放比对；视觉快照用例 |
+| 交付 | `diff-test-harness` **对接现成的** `horizon-port-pack` harness；产出录制契约、状态序列差分断言与视觉快照用例 |
 | 验收 | 至少一个 C1 单元完成「Java oracle 录制 → Rust 侧重放」闭环；差异可定位到 unit_id 与 tick |
 | 依赖 | M1、M2；需要可运行的 Horizon 实例（工作区已有 `undeadwar-horizon/bin`，D 盘） |
+| v0.7 修正 | **不重造 harness**：源码研读确认 `crates/horizon-port-pack/src/oracle.rs`(1027 行)、`report.rs`(816 行，含 `coverage.json`)、`tools/mod_port_harness.py` 已实现 dev-only Java oracle 与 coverage。本里程碑改为对接与产出断言格式 |
 | 风险 | Java oracle 需要 26.3 与 1.20.1 的行为差异对齐；先选不依赖版本语义的纯算法单元 |
 
 ### M4 · 第二样本与泛化验证
@@ -125,15 +126,18 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 
 ## 4. 度量（每次里程碑后记录）
 
-| 指标 | 当前值（v0.5） | 目标 |
+| 指标 | 当前值（v0.7） | 目标 |
 |---|---|---|
 | C6 占比（源码/字节码） | 0 / 0（单一样本） | 第二样本上仍 < 0.05 |
 | 双轨一致率 | 0.8734 | 逐条归因后 ≥ 0.90 |
-| Horizon 能力缺口 | 1（`animation_driver`） | 明确临时方案，不假装已解决 |
+| Horizon 能力缺口 | 1（`animation_driver`，源码级定位） | 明确临时方案，不假装已解决 |
 | policy 覆盖率 | 100% 样本过门禁 | 解析失败强制 review |
 | NeoForge → hook 映射 | 162 条 / 156 事件 | 随 Horizon 快照重生成 |
-| 子 agent 任务包 | 12（4 wave / 2 worker，2 已完成） | M2 全部 result 闭合 |
-| `validate.py` 检查数 | 49 | 随里程碑递增，始终全绿 |
+| 子 agent 任务包 | **17（4 wave，17 完成 / COMPLETE）** | 下一轮真正分给独立子 agent 验证并行收益 |
+| 跨层切片 | **10（157→110 状态，2 portable / 8 needs_workaround）** | 第二样本检验锚点是否需扩展 |
+| 格式等价转换 | **5 个转换器 / 3683 源文件 / roundtrip 全闭合 / 1 partial + 2 unbound + 2 bound** | 内容级转换需在可运行环境验证 |
+| 目标侧源码探针 | **3 路 / 25 文件 / 424 声明 / missing_files 全空** | 随 Horizon 快照重跑比对 |
+| `validate.py` 检查数 | **67** | 随里程碑递增，始终全绿 |
 
 **合规成本实测（M0，TaCZ 799 单元，同一套 20 条规则）**：
 
@@ -164,3 +168,4 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 0006 | 方案 C：按许可证分档的合规门禁（资产侧判定已被 0008 修正） |
 | 0007 | 子 agent 分工：确定性复杂度 + 自包含任务包 |
 | 0008 | **合规模型三维度：技术性转换可做、分发受限（v0.6）** |
+| 0009 | **跨层特性切片、目标侧源码研读三路探针、真实格式等价转换与政策断点修复（v0.7）** |

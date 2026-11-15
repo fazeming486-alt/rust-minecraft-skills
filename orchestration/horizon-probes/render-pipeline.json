@@ -1,0 +1,50 @@
+{
+  "id": "render-pipeline",
+  "title": "Horizon 客户端渲染 / 第一人称手部 / 姿态管线",
+  "note": "探针配置：只声明要取证的文件与符号，扫描逻辑在 tools/lib_horizon_source.py。换 Horizon 快照后重跑即可对比。",
+  "files": [
+    {
+      "path": "crates/horizon-client/src/game/native_hooks.rs",
+      "declarations": ["Game", "GameLevel", "NativePlayer", "NativeClock", "NativeShake", "OpenNativeScreen"],
+      "patterns": ["render_hand", "render_hand_pose", "hand_drawn", "item_model_property", "standalone_models", "ModelPart", "PoseStack", "cancel"],
+      "absence_patterns": ["skeleton", "skinning", "gltf", "bedrock geometry", "keyframe"]
+    },
+    {
+      "path": "crates/horizon-client/src/game/item_draw.rs",
+      "declarations": ["ItemEnv", "SpecialHost", "Game", "IconPainter"],
+      "patterns": ["hand", "pose", "model", "item_model_property"],
+      "absence_patterns": ["skeleton", "skinning"]
+    },
+    {
+      "path": "crates/horizon-client/src/game/frame_geometry.rs",
+      "declarations": ["Game"],
+      "patterns": ["item_model_property", "standalone_models"],
+      "absence_patterns": ["skeleton"]
+    },
+    {
+      "path": "crates/horizon-client-render/src/models.rs",
+      "declarations": ["register_standalone", "standalone", "ModelInstance", "PreparedModels", "prepare", "instance", "load_visibility"],
+      "patterns": ["ModelPart", "x_rot", "y_rot", "z_rot", "children", "scale"],
+      "absence_patterns": ["bone", "skeleton", "skinning", "gltf"]
+    },
+    {
+      "path": "crates/horizon-client-render/src/models/catalog.rs",
+      "declarations": [],
+      "patterns": ["item_model_property", "standalone_models", "ModelPart"],
+      "absence_patterns": ["bone", "gltf"]
+    },
+    {
+      "path": "crates/horizon-hooks/src/lib.rs",
+      "declarations": [],
+      "patterns": ["hook", "contract"],
+      "absence_patterns": []
+    }
+  ],
+  "tree_globs": ["crates/horizon-client-render/**/*.rs", "crates/horizon-assets/**/*.rs", "crates/horizon-client/src/game/*.rs"],
+  "tree_keywords": ["gltf|GLTFLoader", "BedrockGeometry|bedrock[_ ]geometry", "bone_hierarchy|skeleton_model|joint_matrices|skin_weights", "skinning|keyframe_interpolat", "ModelPart"],
+  "acceptance": [
+    "render_hand / render_hand_pose / item_model_property / standalone_models 的实现文件与行号可查",
+    "tree_keywords 命中数如实记录，用于证明骨骼动画能力缺席",
+    "missing_files 为空或显式列出快照差异"
+  ]
+}

@@ -29,7 +29,7 @@
   "modes": {
     "full-inspection": {
       "summary": "可读源码正文、class 常量池，以及 mod 自己的数据文件与二进制资产（用于技术性转换）",
-      "allowed_actions": ["read_source_text", "read_class_constant_pool", "extract_string_literals", "extract_annotation_values", "extract_method_names", "extract_type_signatures", "read_jar_metadata", "list_resource_entries", "read_public_docs", "read_own_data_files", "observe_behaviour", "read_asset_data_file", "read_binary_asset", "technical_format_conversion"],
+      "allowed_actions": ["read_source_text", "read_class_constant_pool", "extract_string_literals", "extract_annotation_values", "extract_method_names", "extract_type_signatures", "read_jar_metadata", "list_resource_entries", "read_public_docs", "read_own_data_files", "observe_behaviour", "read_asset_data_file", "read_binary_asset", "technical_format_conversion", "read_horizon_source", "build_cross_layer_slice"],
       "forbidden_actions": ["creative_adaptation", "publish_adapted_material", "commercial_use"],
       "output_fields": ["annotations", "superclasses", "interfaces", "import_prefixes", "referenced_types", "constant_strings", "methods", "declared_kind"]
     },

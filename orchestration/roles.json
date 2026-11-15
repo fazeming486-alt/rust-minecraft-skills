@@ -1,140 +1,194 @@
 {
   "schema_version": "0.1.0",
-  "version": "0.1.0",
-  "note": "子 agent 角色定义。角色只规定「能做什么、不能做什么、交什么」，不规定实现；具体任务由 plan-dispatch 按角色生成。",
+  "version": "0.2.0",
+  "note": "子 agent 角色定义。v0.7 按 ADR 0008 修好政策断点：资产角色现在显式允许读取资产数据并做技术性格式等价转换；新增目标侧源码研读与跨层切片角色。角色只规定「能做什么、不能做什么、交什么」，不规定实现。",
   "invariants": [
     "子 agent 之间禁止直接通信，只通过 dispatch pack 输入与 result 输出交互",
-    "每个任务包必须携带 policy_mode 与 forbidden_actions，子 agent 不得越界",
+    "每个任务包必须携带 policy_mode / transformation / distribution 与 forbidden_actions，子 agent 不得越界",
     "复杂度由确定性评估器给出，禁止子 agent 自评",
     "主 agent 负责规划、冲突裁决与人工关卡；子 agent 只执行并回传证据",
-    "所有 result 必须可追溯到 task_id + input_hash"
+    "所有 result 必须可追溯到 task_id + input_hash",
+    "动画这类跨层特性必须由 cross-layer-slice 角色缝合，禁止资产组与代码组各自宣布完成"
   ],
   "output_kinds": {
     "report": "结构化统计/差异报告，不写 manifest",
     "delta": "manifest 补丁，必须符合 schemas/delta.schema.json",
     "mapping": "映射表或路由表",
-    "review": "人工复核清单"
+    "review": "人工复核清单",
+    "facts": "目标侧源码取证报告（路径、行号、短签名，不含源码正文）",
+    "slice": "跨层特性切片，符合 schemas/feature-slice.schema.json",
+    "conversion": "格式等价转换产物清单与 roundtrip 证明"
   },
   "roles": [
     {
       "id": "art-inventory",
-      "summary": "资产路径级清单与规模统计（不读内容）",
+      "summary": "资产清单与规模统计，可读取资产数据文件做格式判定",
       "allowed_skills": ["fetch-mod-artifact", "policy-gate", "art-asset-classify"],
-      "allowed_actions": ["list_resource_entries", "read_own_data_files"],
+      "allowed_actions": ["list_resource_entries", "read_own_data_files", "read_asset_data_file", "read_binary_asset", "read_public_docs"],
       "input_globs": ["assets/**"],
       "output_kind": "report",
       "can_parallel": true,
-      "acceptance": ["按扩展名与目录给出精确计数", "不复制任何资产内容", "清单闭合可复核"]
+      "acceptance": ["按扩展名与目录给出精确计数", "仓库内报告只含统计，不含资产内容", "清单闭合可复核"]
     },
     {
       "id": "geometry-asset",
-      "summary": "Bedrock geometry 模型格式差异分析",
-      "allowed_skills": ["art-asset-classify", "api-mapping-table"],
-      "allowed_actions": ["list_resource_entries", "read_public_docs"],
+      "summary": "Bedrock geometry → 目标侧等价结构的技术性转换",
+      "allowed_skills": ["art-asset-classify", "technical-convert-assets", "study-horizon-asset-schema"],
+      "allowed_actions": ["list_resource_entries", "read_asset_data_file", "technical_format_conversion", "read_public_docs", "read_own_data_files"],
       "input_globs": ["**/geo_models/**", "**/models/bedrock/**"],
-      "output_kind": "mapping",
+      "output_kind": "conversion",
       "can_parallel": true,
-      "acceptance": ["列出目标侧不接受的格式", "给出可迁移/需转译分类", "不含模型内容"]
+      "acceptance": ["转换 roundtrip 闭合", "目标侧无读取器必须标 unbound", "产物只留 work/"]
     },
     {
       "id": "animation-asset",
-      "summary": "*.animation.json 与动画状态枚举对齐",
-      "allowed_skills": ["art-asset-classify", "calibrate-classification"],
-      "allowed_actions": ["list_resource_entries", "read_public_docs"],
+      "summary": "动画状态枚举提取、参数化压缩与骨骼轨道中间表示",
+      "allowed_skills": ["technical-convert-assets", "build-feature-slices"],
+      "allowed_actions": ["read_asset_data_file", "technical_format_conversion", "list_resource_entries", "read_own_data_files"],
       "input_globs": ["**/animations/**"],
-      "output_kind": "report",
+      "output_kind": "conversion",
       "can_parallel": true,
-      "acceptance": ["动画 id 与模型 id 对齐率统计", "状态枚举候选来自公开文档而非内容解析"]
+      "acceptance": ["状态参数化 roundtrip 闭合", "未匹配状态为 0", "骨骼轨道无消费者时标 unbound"]
     },
     {
       "id": "texture-asset",
-      "summary": "贴图通道、图集与分辨率分类",
-      "allowed_skills": ["art-asset-classify"],
-      "allowed_actions": ["list_resource_entries"],
+      "summary": "贴图原样搬运与通道/图集分类",
+      "allowed_skills": ["technical-convert-assets"],
+      "allowed_actions": ["read_binary_asset", "technical_format_conversion", "list_resource_entries"],
       "input_globs": ["**/textures/**"],
-      "output_kind": "report",
+      "output_kind": "conversion",
       "can_parallel": true,
-      "acceptance": ["按路径模式分组给出计数", "标注透明/发光等需人工确认项"]
+      "acceptance": ["sha256 前后一致", "不做重绘或创造性改编", "产物只留 work/"]
     },
     {
       "id": "audio-asset",
-      "summary": "音效清单与事件表映射",
-      "allowed_skills": ["art-asset-classify"],
-      "allowed_actions": ["list_resource_entries", "read_public_docs"],
+      "summary": "音效原样搬运与 sounds.json 事件表映射口径",
+      "allowed_skills": ["technical-convert-assets"],
+      "allowed_actions": ["read_binary_asset", "read_asset_data_file", "technical_format_conversion", "list_resource_entries"],
       "input_globs": ["**/sounds/**", "**/tacz_sounds/**"],
-      "output_kind": "mapping",
+      "output_kind": "conversion",
       "can_parallel": true,
-      "acceptance": ["音效数量与命名模式", "sounds.json 到目标侧事件表的映射口径"]
+      "acceptance": ["sha256 前后一致", "事件表映射口径可查", "不重编码、不发布"]
     },
     {
       "id": "display-index",
-      "summary": "display 客户端表现层与 index 内容注册层分离",
-      "allowed_skills": ["art-asset-classify"],
-      "allowed_actions": ["list_resource_entries", "read_public_docs"],
-      "input_globs": ["**/display/**", "**/data/*/index/**"],
-      "output_kind": "mapping",
+      "summary": "display / index / lang 的命名空间重写与键集合守恒",
+      "allowed_skills": ["technical-convert-assets"],
+      "allowed_actions": ["read_asset_data_file", "technical_format_conversion", "list_resource_entries"],
+      "input_globs": ["**/display/**", "**/data/*/index/**", "**/lang/**"],
+      "output_kind": "conversion",
       "can_parallel": true,
-      "acceptance": ["明确 assets 侧与 data 侧不 1:1", "给出命名空间转换规则"]
+      "acceptance": ["路径重写后 JSON 键集合守恒", "明确 assets 侧与 data 侧不 1:1", "产物只留 work/"]
     },
     {
       "id": "data-registry",
       "summary": "配方/标签/战利品/进度等数据层转换",
-      "allowed_skills": ["art-asset-classify", "api-mapping-table"],
-      "allowed_actions": ["list_resource_entries", "read_public_docs", "read_own_data_files"],
+      "allowed_skills": ["art-asset-classify", "api-mapping-table", "technical-convert-assets"],
+      "allowed_actions": ["read_asset_data_file", "technical_format_conversion", "list_resource_entries", "read_public_docs"],
       "input_globs": ["data/**"],
       "output_kind": "mapping",
       "can_parallel": true,
-      "acceptance": ["26.3 数据格式差异清单", "命名空间冲突检查"]
+      "acceptance": ["26.3 数据格式差异清单", "命名空间冲突检查", "转换可逆"]
     },
     {
       "id": "localization-shader",
-      "summary": "lang / shader / lua / gui 等可插拔资产",
-      "allowed_skills": ["art-asset-classify"],
-      "allowed_actions": ["list_resource_entries", "read_public_docs"],
+      "summary": "lang / shader / lua / gui 等可插拔资产的支持性分类",
+      "allowed_skills": ["art-asset-classify", "technical-convert-assets"],
+      "allowed_actions": ["read_asset_data_file", "list_resource_entries", "read_public_docs"],
       "input_globs": ["**/lang/**", "**/shaders/**", "**/*.lua", "**/textures/gui/**"],
       "output_kind": "report",
       "can_parallel": true,
-      "acceptance": ["列出目标侧明确不支持的着色器/脚本类别", "不假设 lua 可运行"]
+      "acceptance": ["列出目标侧明确不支持的着色器/脚本类别", "不假设 lua 可运行", "不复制脚本内容"]
+    },
+    {
+      "id": "target-study-render",
+      "summary": "研读 Horizon 客户端渲染 / 手部 / 逐部件姿态管线源码",
+      "allowed_skills": ["study-horizon-render-pipeline"],
+      "allowed_actions": ["read_horizon_source", "read_public_docs", "read_own_data_files"],
+      "input_globs": ["third_party/horizon/crates/horizon-client/**", "third_party/horizon/crates/horizon-client-render/**"],
+      "output_kind": "facts",
+      "can_parallel": true,
+      "acceptance": ["探针 missing_files 为空", "骨骼/glTF/Bedrock 缺席由 tree_scan 证明", "报告不含源码正文"]
+    },
+    {
+      "id": "target-study-assets",
+      "summary": "研读 Horizon 资产模型 / 动画元数据 / item model 条件系统源码",
+      "allowed_skills": ["study-horizon-asset-schema"],
+      "allowed_actions": ["read_horizon_source", "read_public_docs", "read_own_data_files"],
+      "input_globs": ["third_party/horizon/crates/horizon-assets/**"],
+      "output_kind": "facts",
+      "can_parallel": true,
+      "acceptance": ["AnimationClip 判定为贴图精灵帧动画且有行号", "foreign.rs 静默降级有行号证据", "报告不含源码正文"]
+    },
+    {
+      "id": "target-study-mod-api",
+      "summary": "研读 Horizon mod API 生成 / hook 分发 / tier 归属 / .hmod 加载链",
+      "allowed_skills": ["study-horizon-mod-api"],
+      "allowed_actions": ["read_horizon_source", "read_public_docs", "read_own_data_files"],
+      "input_globs": ["third_party/horizon/crates/horizon-mod-api-gen/**", "third_party/horizon/crates/horizon-mods/**", "third_party/horizon/crates/horizon-port-pack/**"],
+      "output_kind": "facts",
+      "can_parallel": true,
+      "acceptance": ["证明 mod_api 无 tier 字段", "0.5 仅声明未实现有行号", "oracle / coverage 实现存在"]
+    },
+    {
+      "id": "cross-layer-slice",
+      "summary": "把资产/代码/目标/契约缝成跨层特性切片并判定 verdict",
+      "allowed_skills": ["build-feature-slices"],
+      "allowed_actions": ["build_cross_layer_slice", "read_asset_data_file", "read_own_data_files", "read_horizon_source"],
+      "input_globs": ["work/index.source.json", "work/delta.source.json", "jar:**/*.animation.json", "orchestration/slice-anchors.json"],
+      "output_kind": "slice",
+      "can_parallel": false,
+      "acceptance": ["每个切片四层齐全", "shared_states 是唯一状态来源", "unmatched 为 0 且 roundtrip 闭合", "硬缺口不得伪装成 portable"]
+    },
+    {
+      "id": "asset-conversion",
+      "summary": "执行五个技术性格式等价转换器并做 roundtrip 验证",
+      "allowed_skills": ["technical-convert-assets"],
+      "allowed_actions": ["read_asset_data_file", "read_binary_asset", "technical_format_conversion", "list_resource_entries"],
+      "input_globs": ["jar:assets/**", "jar:data/**"],
+      "output_kind": "conversion",
+      "can_parallel": false,
+      "acceptance": ["所有转换器 roundtrip_closed 为 true", "产物只留 work/", "仓库内只放脱敏统计报告"]
     },
     {
       "id": "animation-gap",
       "summary": "目标侧动画能力缺口与最小可行路径",
-      "allowed_skills": ["build-hook-mapping", "api-mapping-table"],
-      "allowed_actions": ["read_public_docs", "read_own_data_files"],
-      "input_globs": ["third_party/horizon/native-hooks.json", "target/horizon.capabilities.json", "mappings/**"],
+      "allowed_skills": ["build-hook-mapping", "api-mapping-table", "build-feature-slices"],
+      "allowed_actions": ["read_public_docs", "read_own_data_files", "read_horizon_source", "build_cross_layer_slice"],
+      "input_globs": ["third_party/horizon/native-hooks.json", "target/horizon.capabilities.json", "mappings/**", "work/feature-slices.json"],
       "output_kind": "report",
       "can_parallel": true,
-      "acceptance": ["区分硬缺口与 workaround", "每个结论附 Horizon 文件路径或行号"]
+      "acceptance": ["区分硬缺口与 workaround", "每个结论附 Horizon 源码路径或行号", "不把近似写成已支持"]
     },
     {
       "id": "contract-alignment",
-      "summary": "逻辑状态机 ↔ 动画状态机 shared_states 契约",
-      "allowed_skills": ["extract-behavior-contract", "diff-test-harness"],
-      "allowed_actions": ["read_public_docs", "read_own_data_files"],
-      "input_globs": ["schemas/manifest.schema.json", "docs/01-java-decompiled-classification.md"],
+      "summary": "逻辑状态机 ↔ 动画状态机 shared_states 契约对齐",
+      "allowed_skills": ["extract-behavior-contract", "build-feature-slices", "diff-test-harness"],
+      "allowed_actions": ["read_public_docs", "read_own_data_files", "build_cross_layer_slice"],
+      "input_globs": ["work/feature-slices.json", "schemas/manifest.schema.json"],
       "output_kind": "review",
       "can_parallel": false,
-      "acceptance": ["状态枚举双向可查", "不一致即判失败"]
+      "acceptance": ["状态枚举双向可查", "每个 slice 的 authority 与 sync_boundary 明确", "不一致即判失败"]
     },
     {
       "id": "policy-compliance",
-      "summary": "合规监督：审查所有任务包与 result 是否越界",
-      "allowed_skills": ["policy-gate"],
+      "summary": "合规监督：审查所有任务包与 result 的三维边界",
+      "allowed_skills": ["policy-gate", "collect-results"],
       "allowed_actions": ["read_jar_metadata", "list_resource_entries", "read_own_data_files"],
-      "input_globs": ["work/dispatch/**", "policy/**"],
+      "input_globs": ["work/dispatch/**", "policy/**", "reports/m2-conversion.json"],
       "output_kind": "review",
       "can_parallel": false,
-      "acceptance": ["oracle-only 任务不得出现资产内容字段", "越界即整体中止"]
+      "acceptance": ["distribution 为 local-only 且禁止发布/商用/创造性改编", "转换产物不得出现在可入库目录", "越界即整体中止"]
     },
     {
       "id": "verification",
       "summary": "汇总各子 agent 结果、检查闭合与生成验收清单",
       "allowed_skills": ["collect-results", "diff-test-harness"],
-      "allowed_actions": ["read_own_data_files"],
-      "input_globs": ["work/dispatch/**"],
+      "allowed_actions": ["read_own_data_files", "list_resource_entries"],
+      "input_globs": ["work/dispatch/**", "reports/**"],
       "output_kind": "report",
       "can_parallel": false,
-      "acceptance": ["每个任务都有 result 或明确阻塞原因", "缺口清单闭合"]
+      "acceptance": ["每个任务都有 result 或明确阻塞原因", "缺口清单闭合", "verdict 可复核"]
     }
   ]
 }

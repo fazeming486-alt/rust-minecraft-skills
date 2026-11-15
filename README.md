@@ -131,14 +131,26 @@ python tools/experiment.py --profile profiles/forge/1.20.1.json \
 - **因此 M2 能做真实转换了**：可读取 `geo_models/*.json`、`*.animation.json`、`display/*.json`、`index/*.json`、PNG、OGG 并做格式等价转换；产物只留 `work/`，**不发布、不商用、不重绘**。
 - 发布、商用、贡献上游仍须另走授权或换样本流程；本结论是工程政策判断，**非法律意见**。
 
+## v0.7 · 跨层切片、目标侧源码研读与 M2 真实执行（ADR 0009）
+
+针对「动画 = 美术资产 + Java 状态机 + 目标侧 hook + 同步契约」这类复合体，**按文件分工会失效**——资产组与代码组各自宣布完成，却没人负责缝合，典型事故是「逻辑已换弹、动画还在装填」。
+
+- **跨层特性切片**：`build-feature-slices` 把四层绑成单一可判定单元，`shared_states` 是唯一状态来源。实测 73 个动画文件里其实有 **157 个状态 / 365 个骨骼名**，参数化压到 **110**（压缩 29.94%，映射可逆），10 个切片 `unmatched = 0`、`closed = true`，**2 portable / 8 needs_workaround**。
+- **目标侧源码研读做成三路 skill**（`06-target-study`）：`tools/lib_horizon_source.py` + 三份探针配置，真实派出 3 个子 agent 并行读 Horizon Rust 源码，产出可回归取证报告（25 文件 / 424 声明 / `missing_files` 全空）。**纠正 5 处推断**：`Custom` 仅布尔、`foreign.rs` 静默降级第三方 property、`ModelPart` 逐部件姿态可用但无骨骼插值、`mod_api` 无 tier 字段、dev-only Java oracle / coverage 已有实现。精确正则全仓 0 命中证明无 Bedrock geometry / glTF / .bbmodel 读取器。
+- **真实格式等价转换落地**：5 个转换器（状态参数化 / 骨骼轨道 / geometry IR / 命名空间重写 / 二进制搬运），**3683 源文件 → 3215 输出，roundtrip 全闭合**，210 MB 产物只留 `work/`。`schema_status` 三态诚实分级：`1 partial / 2 unbound / 2 bound`——`unbound` 不是失败，但绝不写成「已转换完成」。
+- **修掉政策断点**：ADR 0008 放宽了政策，但 `roles.json` 的角色权限没跟上，任务包实际仍禁止转换。已同步白名单与角色，并加 3 条回归检查。
+- **M2 闭合**：17 任务包 / 4 wave 全部完成，`collect-results` verdict = **COMPLETE**（0 缺失 / 0 越界）；首波改为三路目标侧源码研读。
+
+详见 [执行报告](docs/06-m2-execution.md)、[ADR 0009](docs/adr/0009-cross-layer-slices-and-target-study.md)、`reports/m2-feature-slices.json`、`reports/m2-conversion.json`。
+
 ## 状态与下一步
 
-**v0.6 — 合规边界已修正，M2 可实际执行转换**：17 个 skill、49 项自检全绿、SSH 持续推送。
+**v0.7 — M2 已执行完毕**：22 个 skill、**67 项自检全绿**、SSH 持续推送。
 
 按 `docs/04-roadmap.md` 推进：
 
-- **执行 M2 剩余 10 个任务包**（现在可做真实格式等价转换，不再只是路径清单）
-- **M3 接 `horizon-ctl` 官方 harness**
-- **M4 第二个真实 mod 验证泛化**
+- **M3 改为「对接」而非「自建」**：`horizon-port-pack/src/oracle.rs` / `report.rs` / `tools/mod_port_harness.py` 已实现 dev-only Java oracle 与 coverage，`diff-test-harness` 只产出录制契约与差分断言。
+- **M4**：换混淆或跨版本的第二个 mod，验证 C6 = 0 不是 TaCZ 过拟合，并检验 10 个锚点是否需扩展。
+- **并行化验证**：把 wave 2 的 7 个资产族真正分给独立子 agent，用 `input_hash` + `collect-results` 验证闭环与并行收益。
 
-C6 归零仍只是单一样本结果，不可外推；`animation_driver` 缺口必须如实记录，不用 workaround 冒充已解决。
+三条边界保持诚实：C6 归零只是单一样本结果；`animation_driver` 仍 **unbound**（有逐部件静态姿态，无骨骼/蒙皮/关键帧插值）；`geometry_ir` / `bone_tracks` 只是可逆的中间表示，目标侧没有消费者。不用 workaround 冒充已解决。

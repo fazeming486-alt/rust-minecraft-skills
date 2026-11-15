@@ -1,16 +1,18 @@
 {
   "schema_version": "0.1.0",
   "milestone": "M2 · 美术链与 animation_driver 缺口",
-  "total": 12,
-  "completed": 2,
-  "missing": 10,
+  "total": 17,
+  "completed": 17,
+  "missing": 0,
   "violations": [],
   "human_gate": true,
   "waves": [
     [
       "m2-01-inventory",
-      "m2-09-animation-gap",
-      "m2-11-policy-compliance"
+      "m2-11-policy-compliance",
+      "m2-13-target-render",
+      "m2-14-target-assets",
+      "m2-15-target-mod-api"
     ],
     [
       "m2-02-geometry",
@@ -19,10 +21,13 @@
       "m2-05-audio",
       "m2-06-display-index",
       "m2-07-data-registry",
-      "m2-08-loc-shader"
+      "m2-08-loc-shader",
+      "m2-09-animation-gap",
+      "m2-16-feature-slices"
     ],
     [
-      "m2-10-contract-alignment"
+      "m2-10-contract-alignment",
+      "m2-17-conversion"
     ],
     [
       "m2-12-verification"
@@ -41,49 +46,49 @@
       "role": "geometry-asset",
       "policy_mode": "full-inspection",
       "assigned_worker": "worker-2",
-      "status": "missing"
+      "status": "completed"
     },
     {
       "task_id": "m2-03-animation",
       "role": "animation-asset",
       "policy_mode": "full-inspection",
       "assigned_worker": "worker-1",
-      "status": "missing"
+      "status": "completed"
     },
     {
       "task_id": "m2-04-texture",
       "role": "texture-asset",
       "policy_mode": "full-inspection",
       "assigned_worker": "worker-2",
-      "status": "missing"
+      "status": "completed"
     },
     {
       "task_id": "m2-05-audio",
       "role": "audio-asset",
       "policy_mode": "full-inspection",
       "assigned_worker": "worker-1",
-      "status": "missing"
+      "status": "completed"
     },
     {
       "task_id": "m2-06-display-index",
       "role": "display-index",
       "policy_mode": "full-inspection",
       "assigned_worker": "worker-2",
-      "status": "missing"
+      "status": "completed"
     },
     {
       "task_id": "m2-07-data-registry",
       "role": "data-registry",
       "policy_mode": "full-inspection",
       "assigned_worker": "worker-1",
-      "status": "missing"
+      "status": "completed"
     },
     {
       "task_id": "m2-08-loc-shader",
       "role": "localization-shader",
       "policy_mode": "full-inspection",
       "assigned_worker": "worker-2",
-      "status": "missing"
+      "status": "completed"
     },
     {
       "task_id": "m2-09-animation-gap",
@@ -97,22 +102,57 @@
       "role": "contract-alignment",
       "policy_mode": "full-inspection",
       "assigned_worker": "main-agent",
-      "status": "missing"
+      "status": "completed"
     },
     {
       "task_id": "m2-11-policy-compliance",
       "role": "policy-compliance",
       "policy_mode": "full-inspection",
       "assigned_worker": "main-agent",
-      "status": "missing"
+      "status": "completed"
     },
     {
       "task_id": "m2-12-verification",
       "role": "verification",
       "policy_mode": "full-inspection",
       "assigned_worker": "main-agent",
-      "status": "missing"
+      "status": "completed"
+    },
+    {
+      "task_id": "m2-13-target-render",
+      "role": "target-study-render",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-2",
+      "status": "completed"
+    },
+    {
+      "task_id": "m2-14-target-assets",
+      "role": "target-study-assets",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-1",
+      "status": "completed"
+    },
+    {
+      "task_id": "m2-15-target-mod-api",
+      "role": "target-study-mod-api",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-2",
+      "status": "completed"
+    },
+    {
+      "task_id": "m2-16-feature-slices",
+      "role": "cross-layer-slice",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "main-agent",
+      "status": "completed"
+    },
+    {
+      "task_id": "m2-17-conversion",
+      "role": "asset-conversion",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "main-agent",
+      "status": "completed"
     }
   ],
-  "verdict": "PARTIAL"
+  "verdict": "COMPLETE"
 }

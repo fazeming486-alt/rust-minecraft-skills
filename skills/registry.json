@@ -12,6 +12,7 @@
     {"id": "02-contract", "summary": "行为契约抽取"},
     {"id": "03-map", "summary": "能力映射与目标绑定"},
     {"id": "04-art", "summary": "美术资产分类与转换"},
+    {"id": "06-target-study", "summary": "Horizon 目标侧 Rust 源码取证（渲染 / 资产 / mod API）"},
     {"id": "09-verify", "summary": "验收与回归"},
     {"id": "98-orchestrate", "summary": "复杂度评估、子 agent 任务派发与结果汇总"}
   ],
@@ -264,6 +265,71 @@
       "depends_on": ["plan-dispatch"],
       "acceptance": ["每个 result 校验 task_id 与 input_hash", "结果不得含发布/商用/创造性改编字段且 distribution 为 local-only", "缺失或越界整体判为 BLOCKED 或 PARTIAL"],
       "summary": "唯一汇总入口：校验契约、policy 越界并给出全局 verdict"
+    },
+    {
+      "id": "study-horizon-render-pipeline",
+      "version": "0.1.0",
+      "stage": "06-target-study",
+      "path": "skills/06-target-study/study-horizon-render-pipeline",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": ["third_party/horizon/crates/**/*.rs", "orchestration/horizon-probes/render-pipeline.json"],
+      "writes": ["reports/horizon-render-pipeline.json"],
+      "depends_on": [],
+      "acceptance": ["三路探针 missing_files 为空", "tree_keywords 命中数如实记录且与文档结论一致", "只记录行号与 <=160 字符短签名，不复制源码正文", "换 Horizon 快照后重跑可对比"],
+      "summary": "取证 Horizon 客户端渲染 / 手部 / 逐部件姿态管线，判定骨骼动画能力是否缺席"
+    },
+    {
+      "id": "study-horizon-asset-schema",
+      "version": "0.1.0",
+      "stage": "06-target-study",
+      "path": "skills/06-target-study/study-horizon-asset-schema",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": ["third_party/horizon/crates/horizon-assets/**/*.rs", "orchestration/horizon-probes/asset-schema.json"],
+      "writes": ["reports/horizon-asset-schema.json"],
+      "depends_on": [],
+      "acceptance": ["判定 AnimationClip 为贴图精灵帧动画而非骨骼动画并附声明行号", "Custom 布尔限制与 foreign.rs 静默降级有行号证据", "Bedrock geometry / glTF / .bbmodel 读取器缺席由 tree_scan 0 命中证明", "报告不含源码正文"],
+      "summary": "取证 Horizon 26.3 资产模型 / 动画元数据 / item model 条件系统"
+    },
+    {
+      "id": "study-horizon-mod-api",
+      "version": "0.1.0",
+      "stage": "06-target-study",
+      "path": "skills/06-target-study/study-horizon-mod-api",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": ["third_party/horizon/crates/horizon-mod-api-gen/**/*.rs", "third_party/horizon/crates/horizon-mods/**/*.rs", "third_party/horizon/crates/horizon-port-pack/**/*.rs", "orchestration/horizon-probes/mod-api.json"],
+      "writes": ["reports/horizon-mod-api.json"],
+      "depends_on": [],
+      "acceptance": ["证明 mod_api 不含 tier 字段且 tier 归属 horizon-port-pack 分类逻辑", "0.5 仅声明未实现有行号证据", "dev-only Java oracle / coverage 实现存在且 M3 应对接", "报告不含源码正文"],
+      "summary": "取证 mod API 生成 / hook 分发 / API tier 归属与 .hmod 加载链"
+    },
+    {
+      "id": "build-feature-slices",
+      "version": "0.1.0",
+      "stage": "02-contract",
+      "path": "skills/02-contract/build-feature-slices",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": ["work/index.source.json", "work/delta.source.json", "jar:*.animation.json", "orchestration/slice-anchors.json", "target/horizon.capabilities.json", "third_party/horizon/native-hooks.json"],
+      "writes": ["work/feature-slices.json", "reports/m2-feature-slices.json"],
+      "depends_on": ["parse-java-source", "classify-java-decompiled", "policy-gate", "study-horizon-render-pipeline", "study-horizon-asset-schema", "study-horizon-mod-api"],
+      "acceptance": ["每个切片四层齐全且 shared_states 是唯一状态来源", "目标侧 hook/helper 名称全部可解析，未知符号即报错", "状态参数化 roundtrip 闭合且未匹配状态为 0", "verdict 三态判定可复核，硬缺口不得伪装成 portable"],
+      "summary": "把动画这类跨层特性缝成资产/代码/目标/契约四层单一迁移单元"
+    },
+    {
+      "id": "technical-convert-assets",
+      "version": "0.1.0",
+      "stage": "04-art",
+      "path": "skills/04-art/technical-convert-assets",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": ["jar:*.animation.json", "jar:**/geo_models/**", "jar:**/display/**", "jar:**/index/**", "jar:**/*.png", "jar:**/*.ogg", "work/policy-decision.json", "orchestration/slice-anchors.json"],
+      "writes": ["work/converted/**", "reports/m2-conversion.json"],
+      "depends_on": ["policy-gate", "build-feature-slices", "study-horizon-asset-schema"],
+      "acceptance": ["政策三维必须为 full-inspection / technical-only / local-only，否则拒绝运行", "产物目录必须在 work/ 下", "每个转换器 roundtrip_closed 为 true，整体 closed 为 true", "目标侧无消费者的转换必须标 unbound，不得声称已转换完成", "仓库内只放脱敏统计报告"],
+      "summary": "语义不变的格式等价转换，每个转换器都用 roundtrip 证明可逆"
     }
   ]
 }

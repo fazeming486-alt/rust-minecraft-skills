@@ -1,0 +1,2811 @@
+{
+  "schema_version": "0.1.0",
+  "probe_id": "mod-api",
+  "title": "Horizon mod API 生成 / native hook 分发 / API tier 与 .hmod 加载链",
+  "horizon_root": "D:/RUST重写mc项目/third_party/horizon",
+  "source_kind": "rust-source",
+  "files": [
+    {
+      "path": "crates/horizon-mod-api-gen/src/lib.rs",
+      "exists": true,
+      "lines": 1771,
+      "declarations": [],
+      "pattern_hits": {
+        "mod_api": {
+          "count": 22,
+          "lines": [
+            234,
+            770,
+            771,
+            947,
+            954,
+            960,
+            1026,
+            1134,
+            1195,
+            1213,
+            1456,
+            1461
+          ]
+        },
+        "contract": {
+          "count": 14,
+          "lines": [
+            1,
+            850,
+            853,
+            856,
+            874,
+            911,
+            923,
+            937,
+            978,
+            1003,
+            1184,
+            1213
+          ]
+        },
+        "listen": {
+          "count": 3,
+          "lines": [
+            854,
+            1213,
+            1475
+          ]
+        },
+        "collect": {
+          "count": 24,
+          "lines": [
+            5,
+            110,
+            119,
+            313,
+            379,
+            544,
+            609,
+            628,
+            799,
+            846,
+            854,
+            879
+          ]
+        },
+        "cancel": {
+          "count": 18,
+          "lines": [
+            854,
+            875,
+            938,
+            979,
+            980,
+            1004,
+            1005,
+            1549,
+            1554,
+            1557,
+            1563,
+            1564
+          ]
+        },
+        "replace": {
+          "count": 17,
+          "lines": [
+            650,
+            667,
+            788,
+            849,
+            854,
+            878,
+            939,
+            982,
+            1008,
+            1009,
+            1256,
+            1510
+          ]
+        },
+        "modifiers": {
+          "count": 0,
+          "lines": []
+        }
+      },
+      "absence_hits": {
+        "tier": {
+          "count": 0,
+          "lines": []
+        }
+      }
+    },
+    {
+      "path": "crates/horizon-mod-api-gen/src/build.rs",
+      "exists": true,
+      "lines": 155,
+      "declarations": [
+        {
+          "line": 10,
+          "kind": "fn",
+          "name": "generate",
+          "signature": "pub fn generate(root: &Path, out_dir: &Path, target: Target) -> Result<(), String> {"
+        },
+        {
+          "line": 40,
+          "kind": "fn",
+          "name": "track",
+          "signature": "pub(super) fn track(root: &Path, target: Target) -> Result<(), String> {"
+        },
+        {
+          "line": 41,
+          "kind": "fn",
+          "name": "directory",
+          "signature": "fn directory(path: &Path, extension: &str, recursive: bool) -> Result<(), String> {"
+        },
+        {
+          "line": 91,
+          "kind": "struct",
+          "name": "Injection",
+          "signature": "struct Injection {"
+        },
+        {
+          "line": 100,
+          "kind": "fn",
+          "name": "inject",
+          "signature": "pub fn inject(code: &str, injections: &str) -> Result<String, String> {"
+        }
+      ],
+      "pattern_hits": {
+        "native-hooks.json": {
+          "count": 2,
+          "lines": [
+            54,
+            70
+          ]
+        },
+        "OUT_DIR": {
+          "count": 2,
+          "lines": [
+            10,
+            35
+          ]
+        },
+        "mod_api": {
+          "count": 6,
+          "lines": [
+            16,
+            17,
+            27,
+            28,
+            29,
+            54
+          ]
+        },
+        "contract": {
+          "count": 0,
+          "lines": []
+        }
+      },
+      "absence_hits": {}
+    },
+    {
+      "path": "crates/horizon-mod-api-gen/src/staged.rs",
+      "exists": true,
+      "lines": 83,
+      "declarations": [
+        {
+          "line": 7,
+          "kind": "const",
+          "name": "MIXINS_STAGE",
+          "signature": "pub const MIXINS_STAGE: &str = \".horizon-mixins-stage.json\";"
+        },
+        {
+          "line": 12,
+          "kind": "fn",
+          "name": "staged_mods",
+          "signature": "pub fn staged_mods(root: &Path) -> Vec<String> {"
+        },
+        {
+          "line": 30,
+          "kind": "mod",
+          "name": "tests",
+          "signature": "mod tests {"
+        },
+        {
+          "line": 33,
+          "kind": "fn",
+          "name": "workspace",
+          "signature": "fn workspace(name: &str, record: Option<&str>) -> std::path::PathBuf {"
+        },
+        {
+          "line": 47,
+          "kind": "fn",
+          "name": "the_mods_of_every_injection_and_module_once",
+          "signature": "fn the_mods_of_every_injection_and_module_once() {"
+        },
+        {
+          "line": 69,
+          "kind": "fn",
+          "name": "no_mods_without_a_record_or_with_an_empty_or_broken_one",
+          "signature": "fn no_mods_without_a_record_or_with_an_empty_or_broken_one() {"
+        }
+      ],
+      "pattern_hits": {
+        "stage": {
+          "count": 7,
+          "lines": [
+            7,
+            12,
+            13,
+            35,
+            41,
+            64,
+            79
+          ]
+        },
+        "mod_api": {
+          "count": 0,
+          "lines": []
+        },
+        "contract": {
+          "count": 0,
+          "lines": []
+        }
+      },
+      "absence_hits": {}
+    },
+    {
+      "path": "crates/horizon-mods/src/manifest.rs",
+      "exists": true,
+      "lines": 543,
+      "declarations": [
+        {
+          "line": 20,
+          "kind": "const",
+          "name": "APIS",
+          "signature": "pub const APIS: [&str; 3] = [API, \"0.2\", SERVER_API];"
+        },
+        {
+          "line": 34,
+          "kind": "struct",
+          "name": "Manifest",
+          "signature": "pub struct Manifest {"
+        },
+        {
+          "line": 221,
+          "kind": "impl",
+          "name": "Manifest",
+          "signature": "impl Manifest {"
+        }
+      ],
+      "pattern_hits": {
+        "0\\.1": {
+          "count": 20,
+          "lines": [
+            14,
+            15,
+            16,
+            18,
+            43,
+            183,
+            429,
+            430,
+            440,
+            441,
+            442,
+            445
+          ]
+        },
+        "0\\.2": {
+          "count": 8,
+          "lines": [
+            16,
+            20,
+            43,
+            86,
+            243,
+            450,
+            451,
+            498
+          ]
+        },
+        "0\\.3": {
+          "count": 6,
+          "lines": [
+            19,
+            22,
+            69,
+            483,
+            486,
+            490
+          ]
+        },
+        "api": {
+          "count": 31,
+          "lines": [
+            13,
+            15,
+            16,
+            18,
+            20,
+            22,
+            43,
+            44,
+            57,
+            69,
+            86,
+            184
+          ]
+        },
+        "version": {
+          "count": 10,
+          "lines": [
+            13,
+            38,
+            71,
+            182,
+            183,
+            184,
+            429,
+            480,
+            498,
+            529
+          ]
+        }
+      },
+      "absence_hits": {
+        "0\\.5": {
+          "count": 0,
+          "lines": []
+        },
+        "0\\.4": {
+          "count": 2,
+          "lines": [
+            470,
+            471
+          ]
+        }
+      }
+    },
+    {
+      "path": "crates/horizon-mods/src/lib.rs",
+      "exists": true,
+      "lines": 12,
+      "declarations": [],
+      "pattern_hits": {
+        "content": {
+          "count": 3,
+          "lines": [
+            1,
+            5,
+            11
+          ]
+        },
+        "native": {
+          "count": 1,
+          "lines": [
+            3
+          ]
+        },
+        "load": {
+          "count": 0,
+          "lines": []
+        },
+        "manifest": {
+          "count": 2,
+          "lines": [
+            8,
+            12
+          ]
+        }
+      },
+      "absence_hits": {}
+    },
+    {
+      "path": "crates/horizon-mods/src/content.rs",
+      "exists": true,
+      "lines": 2921,
+      "declarations": [
+        {
+          "line": 21,
+          "kind": "const",
+          "name": "MAX_FILES",
+          "signature": "pub const MAX_FILES: usize = 65_536;"
+        },
+        {
+          "line": 22,
+          "kind": "const",
+          "name": "MAX_FILE",
+          "signature": "pub const MAX_FILE: u64 = 16 << 20;"
+        },
+        {
+          "line": 23,
+          "kind": "const",
+          "name": "MAX_TOTAL",
+          "signature": "pub const MAX_TOTAL: u64 = 512 << 20;"
+        },
+        {
+          "line": 28,
+          "kind": "fn",
+          "name": "check_path",
+          "signature": "pub fn check_path(name: &str) -> Result<(), String> {"
+        },
+        {
+          "line": 54,
+          "kind": "fn",
+          "name": "namespaced_id",
+          "signature": "fn namespaced_id(id: &str) -> bool {"
+        },
+        {
+          "line": 64,
+          "kind": "fn",
+          "name": "vanilla_id",
+          "signature": "fn vanilla_id(id: &str) -> bool {"
+        },
+        {
+          "line": 77,
+          "kind": "struct",
+          "name": "BlockProperties",
+          "signature": "pub struct BlockProperties {"
+        },
+        {
+          "line": 103,
+          "kind": "enum",
+          "name": "RenderShape",
+          "signature": "pub enum RenderShape {"
+        },
+        {
+          "line": 109,
+          "kind": "impl",
+          "name": "RenderShape",
+          "signature": "impl RenderShape {"
+        },
+        {
+          "line": 111,
+          "kind": "fn",
+          "name": "name",
+          "signature": "pub fn name(self) -> &'static str {"
+        },
+        {
+          "line": 125,
+          "kind": "enum",
+          "name": "RandomTicks",
+          "signature": "pub enum RandomTicks {"
+        },
+        {
+          "line": 135,
+          "kind": "impl",
+          "name": "RandomTicks",
+          "signature": "impl RandomTicks {"
+        },
+        {
+          "line": 137,
+          "kind": "fn",
+          "name": "applies",
+          "signature": "pub fn applies(&self, combo: &[(String, String)]) -> bool {"
+        },
+        {
+          "line": 150,
+          "kind": "struct",
+          "name": "StateValues",
+          "signature": "pub struct StateValues<T> {"
+        },
+        {
+          "line": 161,
+          "kind": "type",
+          "name": "BlockShapes",
+          "signature": "pub type BlockShapes = StateValues<Vec<[f64; 6]>>;"
+        },
+        {
+          "line": 163,
+          "kind": "type",
+          "name": "StateLight",
+          "signature": "pub type StateLight = StateValues<u8>;"
+        },
+        {
+          "line": 166,
+          "kind": "fn",
+          "name": "property_names",
+          "signature": "pub fn property_names(&self) -> Vec<&str> {"
+        },
+        {
+          "line": 174,
+          "kind": "fn",
+          "name": "check_selection",
+          "signature": "fn check_selection(&self, label: &str) -> Result<(), String> {"
+        },
+        {
+          "line": 198,
+          "kind": "impl",
+          "name": "BlockShapes",
+          "signature": "impl BlockShapes {"
+        },
+        {
+          "line": 199,
+          "kind": "fn",
+          "name": "check",
+          "signature": "fn check(&self) -> Result<(), String> {"
+        },
+        {
+          "line": 215,
+          "kind": "impl",
+          "name": "StateLight",
+          "signature": "impl StateLight {"
+        },
+        {
+          "line": 216,
+          "kind": "fn",
+          "name": "check",
+          "signature": "fn check(&self) -> Result<(), String> {"
+        },
+        {
+          "line": 234,
+          "kind": "enum",
+          "name": "ShapeEntityKind",
+          "signature": "pub enum ShapeEntityKind {"
+        },
+        {
+          "line": 240,
+          "kind": "impl",
+          "name": "ShapeEntityKind",
+          "signature": "impl ShapeEntityKind {"
+        },
+        {
+          "line": 241,
+          "kind": "fn",
+          "name": "name",
+          "signature": "pub fn name(self) -> &'static str {"
+        },
+        {
+          "line": 256,
+          "kind": "enum",
+          "name": "StateProperty",
+          "signature": "pub enum StateProperty {"
+        },
+        {
+          "line": 263,
+          "kind": "impl",
+          "name": "StateProperty",
+          "signature": "impl StateProperty {"
+        },
+        {
+          "line": 266,
+          "kind": "fn",
+          "name": "values",
+          "signature": "pub fn values(&self) -> Vec<&str> {"
+        },
+        {
+          "line": 276,
+          "kind": "fn",
+          "name": "state_name",
+          "signature": "fn state_name(s: &str) -> bool {"
+        },
+        {
+          "line": 284,
+          "kind": "struct",
+          "name": "BlockFile",
+          "signature": "struct BlockFile {"
+        },
+        {
+          "line": 313,
+          "kind": "fn",
+          "name": "yes",
+          "signature": "fn yes() -> bool {"
+        },
+        {
+          "line": 322,
+          "kind": "struct",
+          "name": "Block",
+          "signature": "pub struct Block {"
+        },
+        {
+          "line": 365,
+          "kind": "struct",
+          "name": "CreativeTabFile",
+          "signature": "struct CreativeTabFile {"
+        },
+        {
+          "line": 375,
+          "kind": "struct",
+          "name": "CreativeTab",
+          "signature": "pub struct CreativeTab {"
+        },
+        {
+          "line": 385,
+          "kind": "enum",
+          "name": "Rarity",
+          "signature": "pub enum Rarity {"
+        },
+        {
+          "line": 394,
+          "kind": "struct",
+          "name": "ItemFile",
+          "signature": "struct ItemFile {"
+        },
+        {
+          "line": 408,
+          "kind": "struct",
+          "name": "Item",
+          "signature": "pub struct Item {"
+        },
+        {
+          "line": 427,
+          "kind": "enum",
+          "name": "EffectCategory",
+          "signature": "pub enum EffectCategory {"
+        },
+        {
+          "line": 436,
+          "kind": "struct",
+          "name": "MobEffect",
+          "signature": "pub struct MobEffect {"
+        },
+        {
+          "line": 445,
+          "kind": "mod",
+          "name": "fluid",
+          "signature": "mod fluid;"
+        },
+        {
+          "line": 452,
+          "kind": "const",
+          "name": "ENTITY_TEMPLATES",
+          "signature": "pub const ENTITY_TEMPLATES: [&str; 4] = ["
+        },
+        {
+          "line": 465,
+          "kind": "const",
+          "name": "LIVING_TEMPLATES",
+          "signature": "pub const LIVING_TEMPLATES: [&str; 3] = ["
+        },
+        {
+          "line": 476,
+          "kind": "struct",
+          "name": "EntityType",
+          "signature": "pub struct EntityType {"
+        },
+        {
+          "line": 497,
+          "kind": "impl",
+          "name": "EntityType",
+          "signature": "impl EntityType {"
+        },
+        {
+          "line": 499,
+          "kind": "fn",
+          "name": "is_living",
+          "signature": "pub fn is_living(&self) -> bool {"
+        },
+        {
+          "line": 511,
+          "kind": "struct",
+          "name": "MenuType",
+          "signature": "pub struct MenuType {"
+        },
+        {
+          "line": 541,
+          "kind": "struct",
+          "name": "MenuLinks",
+          "signature": "pub struct MenuLinks {"
+        },
+        {
+          "line": 548,
+          "kind": "impl",
+          "name": "MenuLinks",
+          "signature": "impl MenuLinks {"
+        },
+        {
+          "line": 549,
+          "kind": "fn",
+          "name": "range",
+          "signature": "fn range(&self) -> std::ops::Range<u32> {"
+        },
+        {
+          "line": 560,
+          "kind": "struct",
+          "name": "MenuCrafting",
+          "signature": "pub struct MenuCrafting {"
+        },
+        {
+          "line": 570,
+          "kind": "impl",
+          "name": "MenuCrafting",
+          "signature": "impl MenuCrafting {"
+        },
+        {
+          "line": 571,
+          "kind": "fn",
+          "name": "default_size",
+          "signature": "fn default_size() -> u16 {"
+        },
+        {
+          "line": 578,
+          "kind": "const",
+          "name": "MAX_MENU_SLOTS",
+          "signature": "pub const MAX_MENU_SLOTS: u16 = 256;"
+        },
+        {
+          "line": 581,
+          "kind": "enum",
+          "name": "Source",
+          "signature": "enum Source {"
+        },
+        {
+          "line": 590,
+          "kind": "struct",
+          "name": "Content",
+          "signature": "pub struct Content {"
+        },
+        {
+          "line": 608,
+          "kind": "enum",
+          "name": "FileReader",
+          "signature": "pub enum FileReader<'a> {"
+        },
+        {
+          "line": 612,
+          "kind": "impl",
+          "name": "FileReader",
+          "signature": "impl FileReader<'_> {"
+        },
+        {
+          "line": 614,
+          "kind": "fn",
+          "name": "read",
+          "signature": "pub fn read(&mut self, name: &str) -> Result<Vec<u8>, String> {"
+        },
+        {
+          "line": 634,
+          "kind": "fn",
+          "name": "path",
+          "signature": "pub fn path(&self, name: &str) -> Result<Option<std::path::PathBuf>, String> {"
+        },
+        {
+          "line": 653,
+          "kind": "fn",
+          "name": "clash",
+          "signature": "pub fn clash(a: (&str, &[String]), b: (&str, &[String])) -> Option<String> {"
+        },
+        {
+          "line": 661,
+          "kind": "impl",
+          "name": "Content",
+          "signature": "impl Content {"
+        },
+        {
+          "line": 663,
+          "kind": "fn",
+          "name": "read",
+          "signature": "pub fn read(path: &Path, manifest: &Manifest) -> Result<Content, String> {"
+        },
+        {
+          "line": 669,
+          "kind": "fn",
+          "name": "read_declaring",
+          "signature": "pub fn read_declaring("
+        },
+        {
+          "line": 728,
+          "kind": "fn",
+          "name": "declared",
+          "signature": "pub fn declared(namespace: &str) -> Content {"
+        },
+        {
+          "line": 749,
+          "kind": "fn",
+          "name": "declare",
+          "signature": "pub fn declare(&mut self, blocks: &[Block], items: &[Item]) -> Result<(), String> {"
+        },
+        {
+          "line": 814,
+          "kind": "fn",
+          "name": "source",
+          "signature": "pub fn source(&self) -> &Path {"
+        },
+        {
+          "line": 822,
+          "kind": "fn",
+          "name": "is_empty",
+          "signature": "pub fn is_empty(&self) -> bool {"
+        },
+        {
+          "line": 827,
+          "kind": "fn",
+          "name": "file",
+          "signature": "pub fn file(&self, name: &str) -> Result<Vec<u8>, String> {"
+        },
+        {
+          "line": 833,
+          "kind": "fn",
+          "name": "reader",
+          "signature": "pub fn reader(&self) -> Result<FileReader<'_>, String> {"
+        },
+        {
+          "line": 838,
+          "kind": "fn",
+          "name": "check",
+          "signature": "fn check(&mut self, manifest: &Manifest, declared: &[String]) -> Result<(), String> {"
+        },
+        {
+          "line": 1193,
+          "kind": "fn",
+          "name": "check_components",
+          "signature": "fn check_components("
+        },
+        {
+          "line": 1219,
+          "kind": "fn",
+          "name": "check_item",
+          "signature": "fn check_item(item: &Item) -> Result<(), String> {"
+        },
+        {
+          "line": 1241,
+          "kind": "fn",
+          "name": "check_block",
+          "signature": "fn check_block(file: &Block) -> Result<(), String> {"
+        },
+        {
+          "line": 1398,
+          "kind": "fn",
+          "name": "check_sign_walls",
+          "signature": "fn check_sign_walls(blocks: &[&Block]) -> Result<(), String> {"
+        },
+        {
+          "line": 1434,
+          "kind": "fn",
+          "name": "reader_of",
+          "signature": "fn reader_of(source: &Source) -> Result<FileReader<'_>, String> {"
+        },
+        {
+          "line": 1442,
+          "kind": "fn",
+          "name": "open_zip",
+          "signature": "fn open_zip(path: &Path) -> Result<zip::ZipArchive<std::fs::File>, String> {"
+        },
+        {
+          "line": 1449,
+          "kind": "fn",
+          "name": "walk",
+          "signature": "fn walk(root: &Path, dir: &Path, out: &mut Vec<(String, u64)>) -> Result<(), String> {"
+        },
+        {
+          "line": 1472,
+          "kind": "mod",
+          "name": "tests",
+          "signature": "mod tests {"
+        },
+        {
+          "line": 1476,
+          "kind": "const",
+          "name": "MANIFEST_TEXT",
+          "signature": "const MANIFEST_TEXT: &str = r#\""
+        },
+        {
+          "line": 1484,
+          "kind": "const",
+          "name": "BLOCK",
+          "signature": "const BLOCK: &[u8] = br#\"{\"template\": \"minecraft:iron_block\","
+        }
+      ],
+      "pattern_hits": {
+        "assets/": {
+          "count": 21,
+          "lines": [
+            1,
+            25,
+            29,
+            44,
+            592,
+            686,
+            842,
+            1376,
+            1732,
+            1733,
+            2638,
+            2645
+          ]
+        },
+        "data/": {
+          "count": 97,
+          "lines": [
+            1,
+            4,
+            25,
+            29,
+            371,
+            592,
+            686,
+            745,
+            842,
+            873,
+            905,
+            1498
+          ]
+        },
+        "content": {
+          "count": 111,
+          "lines": [
+            1,
+            6,
+            20,
+            25,
+            492,
+            588,
+            590,
+            592,
+            607,
+            613,
+            632,
+            650
+          ]
+        },
+        "register": {
+          "count": 2,
+          "lines": [
+            373,
+            463
+          ]
+        }
+      },
+      "absence_hits": {}
+    },
+    {
+      "path": "crates/horizon-mods/src/index/native.rs",
+      "exists": true,
+      "lines": 498,
+      "declarations": [
+        {
+          "line": 6,
+          "kind": "const",
+          "name": "MANIFEST",
+          "signature": "pub const MANIFEST: &str = \"horizon-native.json\";"
+        },
+        {
+          "line": 9,
+          "kind": "const",
+          "name": "WASM_GONE",
+          "signature": "pub const WASM_GONE: &str = \"mod.wasm: WebAssembly mods don't run any more, port the code to a native mod (docs/native-mods.md)\";"
+        },
+        {
+          "line": 13,
+          "kind": "fn",
+          "name": "is_file",
+          "signature": "pub fn is_file(path: &Path) -> bool {"
+        },
+        {
+          "line": 20,
+          "kind": "fn",
+          "name": "holds",
+          "signature": "pub fn holds(path: &Path) -> bool {"
+        },
+        {
+          "line": 29,
+          "kind": "fn",
+          "name": "content",
+          "signature": "fn content(name: &str) -> bool {"
+        },
+        {
+          "line": 35,
+          "kind": "struct",
+          "name": "Manifest",
+          "signature": "pub struct Manifest {"
+        },
+        {
+          "line": 51,
+          "kind": "fn",
+          "name": "revision",
+          "signature": "pub fn revision(value: &str) -> bool {"
+        },
+        {
+          "line": 58,
+          "kind": "impl",
+          "name": "Manifest",
+          "signature": "impl Manifest {"
+        },
+        {
+          "line": 59,
+          "kind": "fn",
+          "name": "check",
+          "signature": "pub fn check(&self) -> Result<(), String> {"
+        },
+        {
+          "line": 77,
+          "kind": "fn",
+          "name": "api",
+          "signature": "pub fn api(&self) -> String {"
+        },
+        {
+          "line": 81,
+          "kind": "fn",
+          "name": "facts",
+          "signature": "pub fn facts(&self) -> Facts {"
+        },
+        {
+          "line": 93,
+          "kind": "struct",
+          "name": "Bundle",
+          "signature": "pub struct Bundle {"
+        },
+        {
+          "line": 106,
+          "kind": "fn",
+          "name": "in_data",
+          "signature": "fn in_data(rest: &str) -> bool {"
+        },
+        {
+          "line": 114,
+          "kind": "fn",
+          "name": "text",
+          "signature": "fn text(rest: &str) -> bool {"
+        },
+        {
+          "line": 126,
+          "kind": "fn",
+          "name": "allowed",
+          "signature": "pub fn allowed(rest: &str) -> bool {"
+        },
+        {
+          "line": 130,
+          "kind": "impl",
+          "name": "Bundle",
+          "signature": "impl Bundle {"
+        },
+        {
+          "line": 132,
+          "kind": "fn",
+          "name": "source_files",
+          "signature": "pub fn source_files(&self) -> BTreeMap<&str, &[u8]> {"
+        },
+        {
+          "line": 140,
+          "kind": "fn",
+          "name": "read",
+          "signature": "pub fn read(path: &Path) -> Result<Self, String> {"
+        },
+        {
+          "line": 273,
+          "kind": "mod",
+          "name": "tests",
+          "signature": "mod tests {"
+        },
+        {
+          "line": 277,
+          "kind": "fn",
+          "name": "manifest",
+          "signature": "fn manifest() -> Manifest {"
+        },
+        {
+          "line": 288,
+          "kind": "fn",
+          "name": "read",
+          "signature": "fn read(name: &str, extras: &[(&str, &[u8])], mixin: &str) -> Result<Bundle, String> {"
+        },
+        {
+          "line": 291,
+          "kind": "fn",
+          "name": "read_format",
+          "signature": "fn read_format("
+        },
+        {
+          "line": 318,
+          "kind": "fn",
+          "name": "mixin",
+          "signature": "fn mixin() -> String {"
+        },
+        {
+          "line": 325,
+          "kind": "fn",
+          "name": "combined_sound_content_is_validated_and_part_of_the_source_digest",
+          "signature": "fn combined_sound_content_is_validated_and_part_of_the_source_digest() {"
+        },
+        {
+          "line": 358,
+          "kind": "fn",
+          "name": "source_bundle_carries_exact_compatibility_into_index_facts",
+          "signature": "fn source_bundle_carries_exact_compatibility_into_index_facts() {"
+        },
+        {
+          "line": 375,
+          "kind": "fn",
+          "name": "accepts_binary_data_in_the_bundle_data_directory",
+          "signature": "fn accepts_binary_data_in_the_bundle_data_directory() {"
+        },
+        {
+          "line": 395,
+          "kind": "fn",
+          "name": "rejects_path_traversal_and_non_source_payloads",
+          "signature": "fn rejects_path_traversal_and_non_source_payloads() {"
+        },
+        {
+          "line": 418,
+          "kind": "fn",
+          "name": "one_hmod_carries_content_beside_its_native_code",
+          "signature": "fn one_hmod_carries_content_beside_its_native_code() {"
+        },
+        {
+          "line": 460,
+          "kind": "fn",
+          "name": "rejects_missing_or_mismatched_mixin_identity_without_panicking",
+          "signature": "fn rejects_missing_or_mismatched_mixin_identity_without_panicking() {"
+        },
+        {
+          "line": 481,
+          "kind": "fn",
+          "name": "hooks_is_optional_and_kept",
+          "signature": "fn hooks_is_optional_and_kept() {"
+        }
+      ],
+      "pattern_hits": {
+        "cdylib": {
+          "count": 0,
+          "lines": []
+        },
+        "ABI": {
+          "count": 3,
+          "lines": [
+            326,
+            372,
+            423
+          ]
+        },
+        "load": {
+          "count": 1,
+          "lines": [
+            395
+          ]
+        },
+        "native": {
+          "count": 27,
+          "lines": [
+            1,
+            6,
+            8,
+            9,
+            11,
+            12,
+            18,
+            28,
+            43,
+            44,
+            69,
+            76
+          ]
+        }
+      },
+      "absence_hits": {}
+    },
+    {
+      "path": "crates/horizon-mod-registry/src/lib.rs",
+      "exists": true,
+      "lines": 1670,
+      "declarations": [
+        {
+          "line": 8,
+          "kind": "mod",
+          "name": "archive",
+          "signature": "mod archive;"
+        },
+        {
+          "line": 9,
+          "kind": "mod",
+          "name": "github",
+          "signature": "pub mod github;"
+        },
+        {
+          "line": 10,
+          "kind": "mod",
+          "name": "page",
+          "signature": "pub mod page;"
+        },
+        {
+          "line": 11,
+          "kind": "mod",
+          "name": "ratings",
+          "signature": "pub mod ratings;"
+        },
+        {
+          "line": 44,
+          "kind": "const",
+          "name": "SESSION",
+          "signature": "const SESSION: u64 = 12 * 3600;"
+        },
+        {
+          "line": 46,
+          "kind": "const",
+          "name": "PER_ACCOUNT",
+          "signature": "const PER_ACCOUNT: usize = 6;"
+        },
+        {
+          "line": 47,
+          "kind": "const",
+          "name": "PER_HOUR",
+          "signature": "const PER_HOUR: usize = 60;"
+        },
+        {
+          "line": 49,
+          "kind": "const",
+          "name": "MAX_FORM",
+          "signature": "const MAX_FORM: usize = 64 << 10;"
+        },
+        {
+          "line": 51,
+          "kind": "const",
+          "name": "MAX_BODY",
+          "signature": "const MAX_BODY: usize = index::MAX_FILE as usize + page::MAX_IMAGES + MAX_FORM * 2;"
+        },
+        {
+          "line": 53,
+          "kind": "const",
+          "name": "RATINGS_PER_ACCOUNT",
+          "signature": "const RATINGS_PER_ACCOUNT: usize = 30;"
+        },
+        {
+          "line": 54,
+          "kind": "const",
+          "name": "RATINGS_PER_HOUR",
+          "signature": "const RATINGS_PER_HOUR: usize = 600;"
+        },
+        {
+          "line": 56,
+          "kind": "const",
+          "name": "MAX_SET_MODS",
+          "signature": "const MAX_SET_MODS: usize = 64;"
+        },
+        {
+          "line": 58,
+          "kind": "const",
+          "name": "BUILDS_PER_ADDRESS",
+          "signature": "const BUILDS_PER_ADDRESS: usize = 12;"
+        },
+        {
+          "line": 59,
+          "kind": "const",
+          "name": "BUILDS_PER_HOUR",
+          "signature": "const BUILDS_PER_HOUR: usize = 120;"
+        },
+        {
+          "line": 61,
+          "kind": "const",
+          "name": "POLLS_PER_ADDRESS",
+          "signature": "const POLLS_PER_ADDRESS: usize = 120;"
+        },
+        {
+          "line": 62,
+          "kind": "const",
+          "name": "POLLS_PER_HOUR",
+          "signature": "const POLLS_PER_HOUR: usize = 1200;"
+        },
+        {
+          "line": 64,
+          "kind": "const",
+          "name": "DISPATCH_DEDUP_WINDOW",
+          "signature": "const DISPATCH_DEDUP_WINDOW: Duration = Duration::from_secs(15 * 60);"
+        },
+        {
+          "line": 67,
+          "kind": "const",
+          "name": "TOTALS_FOR",
+          "signature": "const TOTALS_FOR: Duration = Duration::from_secs(60);"
+        },
+        {
+          "line": 69,
+          "kind": "struct",
+          "name": "Config",
+          "signature": "pub struct Config {"
+        },
+        {
+          "line": 85,
+          "kind": "impl",
+          "name": "Config",
+          "signature": "impl Config {"
+        },
+        {
+          "line": 90,
+          "kind": "fn",
+          "name": "from_env",
+          "signature": "pub fn from_env() -> Result<Config, String> {"
+        },
+        {
+          "line": 120,
+          "kind": "fn",
+          "name": "callback",
+          "signature": "fn callback(&self) -> String {"
+        },
+        {
+          "line": 126,
+          "kind": "struct",
+          "name": "App",
+          "signature": "pub struct App(Arc<Inner>);"
+        },
+        {
+          "line": 128,
+          "kind": "type",
+          "name": "Windows",
+          "signature": "type Windows = Mutex<HashMap<String, VecDeque<Instant>>>;"
+        },
+        {
+          "line": 130,
+          "kind": "struct",
+          "name": "Inner",
+          "signature": "struct Inner {"
+        },
+        {
+          "line": 147,
+          "kind": "impl",
+          "name": "App",
+          "signature": "impl App {"
+        },
+        {
+          "line": 149,
+          "kind": "fn",
+          "name": "new",
+          "signature": "pub fn new(config: Config) -> Result<App, String> {"
+        },
+        {
+          "line": 165,
+          "kind": "fn",
+          "name": "router",
+          "signature": "pub fn router(app: App) -> Router {"
+        },
+        {
+          "line": 191,
+          "kind": "struct",
+          "name": "Refusal",
+          "signature": "pub struct Refusal(StatusCode, String);"
+        },
+        {
+          "line": 193,
+          "kind": "impl",
+          "name": "Refusal",
+          "signature": "impl Refusal {"
+        },
+        {
+          "line": 194,
+          "kind": "fn",
+          "name": "new",
+          "signature": "fn new(status: StatusCode, message: impl Into<String>) -> Refusal {"
+        },
+        {
+          "line": 199,
+          "kind": "impl",
+          "name": "IntoResponse",
+          "signature": "impl IntoResponse for Refusal {"
+        },
+        {
+          "line": 200,
+          "kind": "fn",
+          "name": "into_response",
+          "signature": "fn into_response(self) -> Response {"
+        },
+        {
+          "line": 205,
+          "kind": "fn",
+          "name": "bad",
+          "signature": "fn bad(message: impl Into<String>) -> Refusal {"
+        },
+        {
+          "line": 209,
+          "kind": "fn",
+          "name": "github_down",
+          "signature": "fn github_down(e: github::Failure) -> Refusal {"
+        },
+        {
+          "line": 225,
+          "kind": "fn",
+          "name": "sign",
+          "signature": "fn sign(key: &[u8], payload: &str) -> String {"
+        },
+        {
+          "line": 235,
+          "kind": "fn",
+          "name": "unsign",
+          "signature": "fn unsign(key: &[u8], value: &str) -> Option<String> {"
+        },
+        {
+          "line": 244,
+          "kind": "fn",
+          "name": "now",
+          "signature": "fn now() -> u64 {"
+        },
+        {
+          "line": 251,
+          "kind": "fn",
+          "name": "random_hex",
+          "signature": "fn random_hex() -> String {"
+        },
+        {
+          "line": 257,
+          "kind": "fn",
+          "name": "cookie",
+          "signature": "fn cookie(headers: &HeaderMap, name: &str) -> Option<String> {"
+        },
+        {
+          "line": 268,
+          "kind": "fn",
+          "name": "set_cookie",
+          "signature": "fn set_cookie(name: &str, value: &str, max_age: u64) -> String {"
+        },
+        {
+          "line": 273,
+          "kind": "fn",
+          "name": "session",
+          "signature": "fn session(app: &Inner, headers: &HeaderMap) -> Option<(String, u64)> {"
+        },
+        {
+          "line": 282,
+          "kind": "fn",
+          "name": "csrf",
+          "signature": "fn csrf(app: &Inner, headers: &HeaderMap) -> Option<String> {"
+        },
+        {
+          "line": 289,
+          "kind": "struct",
+          "name": "Login",
+          "signature": "struct Login {"
+        },
+        {
+          "line": 296,
+          "kind": "fn",
+          "name": "registry_page",
+          "signature": "fn registry_page(path: &str) -> bool {"
+        },
+        {
+          "line": 304,
+          "kind": "fn",
+          "name": "login",
+          "signature": "async fn login(State(app): State<App>, Query(q): Query<Login>) -> Response {"
+        },
+        {
+          "line": 324,
+          "kind": "struct",
+          "name": "Callback",
+          "signature": "struct Callback {"
+        },
+        {
+          "line": 329,
+          "kind": "fn",
+          "name": "callback",
+          "signature": "async fn callback("
+        },
+        {
+          "line": 373,
+          "kind": "fn",
+          "name": "logout",
+          "signature": "async fn logout() -> Response {"
+        },
+        {
+          "line": 381,
+          "kind": "fn",
+          "name": "me",
+          "signature": "async fn me("
+        },
+        {
+          "line": 392,
+          "kind": "fn",
+          "name": "database",
+          "signature": "fn database(e: rusqlite::Error) -> Refusal {"
+        },
+        {
+          "line": 401,
+          "kind": "fn",
+          "name": "rounded",
+          "signature": "fn rounded(average: f64) -> f64 {"
+        },
+        {
+          "line": 407,
+          "kind": "fn",
+          "name": "totals",
+          "signature": "async fn totals(State(app): State<App>) -> Result<Response, Refusal> {"
+        },
+        {
+          "line": 440,
+          "kind": "fn",
+          "name": "my_rating",
+          "signature": "async fn my_rating("
+        },
+        {
+          "line": 458,
+          "kind": "struct",
+          "name": "Rating",
+          "signature": "struct Rating {"
+        },
+        {
+          "line": 465,
+          "kind": "fn",
+          "name": "rate",
+          "signature": "async fn rate("
+        },
+        {
+          "line": 520,
+          "kind": "struct",
+          "name": "Form",
+          "signature": "pub struct Form {"
+        },
+        {
+          "line": 569,
+          "kind": "fn",
+          "name": "take",
+          "signature": "fn take(window: &mut VecDeque<Instant>, max: usize) -> bool {"
+        },
+        {
+          "line": 582,
+          "kind": "fn",
+          "name": "url_origin",
+          "signature": "fn url_origin(url: &str) -> &str {"
+        },
+        {
+          "line": 593,
+          "kind": "fn",
+          "name": "from_the_site",
+          "signature": "fn from_the_site(public_url: &str, origin: Option<&str>) -> bool {"
+        },
+        {
+          "line": 599,
+          "kind": "fn",
+          "name": "signed_in_here",
+          "signature": "fn signed_in_here(app: &Inner, headers: &HeaderMap) -> Result<(String, u64), Refusal> {"
+        },
+        {
+          "line": 621,
+          "kind": "fn",
+          "name": "allow",
+          "signature": "fn allow(windows: &Windows, login: &str, per_account: usize, per_hour: usize) -> bool {"
+        },
+        {
+          "line": 635,
+          "kind": "fn",
+          "name": "too_big",
+          "signature": "fn too_big() -> Refusal {"
+        },
+        {
+          "line": 643,
+          "kind": "fn",
+          "name": "torn",
+          "signature": "fn torn(e: MultipartError) -> Refusal {"
+        },
+        {
+          "line": 654,
+          "kind": "fn",
+          "name": "drain",
+          "signature": "async fn drain(body: Body) {"
+        },
+        {
+          "line": 661,
+          "kind": "fn",
+          "name": "drain_form",
+          "signature": "async fn drain_form(multipart: &mut Multipart) {"
+        },
+        {
+          "line": 667,
+          "kind": "fn",
+          "name": "submit",
+          "signature": "async fn submit("
+        },
+        {
+          "line": 734,
+          "kind": "fn",
+          "name": "receive",
+          "signature": "async fn receive("
+        },
+        {
+          "line": 794,
+          "kind": "fn",
+          "name": "date",
+          "signature": "fn date(secs: u64) -> String {"
+        },
+        {
+          "line": 811,
+          "kind": "fn",
+          "name": "submission_key",
+          "signature": "fn submission_key(config: &Config) -> [u8; 32] {"
+        },
+        {
+          "line": 820,
+          "kind": "fn",
+          "name": "submission_tag",
+          "signature": "fn submission_tag(config: &Config, branch: &str, login: &str) -> String {"
+        },
+        {
+          "line": 826,
+          "kind": "fn",
+          "name": "submission_tag_valid",
+          "signature": "fn submission_tag_valid(config: &Config, branch: &str, login: &str, tag: &str) -> bool {"
+        },
+        {
+          "line": 837,
+          "kind": "enum",
+          "name": "Ownership",
+          "signature": "pub enum Ownership {"
+        },
+        {
+          "line": 849,
+          "kind": "fn",
+          "name": "ownership",
+          "signature": "pub fn ownership(entry: &Entry, login: &str, user_id: u64) -> Ownership {"
+        },
+        {
+          "line": 870,
+          "kind": "fn",
+          "name": "update_trailer",
+          "signature": "pub fn update_trailer("
+        },
+        {
+          "line": 896,
+          "kind": "fn",
+          "name": "publish",
+          "signature": "pub fn publish("
+        },
+        {
+          "line": 1223,
+          "kind": "fn",
+          "name": "client_ip",
+          "signature": "fn client_ip(headers: &HeaderMap) -> String {"
+        },
+        {
+          "line": 1239,
+          "kind": "fn",
+          "name": "is_hex_str",
+          "signature": "fn is_hex_str(s: &str, len: usize) -> bool {"
+        },
+        {
+          "line": 1243,
+          "kind": "fn",
+          "name": "is_target_triple",
+          "signature": "fn is_target_triple(s: &str) -> bool {"
+        },
+        {
+          "line": 1256,
+          "kind": "struct",
+          "name": "NativeBuildRequest",
+          "signature": "pub struct NativeBuildRequest {"
+        }
+      ],
+      "pattern_hits": {
+        "ModType": {
+          "count": 0,
+          "lines": []
+        },
+        "index": {
+          "count": 11,
+          "lines": [
+            2,
+            27,
+            51,
+            299,
+            476,
+            638,
+            770,
+            907,
+            919,
+            933,
+            1071
+          ]
+        },
+        "register": {
+          "count": 0,
+          "lines": []
+        }
+      },
+      "absence_hits": {}
+    },
+    {
+      "path": "crates/horizon-port-pack/src/classify.rs",
+      "exists": true,
+      "lines": 260,
+      "declarations": [
+        {
+          "line": 7,
+          "kind": "const",
+          "name": "KNOWN_CSV",
+          "signature": "const KNOWN_CSV: &str = include_str!(\"../../../docs/modpacks/atm10-mods.csv\");"
+        },
+        {
+          "line": 9,
+          "kind": "struct",
+          "name": "Known",
+          "signature": "pub struct Known {"
+        },
+        {
+          "line": 15,
+          "kind": "fn",
+          "name": "normalise",
+          "signature": "pub fn normalise(s: &str) -> String {"
+        },
+        {
+          "line": 23,
+          "kind": "fn",
+          "name": "csv_fields",
+          "signature": "fn csv_fields(line: &str) -> Vec<String> {"
+        },
+        {
+          "line": 41,
+          "kind": "impl",
+          "name": "Known",
+          "signature": "impl Known {"
+        },
+        {
+          "line": 42,
+          "kind": "fn",
+          "name": "atm10",
+          "signature": "pub fn atm10() -> Self {"
+        },
+        {
+          "line": 57,
+          "kind": "fn",
+          "name": "get",
+          "signature": "pub fn get(&self, keys: &[&str]) -> Option<&(String, String)> {"
+        },
+        {
+          "line": 66,
+          "kind": "struct",
+          "name": "Facts",
+          "signature": "pub struct Facts<'a> {"
+        },
+        {
+          "line": 81,
+          "kind": "fn",
+          "name": "rules",
+          "signature": "pub fn rules(f: &Facts) -> (&'static str, &'static str, &'static str) {"
+        },
+        {
+          "line": 146,
+          "kind": "fn",
+          "name": "layers",
+          "signature": "pub fn layers(depends: &BTreeMap<String, Vec<String>>) -> BTreeMap<String, usize> {"
+        },
+        {
+          "line": 180,
+          "kind": "mod",
+          "name": "tests",
+          "signature": "mod tests {"
+        },
+        {
+          "line": 184,
+          "kind": "fn",
+          "name": "known_table_matches_ids_and_names",
+          "signature": "fn known_table_matches_ids_and_names() {"
+        },
+        {
+          "line": 197,
+          "kind": "fn",
+          "name": "rules_follow_sides_then_categories",
+          "signature": "fn rules_follow_sides_then_categories() {"
+        },
+        {
+          "line": 227,
+          "kind": "fn",
+          "name": "a_project_that_ships_as_a_data_pack_is_data_tier_until_its_jar_says_otherwise",
+          "signature": "fn a_project_that_ships_as_a_data_pack_is_data_tier_until_its_jar_says_otherwise() {"
+        },
+        {
+          "line": 247,
+          "kind": "fn",
+          "name": "layers_put_dependencies_first",
+          "signature": "fn layers_put_dependencies_first() {"
+        }
+      ],
+      "pattern_hits": {
+        "api_tier": {
+          "count": 0,
+          "lines": []
+        },
+        "data": {
+          "count": 14,
+          "lines": [
+            67,
+            75,
+            84,
+            86,
+            102,
+            104,
+            106,
+            107,
+            131,
+            221,
+            227,
+            229
+          ]
+        },
+        "logic": {
+          "count": 3,
+          "lines": [
+            99,
+            133,
+            138
+          ]
+        },
+        "machines": {
+          "count": 2,
+          "lines": [
+            126,
+            217
+          ]
+        },
+        "deep": {
+          "count": 2,
+          "lines": [
+            124,
+            243
+          ]
+        },
+        "client": {
+          "count": 8,
+          "lines": [
+            69,
+            95,
+            96,
+            98,
+            199,
+            202,
+            208,
+            233
+          ]
+        },
+        "none": {
+          "count": 9,
+          "lines": [
+            85,
+            90,
+            93,
+            106,
+            140,
+            160,
+            192,
+            193,
+            241
+          ]
+        }
+      },
+      "absence_hits": {}
+    },
+    {
+      "path": "crates/horizon-port-pack/src/oracle.rs",
+      "exists": true,
+      "lines": 1027,
+      "declarations": [
+        {
+          "line": 15,
+          "kind": "struct",
+          "name": "Facts",
+          "signature": "pub struct Facts {"
+        },
+        {
+          "line": 29,
+          "kind": "struct",
+          "name": "Tags",
+          "signature": "pub struct Tags {"
+        },
+        {
+          "line": 37,
+          "kind": "struct",
+          "name": "Block",
+          "signature": "pub struct Block {"
+        },
+        {
+          "line": 55,
+          "kind": "struct",
+          "name": "SetType",
+          "signature": "pub struct SetType {"
+        },
+        {
+          "line": 61,
+          "kind": "struct",
+          "name": "State",
+          "signature": "pub struct State {"
+        },
+        {
+          "line": 79,
+          "kind": "struct",
+          "name": "Item",
+          "signature": "pub struct Item {"
+        },
+        {
+          "line": 101,
+          "kind": "struct",
+          "name": "Armor",
+          "signature": "pub struct Armor {"
+        },
+        {
+          "line": 115,
+          "kind": "struct",
+          "name": "ArmorLayer",
+          "signature": "pub struct ArmorLayer {"
+        },
+        {
+          "line": 122,
+          "kind": "impl",
+          "name": "Armor",
+          "signature": "impl Armor {"
+        },
+        {
+          "line": 124,
+          "kind": "fn",
+          "name": "asset_carried",
+          "signature": "pub fn asset_carried(&self, owned: &[&str]) -> bool {"
+        },
+        {
+          "line": 132,
+          "kind": "fn",
+          "name": "equipment",
+          "signature": "pub fn equipment(&self) -> Option<(Value, Vec<(String, String)>)> {"
+        },
+        {
+          "line": 164,
+          "kind": "fn",
+          "name": "item_template",
+          "signature": "fn item_template(item: &Item) -> &'static str {"
+        },
+        {
+          "line": 184,
+          "kind": "fn",
+          "name": "food_26_3",
+          "signature": "fn food_26_3(f: &Value, differences: &mut Vec<String>) -> Map<String, Value> {"
+        },
+        {
+          "line": 222,
+          "kind": "fn",
+          "name": "modifiers_26_3",
+          "signature": "fn modifiers_26_3(v: &Value) -> Value {"
+        },
+        {
+          "line": 237,
+          "kind": "const",
+          "name": "VANILLA_PACKAGE",
+          "signature": "const VANILLA_PACKAGE: &str = \"net.minecraft.\";"
+        },
+        {
+          "line": 242,
+          "kind": "enum",
+          "name": "SelfDrop",
+          "signature": "pub enum SelfDrop {"
+        },
+        {
+          "line": 250,
+          "kind": "fn",
+          "name": "pairs",
+          "signature": "fn pairs(key: &str) -> BTreeSet<(String, String)> {"
+        },
+        {
+          "line": 257,
+          "kind": "fn",
+          "name": "state_key",
+          "signature": "pub fn state_key(key: &str) -> String {"
+        },
+        {
+          "line": 263,
+          "kind": "impl",
+          "name": "Block",
+          "signature": "impl Block {"
+        },
+        {
+          "line": 265,
+          "kind": "fn",
+          "name": "vanilla_class",
+          "signature": "pub fn vanilla_class(&self) -> &str {"
+        },
+        {
+          "line": 272,
+          "kind": "fn",
+          "name": "custom_class",
+          "signature": "pub fn custom_class(&self) -> bool {"
+        },
+        {
+          "line": 282,
+          "kind": "fn",
+          "name": "drops_itself",
+          "signature": "pub fn drops_itself(&self, item: &str) -> Option<SelfDrop> {"
+        },
+        {
+          "line": 316,
+          "kind": "fn",
+          "name": "default_state",
+          "signature": "fn default_state(&self) -> Option<&State> {"
+        },
+        {
+          "line": 321,
+          "kind": "fn",
+          "name": "same_states",
+          "signature": "fn same_states(&self, other: &Block) -> bool {"
+        },
+        {
+          "line": 329,
+          "kind": "fn",
+          "name": "by_key",
+          "signature": "fn by_key(&self) -> BTreeMap<String, &State> {"
+        },
+        {
+          "line": 336,
+          "kind": "struct",
+          "name": "Choice",
+          "signature": "pub struct Choice {"
+        },
+        {
+          "line": 345,
+          "kind": "fn",
+          "name": "same",
+          "signature": "fn same(a: &Value, b: &Value) -> bool {"
+        },
+        {
+          "line": 358,
+          "kind": "impl",
+          "name": "Facts",
+          "signature": "impl Facts {"
+        },
+        {
+          "line": 359,
+          "kind": "fn",
+          "name": "read",
+          "signature": "pub fn read(path: &Path) -> Result<Facts, String> {"
+        },
+        {
+          "line": 368,
+          "kind": "fn",
+          "name": "template",
+          "signature": "pub fn template(&self, id: &str, allowed: &dyn Fn(&str) -> bool) -> Option<Choice> {"
+        },
+        {
+          "line": 416,
+          "kind": "fn",
+          "name": "choice",
+          "signature": "fn choice("
+        },
+        {
+          "line": 497,
+          "kind": "fn",
+          "name": "sound_block",
+          "signature": "fn sound_block(&self, sound: &Value, allowed: &dyn Fn(&str) -> bool) -> Option<&str> {"
+        },
+        {
+          "line": 508,
+          "kind": "fn",
+          "name": "item",
+          "signature": "pub fn item(&self, id: &str, owned: &[&str]) -> Result<(Value, Vec<String>), String> {"
+        },
+        {
+          "line": 548,
+          "kind": "fn",
+          "name": "armor_asset_exists",
+          "signature": "fn armor_asset_exists(&self, armor: &Armor, owned: &[&str]) -> bool {"
+        },
+        {
+          "line": 555,
+          "kind": "fn",
+          "name": "item_components",
+          "signature": "fn item_components(&self, item: &Item, template: &str, owned: &[&str]) -> Map<String, Value> {"
+        },
+        {
+          "line": 628,
+          "kind": "fn",
+          "name": "tag_members",
+          "signature": "pub fn tag_members(&self, kind: &str, tag: &str, own: &str) -> Option<Vec<String>> {"
+        },
+        {
+          "line": 649,
+          "kind": "mod",
+          "name": "tests",
+          "signature": "mod tests {"
+        },
+        {
+          "line": 652,
+          "kind": "fn",
+          "name": "state",
+          "signature": "fn state(hardness: f32, sound: &str, outline: Value) -> Value {"
+        },
+        {
+          "line": 656,
+          "kind": "fn",
+          "name": "block",
+          "signature": "fn block(class: &[&str], props: Value, states: Value) -> Value {"
+        },
+        {
+          "line": 670,
+          "kind": "fn",
+          "name": "templates_follow_class_shapes_and_sounds",
+          "signature": "fn templates_follow_class_shapes_and_sounds() {"
+        },
+        {
+          "line": 714,
+          "kind": "fn",
+          "name": "drops_itself_is_vanillas_drop_self",
+          "signature": "fn drops_itself_is_vanillas_drop_self() {"
+        },
+        {
+          "line": 742,
+          "kind": "fn",
+          "name": "a_door_drops_from_its_lower_half",
+          "signature": "fn a_door_drops_from_its_lower_half() {"
+        },
+        {
+          "line": 775,
+          "kind": "fn",
+          "name": "a_block_that_cannot_occlude_hides_no_neighbour_faces",
+          "signature": "fn a_block_that_cannot_occlude_hides_no_neighbour_faces() {"
+        },
+        {
+          "line": 801,
+          "kind": "fn",
+          "name": "values_past_vanillas_keep_the_templates",
+          "signature": "fn values_past_vanillas_keep_the_templates() {"
+        },
+        {
+          "line": 833,
+          "kind": "fn",
+          "name": "food_becomes_26_3s_food_and_consumable",
+          "signature": "fn food_becomes_26_3s_food_and_consumable() {"
+        },
+        {
+          "line": 882,
+          "kind": "fn",
+          "name": "items_of_vanilla_classes_take_their_template_and_numbers",
+          "signature": "fn items_of_vanilla_classes_take_their_template_and_numbers() {"
+        },
+        {
+          "line": 938,
+          "kind": "fn",
+          "name": "armour_materials_become_equipment_assets",
+          "signature": "fn armour_materials_become_equipment_assets() {"
+        },
+        {
+          "line": 980,
+          "kind": "fn",
+          "name": "armour_only_names_an_equipment_asset_that_exists",
+          "signature": "fn armour_only_names_an_equipment_asset_that_exists() {"
+        },
+        {
+          "line": 1015,
+          "kind": "fn",
+          "name": "armor_json",
+          "signature": "fn armor_json() -> Value {"
+        },
+        {
+          "line": 1020,
+          "kind": "fn",
+          "name": "state_keys_sort",
+          "signature": "fn state_keys_sort() {"
+        }
+      ],
+      "pattern_hits": {
+        "oracle": {
+          "count": 5,
+          "lines": [
+            1,
+            2,
+            344,
+            509,
+            772
+          ]
+        },
+        "java": {
+          "count": 0,
+          "lines": []
+        },
+        "behaviour": {
+          "count": 6,
+          "lines": [
+            69,
+            163,
+            271,
+            484,
+            512,
+            695
+          ]
+        },
+        "record": {
+          "count": 0,
+          "lines": []
+        }
+      },
+      "absence_hits": {}
+    },
+    {
+      "path": "crates/horizon-port-pack/src/report.rs",
+      "exists": true,
+      "lines": 816,
+      "declarations": [
+        {
+          "line": 17,
+          "kind": "enum",
+          "name": "Status",
+          "signature": "pub enum Status {"
+        },
+        {
+          "line": 23,
+          "kind": "impl",
+          "name": "Status",
+          "signature": "impl Status {"
+        },
+        {
+          "line": 24,
+          "kind": "const",
+          "name": "ALL",
+          "signature": "pub const ALL: [Status; 4] = ["
+        },
+        {
+          "line": 30,
+          "kind": "fn",
+          "name": "label",
+          "signature": "pub fn label(self) -> &'static str {"
+        },
+        {
+          "line": 39,
+          "kind": "fn",
+          "name": "meaning",
+          "signature": "pub fn meaning(self) -> &'static str {"
+        },
+        {
+          "line": 49,
+          "kind": "const",
+          "name": "PLAIN_PORTED",
+          "signature": "const PLAIN_PORTED: &str ="
+        },
+        {
+          "line": 51,
+          "kind": "const",
+          "name": "PLAIN_PARTIAL",
+          "signature": "const PLAIN_PARTIAL: &str = \"Part of it came over, but something is left out, differs from the original or has not been checked yet; the technical detail says w"
+        },
+        {
+          "line": 54,
+          "kind": "struct",
+          "name": "Row",
+          "signature": "pub struct Row {"
+        },
+        {
+          "line": 79,
+          "kind": "impl",
+          "name": "Row",
+          "signature": "impl Row {"
+        },
+        {
+          "line": 81,
+          "kind": "fn",
+          "name": "plain_text",
+          "signature": "pub fn plain_text(&self) -> String {"
+        },
+        {
+          "line": 98,
+          "kind": "fn",
+          "name": "license_kind",
+          "signature": "pub fn license_kind(license: &str) -> &'static str {"
+        },
+        {
+          "line": 131,
+          "kind": "fn",
+          "name": "not_yet",
+          "signature": "fn not_yet(tier: &str) -> &'static str {"
+        },
+        {
+          "line": 146,
+          "kind": "fn",
+          "name": "not_needed",
+          "signature": "fn not_needed(class: &str) -> &'static str {"
+        },
+        {
+          "line": 157,
+          "kind": "fn",
+          "name": "plain_not_yet",
+          "signature": "fn plain_not_yet(r: &Record) -> &'static str {"
+        },
+        {
+          "line": 187,
+          "kind": "fn",
+          "name": "plain_not_needed",
+          "signature": "fn plain_not_needed(class: &str) -> &'static str {"
+        },
+        {
+          "line": 204,
+          "kind": "enum",
+          "name": "OldLayout",
+          "signature": "enum OldLayout {"
+        },
+        {
+          "line": 213,
+          "kind": "fn",
+          "name": "old_layout",
+          "signature": "fn old_layout(work: &Path, key: &str) -> OldLayout {"
+        },
+        {
+          "line": 239,
+          "kind": "fn",
+          "name": "carried",
+          "signature": "fn carried(work: &Path, key: &str) -> Option<(Status, String)> {"
+        },
+        {
+          "line": 332,
+          "kind": "fn",
+          "name": "data_pack",
+          "signature": "fn data_pack(installed: &Installed) -> (Status, String) {"
+        },
+        {
+          "line": 351,
+          "kind": "fn",
+          "name": "resource_row",
+          "signature": "fn resource_row(path: &str, outcome: Option<&Outcome>, record: Option<&Record>) -> Row {"
+        },
+        {
+          "line": 388,
+          "kind": "fn",
+          "name": "build",
+          "signature": "pub fn build(records: &[Record], work: &Path) -> Vec<Row> {"
+        },
+        {
+          "line": 477,
+          "kind": "struct",
+          "name": "Summary",
+          "signature": "pub struct Summary {"
+        },
+        {
+          "line": 492,
+          "kind": "fn",
+          "name": "summary",
+          "signature": "pub fn summary(rows: &[Row]) -> Summary {"
+        },
+        {
+          "line": 518,
+          "kind": "impl",
+          "name": "Summary",
+          "signature": "impl Summary {"
+        },
+        {
+          "line": 521,
+          "kind": "fn",
+          "name": "lines",
+          "signature": "pub fn lines(&self) -> Vec<String> {"
+        },
+        {
+          "line": 546,
+          "kind": "fn",
+          "name": "table",
+          "signature": "fn table(rows: &[Row], title: &str, field: fn(&Row) -> &str) -> String {"
+        },
+        {
+          "line": 576,
+          "kind": "fn",
+          "name": "markdown",
+          "signature": "pub fn markdown(pack: &str, rows: &[Row]) -> String {"
+        },
+        {
+          "line": 611,
+          "kind": "fn",
+          "name": "counts",
+          "signature": "pub fn counts(rows: &[Row]) -> Vec<(&'static str, usize)> {"
+        },
+        {
+          "line": 619,
+          "kind": "mod",
+          "name": "tests",
+          "signature": "mod tests {"
+        },
+        {
+          "line": 622,
+          "kind": "fn",
+          "name": "record",
+          "signature": "fn record(key: &str, class: &str, tier: &str, depends: &[&str]) -> Record {"
+        },
+        {
+          "line": 634,
+          "kind": "fn",
+          "name": "statuses_and_reasons",
+          "signature": "fn statuses_and_reasons() {"
+        },
+        {
+          "line": 713,
+          "kind": "fn",
+          "name": "carried_harness_needs_executed_checks",
+          "signature": "fn carried_harness_needs_executed_checks() {"
+        },
+        {
+          "line": 728,
+          "kind": "fn",
+          "name": "carried_harness_rejects_failed_verdicts",
+          "signature": "fn carried_harness_rejects_failed_verdicts() {"
+        },
+        {
+          "line": 748,
+          "kind": "fn",
+          "name": "carried_harness_keeps_current_and_legacy_successes",
+          "signature": "fn carried_harness_keeps_current_and_legacy_successes() {"
+        },
+        {
+          "line": 761,
+          "kind": "fn",
+          "name": "carried_harness_keeps_missing_or_unreadable_results_partial",
+          "signature": "fn carried_harness_keeps_missing_or_unreadable_results_partial() {"
+        },
+        {
+          "line": 769,
+          "kind": "fn",
+          "name": "carried_harness_row",
+          "signature": "fn carried_harness_row(harness: Option<&str>) -> Row {"
+        },
+        {
+          "line": 797,
+          "kind": "fn",
+          "name": "licence_families",
+          "signature": "fn licence_families() {"
+        }
+      ],
+      "pattern_hits": {
+        "coverage.json": {
+          "count": 2,
+          "lines": [
+            3,
+            66
+          ]
+        },
+        "coverage": {
+          "count": 6,
+          "lines": [
+            1,
+            3,
+            64,
+            66,
+            80,
+            577
+          ]
+        },
+        "harness": {
+          "count": 40,
+          "lines": [
+            4,
+            5,
+            237,
+            247,
+            283,
+            287,
+            290,
+            303,
+            306,
+            325,
+            414,
+            637
+          ]
+        }
+      },
+      "absence_hits": {}
+    },
+    {
+      "path": "tools/mod_port_harness.py",
+      "exists": true,
+      "lines": 277,
+      "declarations": [],
+      "pattern_hits": {
+        "oracle": {
+          "count": 24,
+          "lines": [
+            2,
+            7,
+            14,
+            21,
+            82,
+            83,
+            86,
+            107,
+            143,
+            147,
+            148,
+            177
+          ]
+        },
+        "coverage": {
+          "count": 0,
+          "lines": []
+        },
+        "harness": {
+          "count": 8,
+          "lines": [
+            2,
+            4,
+            15,
+            23,
+            234,
+            255,
+            266,
+            267
+          ]
+        },
+        "java": {
+          "count": 1,
+          "lines": [
+            2
+          ]
+        }
+      },
+      "absence_hits": {}
+    }
+  ],
+  "declared_symbols": [
+    "ALL",
+    "APIS",
+    "App",
+    "Armor",
+    "ArmorLayer",
+    "BLOCK",
+    "BUILDS_PER_ADDRESS",
+    "BUILDS_PER_HOUR",
+    "Block",
+    "BlockFile",
+    "BlockProperties",
+    "BlockShapes",
+    "Bundle",
+    "Callback",
+    "Choice",
+    "Config",
+    "Content",
+    "CreativeTab",
+    "CreativeTabFile",
+    "DISPATCH_DEDUP_WINDOW",
+    "ENTITY_TEMPLATES",
+    "EffectCategory",
+    "EntityType",
+    "Facts",
+    "FileReader",
+    "Form",
+    "Injection",
+    "Inner",
+    "IntoResponse",
+    "Item",
+    "ItemFile",
+    "KNOWN_CSV",
+    "Known",
+    "LIVING_TEMPLATES",
+    "Login",
+    "MANIFEST",
+    "MANIFEST_TEXT",
+    "MAX_BODY",
+    "MAX_FILE",
+    "MAX_FILES",
+    "MAX_FORM",
+    "MAX_MENU_SLOTS",
+    "MAX_SET_MODS",
+    "MAX_TOTAL",
+    "MIXINS_STAGE",
+    "Manifest",
+    "MenuCrafting",
+    "MenuLinks",
+    "MenuType",
+    "MobEffect",
+    "NativeBuildRequest",
+    "OldLayout",
+    "Ownership",
+    "PER_ACCOUNT",
+    "PER_HOUR",
+    "PLAIN_PARTIAL",
+    "PLAIN_PORTED",
+    "POLLS_PER_ADDRESS",
+    "POLLS_PER_HOUR",
+    "RATINGS_PER_ACCOUNT",
+    "RATINGS_PER_HOUR",
+    "RandomTicks",
+    "Rarity",
+    "Rating",
+    "Refusal",
+    "RenderShape",
+    "Row",
+    "SESSION",
+    "SelfDrop",
+    "SetType",
+    "ShapeEntityKind",
+    "Source",
+    "State",
+    "StateLight",
+    "StateProperty",
+    "StateValues",
+    "Status",
+    "Summary",
+    "TOTALS_FOR",
+    "Tags",
+    "VANILLA_PACKAGE",
+    "WASM_GONE",
+    "Windows",
+    "a_block_that_cannot_occlude_hides_no_neighbour_faces",
+    "a_door_drops_from_its_lower_half",
+    "a_project_that_ships_as_a_data_pack_is_data_tier_until_its_jar_says_otherwise",
+    "accepts_binary_data_in_the_bundle_data_directory",
+    "allow",
+    "allowed",
+    "api",
+    "applies",
+    "archive",
+    "armor_asset_exists",
+    "armor_json",
+    "armour_materials_become_equipment_assets",
+    "armour_only_names_an_equipment_asset_that_exists",
+    "asset_carried",
+    "atm10",
+    "bad",
+    "block",
+    "build",
+    "by_key",
+    "callback",
+    "carried",
+    "carried_harness_keeps_current_and_legacy_successes",
+    "carried_harness_keeps_missing_or_unreadable_results_partial",
+    "carried_harness_needs_executed_checks",
+    "carried_harness_rejects_failed_verdicts",
+    "carried_harness_row",
+    "check",
+    "check_block",
+    "check_components",
+    "check_item",
+    "check_path",
+    "check_selection",
+    "check_sign_walls",
+    "choice",
+    "clash",
+    "client_ip",
+    "combined_sound_content_is_validated_and_part_of_the_source_digest",
+    "content",
+    "cookie",
+    "counts",
+    "csrf",
+    "csv_fields",
+    "custom_class",
+    "data_pack",
+    "database",
+    "date",
+    "declare",
+    "declared",
+    "default_size",
+    "default_state",
+    "directory",
+    "drain",
+    "drain_form",
+    "drops_itself",
+    "drops_itself_is_vanillas_drop_self",
+    "equipment",
+    "facts",
+    "file",
+    "fluid",
+    "food_26_3",
+    "food_becomes_26_3s_food_and_consumable",
+    "from_env",
+    "from_the_site",
+    "generate",
+    "get",
+    "github",
+    "github_down",
+    "holds",
+    "hooks_is_optional_and_kept",
+    "in_data",
+    "inject",
+    "into_response",
+    "is_empty",
+    "is_file",
+    "is_hex_str",
+    "is_living",
+    "is_target_triple",
+    "item",
+    "item_components",
+    "item_template",
+    "items_of_vanilla_classes_take_their_template_and_numbers",
+    "known_table_matches_ids_and_names",
+    "label",
+    "layers",
+    "layers_put_dependencies_first",
+    "licence_families",
+    "license_kind",
+    "lines",
+    "login",
+    "logout",
+    "manifest",
+    "markdown",
+    "me",
+    "meaning",
+    "mixin",
+    "modifiers_26_3",
+    "my_rating",
+    "name",
+    "namespaced_id",
+    "new",
+    "no_mods_without_a_record_or_with_an_empty_or_broken_one",
+    "normalise",
+    "not_needed",
+    "not_yet",
+    "now",
+    "old_layout",
+    "one_hmod_carries_content_beside_its_native_code",
+    "open_zip",
+    "ownership",
+    "page",
+    "pairs",
+    "path",
+    "plain_not_needed",
+    "plain_not_yet",
+    "plain_text",
+    "property_names",
+    "publish",
+    "random_hex",
+    "range",
+    "rate",
+    "ratings",
+    "read",
+    "read_declaring",
+    "read_format",
+    "reader",
+    "reader_of",
+    "receive",
+    "record",
+    "registry_page",
+    "rejects_missing_or_mismatched_mixin_identity_without_panicking",
+    "rejects_path_traversal_and_non_source_payloads",
+    "resource_row",
+    "revision",
+    "rounded",
+    "router",
+    "rules",
+    "rules_follow_sides_then_categories",
+    "same",
+    "same_states",
+    "session",
+    "set_cookie",
+    "sign",
+    "signed_in_here",
+    "sound_block",
+    "source",
+    "source_bundle_carries_exact_compatibility_into_index_facts",
+    "source_files",
+    "staged_mods",
+    "state",
+    "state_key",
+    "state_keys_sort",
+    "state_name",
+    "statuses_and_reasons",
+    "submission_key",
+    "submission_tag",
+    "submission_tag_valid",
+    "submit",
+    "summary",
+    "table",
+    "tag_members",
+    "take",
+    "template",
+    "templates_follow_class_shapes_and_sounds",
+    "tests",
+    "text",
+    "the_mods_of_every_injection_and_module_once",
+    "too_big",
+    "torn",
+    "totals",
+    "track",
+    "unsign",
+    "update_trailer",
+    "url_origin",
+    "values",
+    "values_past_vanillas_keep_the_templates",
+    "vanilla_class",
+    "vanilla_id",
+    "walk",
+    "workspace",
+    "yes"
+  ],
+  "missing_files": [],
+  "tree_scan": {
+    "files_scanned": 55,
+    "keywords": {
+      "animated_model|BedrockGeometry": {
+        "matching_files_sample": [],
+        "sample_size": 0
+      },
+      "api_tier|ApiTier": {
+        "matching_files_sample": [],
+        "sample_size": 0
+      },
+      "coverage\\.json": {
+        "matching_files_sample": [
+          "crates/horizon-port-pack/src/main.rs",
+          "crates/horizon-port-pack/src/pipeline.rs",
+          "crates/horizon-port-pack/src/report.rs"
+        ],
+        "sample_size": 3
+      },
+      "dev_only_oracle|java_oracle": {
+        "matching_files_sample": [],
+        "sample_size": 0
+      }
+    },
+    "note": "tree_keywords 按正则大小写不敏感匹配；命中只说明该词出现，是否为目标能力需结合 files[].pattern_hits 与人工判读。skeleton 一类词可能指 vanilla 骷髅生物，不能据此认定存在骨骼动画。"
+  },
+  "invariants": [
+    "只记录行号与 <=160 字符短签名，不复制源码正文",
+    "absence_patterns / tree_keywords 用于证明能力缺席，命中数必须如实记录",
+    "换 Horizon 快照后重跑即可对比，禁止手工编辑本报告"
+  ]
+}

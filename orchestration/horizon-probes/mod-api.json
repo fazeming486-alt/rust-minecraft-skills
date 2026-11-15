@@ -1,0 +1,86 @@
+{
+  "id": "mod-api",
+  "title": "Horizon mod API 生成 / native hook 分发 / API tier 与 .hmod 加载链",
+  "note": "重点取证 tier 不属于 native-hooks.json 的 mod_api 字段、0.5 仅声明未实现、dev-only Java oracle 与 coverage 已有实现（M3 应对接而非重造）。",
+  "files": [
+    {
+      "path": "crates/horizon-mod-api-gen/src/lib.rs",
+      "declarations": ["Hook", "Hooks"],
+      "patterns": ["mod_api", "contract", "listen", "collect", "cancel", "replace", "modifiers"],
+      "absence_patterns": ["tier"]
+    },
+    {
+      "path": "crates/horizon-mod-api-gen/src/build.rs",
+      "declarations": [],
+      "patterns": ["native-hooks.json", "OUT_DIR", "mod_api", "contract"],
+      "absence_patterns": []
+    },
+    {
+      "path": "crates/horizon-mod-api-gen/src/staged.rs",
+      "declarations": [],
+      "patterns": ["stage", "mod_api", "contract"],
+      "absence_patterns": []
+    },
+    {
+      "path": "crates/horizon-mods/src/manifest.rs",
+      "declarations": ["APIS", "Manifest"],
+      "patterns": ["0\\.1", "0\\.2", "0\\.3", "api", "version"],
+      "absence_patterns": ["0\\.5", "0\\.4"]
+    },
+    {
+      "path": "crates/horizon-mods/src/lib.rs",
+      "declarations": ["ContentMod", "NativeModManifest"],
+      "patterns": ["content", "native", "load", "manifest"],
+      "absence_patterns": []
+    },
+    {
+      "path": "crates/horizon-mods/src/content.rs",
+      "declarations": [],
+      "patterns": ["assets/", "data/", "content", "register"],
+      "absence_patterns": []
+    },
+    {
+      "path": "crates/horizon-mods/src/index/native.rs",
+      "declarations": [],
+      "patterns": ["cdylib", "ABI", "load", "native"],
+      "absence_patterns": []
+    },
+    {
+      "path": "crates/horizon-mod-registry/src/lib.rs",
+      "declarations": [],
+      "patterns": ["ModType", "index", "register"],
+      "absence_patterns": []
+    },
+    {
+      "path": "crates/horizon-port-pack/src/classify.rs",
+      "declarations": [],
+      "patterns": ["api_tier", "data", "logic", "machines", "deep", "client", "none"],
+      "absence_patterns": []
+    },
+    {
+      "path": "crates/horizon-port-pack/src/oracle.rs",
+      "declarations": [],
+      "patterns": ["oracle", "java", "behaviour", "record"],
+      "absence_patterns": []
+    },
+    {
+      "path": "crates/horizon-port-pack/src/report.rs",
+      "declarations": [],
+      "patterns": ["coverage.json", "coverage", "harness"],
+      "absence_patterns": []
+    },
+    {
+      "path": "tools/mod_port_harness.py",
+      "declarations": [],
+      "patterns": ["oracle", "coverage", "harness", "java"],
+      "absence_patterns": []
+    }
+  ],
+  "tree_globs": ["crates/horizon-port-pack/**/*.rs", "crates/horizon-mods/**/*.rs", "crates/horizon-mod-api-gen/**/*.rs"],
+  "tree_keywords": ["animated_model|BedrockGeometry", "api_tier|ApiTier", "coverage\\.json", "dev_only_oracle|java_oracle"],
+  "acceptance": [
+    "mod_api 无 tier 字段有明确证据；tier 归属 horizon-port-pack 的分类逻辑",
+    "0.5 仅声明未实现（APIS 止于 0.3）有行号证据",
+    "dev-only Java oracle / coverage 实现存在，M3 应直接对接"
+  ]
+}

@@ -1,0 +1,991 @@
+{
+  "schema_version": "0.1.0",
+  "probe_id": "asset-schema",
+  "title": "Horizon 资产模型 / 动画元数据 / item model 条件系统",
+  "horizon_root": "D:/RUST重写mc项目/third_party/horizon",
+  "source_kind": "rust-source",
+  "files": [
+    {
+      "path": "crates/horizon-assets/src/animation.rs",
+      "exists": true,
+      "lines": 365,
+      "declarations": [
+        {
+          "line": 6,
+          "kind": "struct",
+          "name": "AnimationFrame",
+          "signature": "pub struct AnimationFrame {"
+        },
+        {
+          "line": 12,
+          "kind": "struct",
+          "name": "AnimationMetadata",
+          "signature": "pub struct AnimationMetadata {"
+        },
+        {
+          "line": 26,
+          "kind": "enum",
+          "name": "ClipMode",
+          "signature": "pub enum ClipMode {"
+        },
+        {
+          "line": 42,
+          "kind": "struct",
+          "name": "ModeInputs",
+          "signature": "pub struct ModeInputs<'a> {"
+        },
+        {
+          "line": 70,
+          "kind": "impl",
+          "name": "AnimationMetadata",
+          "signature": "impl AnimationMetadata {"
+        },
+        {
+          "line": 185,
+          "kind": "struct",
+          "name": "AnimationClip",
+          "signature": "pub struct AnimationClip {"
+        },
+        {
+          "line": 193,
+          "kind": "struct",
+          "name": "AnimationSample",
+          "signature": "pub struct AnimationSample {"
+        },
+        {
+          "line": 204,
+          "kind": "impl",
+          "name": "AnimationClip",
+          "signature": "impl AnimationClip {"
+        },
+        {
+          "line": 240,
+          "kind": "impl",
+          "name": "AnimationClip",
+          "signature": "impl AnimationClip {"
+        }
+      ],
+      "pattern_hits": {
+        "pub fn sample": {
+          "count": 2,
+          "lines": [
+            220,
+            245
+          ]
+        },
+        "interpolate": {
+          "count": 7,
+          "lines": [
+            17,
+            110,
+            178,
+            189,
+            211,
+            212,
+            234
+          ]
+        },
+        "frame_time": {
+          "count": 7,
+          "lines": [
+            16,
+            109,
+            145,
+            152,
+            158,
+            268,
+            274
+          ]
+        },
+        "Expression": {
+          "count": 12,
+          "lines": [
+            24,
+            35,
+            36,
+            48,
+            49,
+            126,
+            243,
+            257,
+            297,
+            302,
+            343,
+            353
+          ]
+        },
+        "sprite": {
+          "count": 1,
+          "lines": [
+            1
+          ]
+        },
+        "mcmeta": {
+          "count": 3,
+          "lines": [
+            23,
+            288,
+            289
+          ]
+        }
+      },
+      "absence_hits": {
+        "bone": {
+          "count": 0,
+          "lines": []
+        },
+        "skeleton": {
+          "count": 0,
+          "lines": []
+        },
+        "skinning": {
+          "count": 0,
+          "lines": []
+        },
+        "gltf": {
+          "count": 0,
+          "lines": []
+        }
+      }
+    },
+    {
+      "path": "crates/horizon-assets/src/item_model.rs",
+      "exists": true,
+      "lines": 1816,
+      "declarations": [
+        {
+          "line": 159,
+          "kind": "enum",
+          "name": "DisplayContext",
+          "signature": "pub enum DisplayContext {"
+        },
+        {
+          "line": 171,
+          "kind": "impl",
+          "name": "DisplayContext",
+          "signature": "impl DisplayContext {"
+        },
+        {
+          "line": 360,
+          "kind": "struct",
+          "name": "ClientItem",
+          "signature": "pub struct ClientItem {"
+        },
+        {
+          "line": 366,
+          "kind": "impl",
+          "name": "ClientItem",
+          "signature": "impl ClientItem {"
+        },
+        {
+          "line": 384,
+          "kind": "struct",
+          "name": "ModelLeaf",
+          "signature": "pub struct ModelLeaf {"
+        },
+        {
+          "line": 390,
+          "kind": "enum",
+          "name": "ItemModelNode",
+          "signature": "pub enum ItemModelNode {"
+        },
+        {
+          "line": 425,
+          "kind": "struct",
+          "name": "SwitchCase",
+          "signature": "pub struct SwitchCase {"
+        },
+        {
+          "line": 431,
+          "kind": "impl",
+          "name": "ItemModelNode",
+          "signature": "impl ItemModelNode {"
+        },
+        {
+          "line": 588,
+          "kind": "impl",
+          "name": "SwitchCase",
+          "signature": "impl SwitchCase {"
+        },
+        {
+          "line": 660,
+          "kind": "enum",
+          "name": "ConditionProperty",
+          "signature": "pub enum ConditionProperty {"
+        },
+        {
+          "line": 680,
+          "kind": "impl",
+          "name": "ConditionProperty",
+          "signature": "impl ConditionProperty {"
+        },
+        {
+          "line": 707,
+          "kind": "enum",
+          "name": "SelectProperty",
+          "signature": "pub enum SelectProperty {"
+        },
+        {
+          "line": 723,
+          "kind": "impl",
+          "name": "SelectProperty",
+          "signature": "impl SelectProperty {"
+        },
+        {
+          "line": 834,
+          "kind": "enum",
+          "name": "NumericProperty",
+          "signature": "pub enum NumericProperty {"
+        },
+        {
+          "line": 860,
+          "kind": "impl",
+          "name": "NumericProperty",
+          "signature": "impl NumericProperty {"
+        }
+      ],
+      "pattern_hits": {
+        "ConditionProperty::Custom": {
+          "count": 3,
+          "lines": [
+            440,
+            1392,
+            1395
+          ]
+        },
+        "minecraft:condition": {
+          "count": 3,
+          "lines": [
+            435,
+            466,
+            470
+          ]
+        },
+        "minecraft:select": {
+          "count": 3,
+          "lines": [
+            476,
+            481,
+            695
+          ]
+        },
+        "range_dispatch": {
+          "count": 2,
+          "lines": [
+            2,
+            507
+          ]
+        },
+        "item_model_property": {
+          "count": 2,
+          "lines": [
+            1035,
+            1393
+          ]
+        },
+        "boolean": {
+          "count": 10,
+          "lines": [
+            221,
+            248,
+            249,
+            376,
+            377,
+            692,
+            862,
+            873,
+            883,
+            902
+          ]
+        }
+      },
+      "absence_hits": {
+        "bedrock geometry": {
+          "count": 0,
+          "lines": []
+        },
+        "gltf": {
+          "count": 0,
+          "lines": []
+        }
+      }
+    },
+    {
+      "path": "crates/horizon-assets/src/item_model/foreign.rs",
+      "exists": true,
+      "lines": 114,
+      "declarations": [
+        {
+          "line": 10,
+          "kind": "const",
+          "name": "MODEL_KEYS",
+          "signature": "const MODEL_KEYS: [&str; 4] = [\"model\", \"base_model\", \"base\", \"fallback\"];"
+        },
+        {
+          "line": 12,
+          "kind": "fn",
+          "name": "is_foreign",
+          "signature": "pub fn is_foreign(id: &str) -> bool {"
+        },
+        {
+          "line": 17,
+          "kind": "fn",
+          "name": "wrap",
+          "signature": "pub fn wrap(node: ItemModelNode, transformation: Option<Mat4>) -> ItemModelNode {"
+        },
+        {
+          "line": 27,
+          "kind": "fn",
+          "name": "property_is_foreign",
+          "signature": "pub fn property_is_foreign(m: &Map<String, Value>) -> Result<bool> {"
+        },
+        {
+          "line": 35,
+          "kind": "fn",
+          "name": "leaf",
+          "signature": "fn leaf(model: String, m: &Map<String, Value>) -> ItemModelNode {"
+        },
+        {
+          "line": 52,
+          "kind": "fn",
+          "name": "decode_node",
+          "signature": "pub fn decode_node(kind: &str, m: &Map<String, Value>) -> ItemModelNode {"
+        },
+        {
+          "line": 82,
+          "kind": "fn",
+          "name": "fluid_container",
+          "signature": "fn fluid_container(m: &Map<String, Value>) -> ItemModelNode {"
+        }
+      ],
+      "pattern_hits": {
+        "on_false": {
+          "count": 0,
+          "lines": []
+        },
+        "fallback": {
+          "count": 1,
+          "lines": [
+            10
+          ]
+        },
+        "unknown": {
+          "count": 1,
+          "lines": [
+            51
+          ]
+        },
+        "foreign": {
+          "count": 3,
+          "lines": [
+            12,
+            27,
+            32
+          ]
+        },
+        "degrade": {
+          "count": 0,
+          "lines": []
+        }
+      },
+      "absence_hits": {}
+    },
+    {
+      "path": "crates/horizon-assets/src/item_model/component_predicate.rs",
+      "exists": true,
+      "lines": 190,
+      "declarations": [
+        {
+          "line": 6,
+          "kind": "fn",
+          "name": "decode",
+          "signature": "pub(super) fn decode(m: &Map<String, Value>) -> Result<Value> {"
+        },
+        {
+          "line": 64,
+          "kind": "fn",
+          "name": "matches",
+          "signature": "pub(super) fn matches("
+        },
+        {
+          "line": 106,
+          "kind": "fn",
+          "name": "matches_enchantment",
+          "signature": "fn matches_enchantment(level: i64, bounds: Option<&Value>) -> bool {"
+        },
+        {
+          "line": 111,
+          "kind": "fn",
+          "name": "level_matches",
+          "signature": "fn level_matches(level: i64, bounds: Option<&Value>) -> bool {"
+        },
+        {
+          "line": 128,
+          "kind": "mod",
+          "name": "tests",
+          "signature": "mod tests {"
+        },
+        {
+          "line": 132,
+          "kind": "struct",
+          "name": "Tags",
+          "signature": "struct Tags;"
+        },
+        {
+          "line": 133,
+          "kind": "impl",
+          "name": "ItemEnv",
+          "signature": "impl ItemEnv for Tags {"
+        },
+        {
+          "line": 134,
+          "kind": "fn",
+          "name": "enchantment_in_tag",
+          "signature": "fn enchantment_in_tag(&self, enchantment: &str, tag: &str) -> bool {"
+        },
+        {
+          "line": 140,
+          "kind": "fn",
+          "name": "unnamed_predicates_inspect_entries_but_named_ones_require_a_nonzero_level",
+          "signature": "fn unnamed_predicates_inspect_entries_but_named_ones_require_a_nonzero_level() {"
+        },
+        {
+          "line": 164,
+          "kind": "fn",
+          "name": "enchantment_selectors_use_the_hosts_registry_tags",
+          "signature": "fn enchantment_selectors_use_the_hosts_registry_tags() {"
+        }
+      ],
+      "pattern_hits": {
+        "predicate": {
+          "count": 14,
+          "lines": [
+            4,
+            5,
+            7,
+            61,
+            63,
+            65,
+            69,
+            104,
+            140,
+            165,
+            168,
+            174
+          ]
+        },
+        "component": {
+          "count": 14,
+          "lines": [
+            1,
+            4,
+            7,
+            63,
+            66,
+            76,
+            141,
+            148,
+            156,
+            169,
+            174,
+            178
+          ]
+        },
+        "condition": {
+          "count": 3,
+          "lines": [
+            1,
+            165,
+            168
+          ]
+        }
+      },
+      "absence_hits": {}
+    },
+    {
+      "path": "crates/horizon-assets/src/model.rs",
+      "exists": true,
+      "lines": 565,
+      "declarations": [],
+      "pattern_hits": {
+        "cuboid": {
+          "count": 5,
+          "lines": [
+            1,
+            60,
+            78,
+            217,
+            324
+          ]
+        },
+        "element": {
+          "count": 17,
+          "lines": [
+            3,
+            4,
+            66,
+            92,
+            150,
+            154,
+            167,
+            183,
+            265,
+            266,
+            270,
+            290
+          ]
+        },
+        "rotation": {
+          "count": 23,
+          "lines": [
+            154,
+            166,
+            178,
+            183,
+            186,
+            191,
+            399,
+            400,
+            401,
+            431,
+            455,
+            456
+          ]
+        },
+        "pivot": {
+          "count": 0,
+          "lines": []
+        },
+        "parent": {
+          "count": 10,
+          "lines": [
+            1,
+            61,
+            73,
+            232,
+            233,
+            237,
+            240,
+            285,
+            296,
+            298
+          ]
+        }
+      },
+      "absence_hits": {
+        "bone": {
+          "count": 0,
+          "lines": []
+        },
+        "gltf": {
+          "count": 0,
+          "lines": []
+        },
+        "bedrock": {
+          "count": 0,
+          "lines": []
+        }
+      }
+    },
+    {
+      "path": "crates/horizon-assets/src/obj.rs",
+      "exists": true,
+      "lines": 183,
+      "declarations": [
+        {
+          "line": 5,
+          "kind": "struct",
+          "name": "ObjVertex",
+          "signature": "pub struct ObjVertex {"
+        },
+        {
+          "line": 13,
+          "kind": "struct",
+          "name": "ObjFace",
+          "signature": "pub struct ObjFace {"
+        },
+        {
+          "line": 21,
+          "kind": "struct",
+          "name": "ParsedObj",
+          "signature": "pub struct ParsedObj {"
+        },
+        {
+          "line": 26,
+          "kind": "enum",
+          "name": "MtlTexture",
+          "signature": "pub enum MtlTexture {"
+        },
+        {
+          "line": 34,
+          "kind": "struct",
+          "name": "ObjModel",
+          "signature": "pub struct ObjModel {"
+        },
+        {
+          "line": 39,
+          "kind": "fn",
+          "name": "parse_obj",
+          "signature": "pub fn parse_obj(text: &str) -> Result<ParsedObj, String> {"
+        },
+        {
+          "line": 109,
+          "kind": "fn",
+          "name": "floats",
+          "signature": "fn floats<'a, const N: usize>(mut words: impl Iterator<Item = &'a str>) -> Option<[f32; N]> {"
+        },
+        {
+          "line": 117,
+          "kind": "fn",
+          "name": "index",
+          "signature": "fn index(word: Option<&str>, len: usize) -> Option<usize> {"
+        },
+        {
+          "line": 128,
+          "kind": "fn",
+          "name": "parse_mtl",
+          "signature": "pub fn parse_mtl(text: &str) -> BTreeMap<String, MtlTexture> {"
+        },
+        {
+          "line": 152,
+          "kind": "mod",
+          "name": "tests",
+          "signature": "mod tests {"
+        },
+        {
+          "line": 156,
+          "kind": "fn",
+          "name": "quads_triangles_and_negative_indices",
+          "signature": "fn quads_triangles_and_negative_indices() {"
+        },
+        {
+          "line": 171,
+          "kind": "fn",
+          "name": "bad_indices_are_errors",
+          "signature": "fn bad_indices_are_errors() {"
+        },
+        {
+          "line": 176,
+          "kind": "fn",
+          "name": "mtl_maps_slots_and_sprites",
+          "signature": "fn mtl_maps_slots_and_sprites() {"
+        }
+      ],
+      "pattern_hits": {
+        "obj": {
+          "count": 21,
+          "lines": [
+            1,
+            5,
+            13,
+            17,
+            18,
+            21,
+            23,
+            32,
+            34,
+            35,
+            39,
+            42
+          ]
+        },
+        "mtl": {
+          "count": 18,
+          "lines": [
+            1,
+            14,
+            22,
+            26,
+            36,
+            63,
+            64,
+            128,
+            134,
+            140,
+            141,
+            157
+          ]
+        },
+        "vertex": {
+          "count": 7,
+          "lines": [
+            5,
+            11,
+            18,
+            53,
+            71,
+            78,
+            86
+          ]
+        }
+      },
+      "absence_hits": {
+        "gltf": {
+          "count": 0,
+          "lines": []
+        },
+        "bedrock": {
+          "count": 0,
+          "lines": []
+        }
+      }
+    },
+    {
+      "path": "crates/horizon-assets/src/bake/transform.rs",
+      "exists": true,
+      "lines": 243,
+      "declarations": [
+        {
+          "line": 9,
+          "kind": "struct",
+          "name": "Affine",
+          "signature": "struct Affine {"
+        },
+        {
+          "line": 13,
+          "kind": "impl",
+          "name": "Affine",
+          "signature": "impl Affine {"
+        },
+        {
+          "line": 14,
+          "kind": "const",
+          "name": "IDENTITY",
+          "signature": "const IDENTITY: Self = Self {"
+        },
+        {
+          "line": 22,
+          "kind": "fn",
+          "name": "position",
+          "signature": "fn position(self, v: [f32; 3]) -> [f32; 3] {"
+        },
+        {
+          "line": 26,
+          "kind": "fn",
+          "name": "mul",
+          "signature": "fn mul(self, b: Self) -> Self {"
+        },
+        {
+          "line": 48,
+          "kind": "fn",
+          "name": "inverse",
+          "signature": "fn inverse(self) -> Self {"
+        },
+        {
+          "line": 93,
+          "kind": "fn",
+          "name": "face_basis",
+          "signature": "fn face_basis(direction: Direction) -> Self {"
+        },
+        {
+          "line": 138,
+          "kind": "struct",
+          "name": "BlockModelTransform",
+          "signature": "pub struct BlockModelTransform {"
+        },
+        {
+          "line": 143,
+          "kind": "struct",
+          "name": "Orientation",
+          "signature": "struct Orientation {"
+        },
+        {
+          "line": 147,
+          "kind": "impl",
+          "name": "BlockModelTransform",
+          "signature": "impl BlockModelTransform {"
+        },
+        {
+          "line": 148,
+          "kind": "fn",
+          "name": "new",
+          "signature": "pub fn new(quarter_turns: [u8; 3], uv_lock: bool) -> Self {"
+        },
+        {
+          "line": 149,
+          "kind": "static",
+          "name": "ORIENTATIONS",
+          "signature": "static ORIENTATIONS: OnceLock<[Orientation; 64]> = OnceLock::new();"
+        },
+        {
+          "line": 188,
+          "kind": "fn",
+          "name": "matrix_rows",
+          "signature": "pub fn matrix_rows(self) -> [[f32; 4]; 3] {"
+        },
+        {
+          "line": 191,
+          "kind": "fn",
+          "name": "inverse_uv_rows",
+          "signature": "pub fn inverse_uv_rows(self, direction: Direction) -> [[f32; 4]; 3] {"
+        },
+        {
+          "line": 194,
+          "kind": "fn",
+          "name": "uv_matrix",
+          "signature": "fn uv_matrix(self, direction: Direction) -> Affine {"
+        },
+        {
+          "line": 201,
+          "kind": "fn",
+          "name": "position",
+          "signature": "pub(super) fn position(self, v: [f32; 3]) -> [f32; 3] {"
+        },
+        {
+          "line": 210,
+          "kind": "fn",
+          "name": "uv",
+          "signature": "pub(super) fn uv(self, direction: Direction, uv: [f32; 2]) -> [f32; 2] {"
+        },
+        {
+          "line": 221,
+          "kind": "fn",
+          "name": "direction",
+          "signature": "pub fn direction(self, direction: Direction) -> Direction {"
+        },
+        {
+          "line": 233,
+          "kind": "fn",
+          "name": "nearest",
+          "signature": "fn nearest([x, y, z]: [f32; 3]) -> Direction {"
+        }
+      ],
+      "pattern_hits": {
+        "translate": {
+          "count": 0,
+          "lines": []
+        },
+        "rotate": {
+          "count": 1,
+          "lines": [
+            105
+          ]
+        },
+        "scale": {
+          "count": 0,
+          "lines": []
+        },
+        "matrix": {
+          "count": 18,
+          "lines": [
+            144,
+            165,
+            170,
+            171,
+            173,
+            179,
+            188,
+            189,
+            192,
+            194,
+            202,
+            206
+          ]
+        }
+      },
+      "absence_hits": {
+        "bone": {
+          "count": 0,
+          "lines": []
+        }
+      }
+    }
+  ],
+  "declared_symbols": [
+    "Affine",
+    "AnimationClip",
+    "AnimationFrame",
+    "AnimationMetadata",
+    "AnimationSample",
+    "BlockModelTransform",
+    "ClientItem",
+    "ClipMode",
+    "ConditionProperty",
+    "DisplayContext",
+    "IDENTITY",
+    "ItemEnv",
+    "ItemModelNode",
+    "MODEL_KEYS",
+    "ModeInputs",
+    "ModelLeaf",
+    "MtlTexture",
+    "NumericProperty",
+    "ORIENTATIONS",
+    "ObjFace",
+    "ObjModel",
+    "ObjVertex",
+    "Orientation",
+    "ParsedObj",
+    "SelectProperty",
+    "SwitchCase",
+    "Tags",
+    "bad_indices_are_errors",
+    "decode",
+    "decode_node",
+    "direction",
+    "enchantment_in_tag",
+    "enchantment_selectors_use_the_hosts_registry_tags",
+    "face_basis",
+    "floats",
+    "fluid_container",
+    "index",
+    "inverse",
+    "inverse_uv_rows",
+    "is_foreign",
+    "leaf",
+    "level_matches",
+    "matches",
+    "matches_enchantment",
+    "matrix_rows",
+    "mtl_maps_slots_and_sprites",
+    "mul",
+    "nearest",
+    "new",
+    "parse_mtl",
+    "parse_obj",
+    "position",
+    "property_is_foreign",
+    "quads_triangles_and_negative_indices",
+    "tests",
+    "unnamed_predicates_inspect_entries_but_named_ones_require_a_nonzero_level",
+    "uv",
+    "uv_matrix",
+    "wrap"
+  ],
+  "missing_files": [],
+  "tree_scan": {
+    "files_scanned": 29,
+    "keywords": {
+      "BedrockGeometry|bedrock[_ ]geometry": {
+        "matching_files_sample": [],
+        "sample_size": 0
+      },
+      "gltf|GLTFLoader": {
+        "matching_files_sample": [],
+        "sample_size": 0
+      },
+      "\\.bbmodel|BlockbenchModel": {
+        "matching_files_sample": [],
+        "sample_size": 0
+      },
+      "bone_hierarchy|joint_matrices|skin_weights": {
+        "matching_files_sample": [],
+        "sample_size": 0
+      },
+      "minecraft:condition|range_dispatch": {
+        "matching_files_sample": [
+          "crates/horizon-assets/src/item_model/foreign_tests.rs",
+          "crates/horizon-assets/src/item_model/tests.rs",
+          "crates/horizon-assets/src/item_model.rs"
+        ],
+        "sample_size": 3
+      }
+    },
+    "note": "tree_keywords 按正则大小写不敏感匹配；命中只说明该词出现，是否为目标能力需结合 files[].pattern_hits 与人工判读。skeleton 一类词可能指 vanilla 骷髅生物，不能据此认定存在骨骼动画。"
+  },
+  "invariants": [
+    "只记录行号与 <=160 字符短签名，不复制源码正文",
+    "absence_patterns / tree_keywords 用于证明能力缺席，命中数必须如实记录",
+    "换 Horizon 快照后重跑即可对比，禁止手工编辑本报告"
+  ]
+}

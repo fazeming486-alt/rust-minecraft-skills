@@ -113,6 +113,18 @@ def main() -> int:
         "reports/m2-complexity.json", "reports/m2-collection.json",
         "profiles/forge/1.20.1.json", "reports/calibration-before.json",
         "reports/calibration-1.20.1.json", "tools/lib_facts.py", "tools/experiment.py",
+        "docs/adr/0009-cross-layer-slices-and-target-study.md", "docs/06-m2-execution.md",
+        "schemas/feature-slice.schema.json", "orchestration/slice-anchors.json",
+        "orchestration/horizon-probes/render-pipeline.json",
+        "orchestration/horizon-probes/asset-schema.json",
+        "orchestration/horizon-probes/mod-api.json",
+        "tools/lib_horizon_source.py", "tools/lib_conversion.py",
+        "tools/build_feature_slices.py",
+        "skills/02-contract/build-feature-slices/run.py",
+        "skills/04-art/technical-convert-assets/run.py",
+        "reports/horizon-render-pipeline.json", "reports/horizon-asset-schema.json",
+        "reports/horizon-mod-api.json", "reports/m2-feature-slices.json",
+        "reports/m2-conversion.json",
     ]
     missing = [rel for rel in required_files if not (ROOT / rel).is_file()]
     check("核心文件齐全 (%d 项)" % len(required_files), not missing, ", ".join(missing))
@@ -363,6 +375,93 @@ def main() -> int:
                   for p in packs))
     else:
         check("派发产物存在（work/dispatch/index.json）", False, "未生成")
+
+    # 13. v0.7 · 目标侧源码取证（三路 skill）
+    probe_docs = {pid: load("reports/horizon-%s.json" % pid)
+                  for pid in ("render-pipeline", "asset-schema", "mod-api")}
+    check("三路 Horizon 源码探针 missing_files 全为空",
+          all(not d["missing_files"] for d in probe_docs.values()),
+          "; ".join("%s=%s" % (k, v["missing_files"]) for k, v in probe_docs.items()
+                    if v["missing_files"]))
+    rp = probe_docs["render-pipeline"]["tree_scan"]["keywords"]
+    askw = probe_docs["asset-schema"]["tree_scan"]["keywords"]
+    check("源码级缺席证明：glTF / Bedrock geometry / .bbmodel 读取器 0 命中",
+          rp["gltf|GLTFLoader"]["sample_size"] == 0
+          and askw["BedrockGeometry|bedrock[_ ]geometry"]["sample_size"] == 0
+          and askw["\\.bbmodel|BlockbenchModel"]["sample_size"] == 0)
+    check("逐部件姿态能力存在：ModelPart 命中数 > 0",
+          rp["ModelPart"]["sample_size"] > 0)
+    check("mod API 探针证明 harness/coverage 已存在",
+          probe_docs["mod-api"]["tree_scan"]["keywords"]["coverage\\.json"]["sample_size"] > 0)
+
+    # 14. v0.7 · 跨层特性切片
+    slice_schema = load("schemas/feature-slice.schema.json")
+    check("feature-slice schema 是合法 draft 2020-12 且定义四层",
+          slice_schema.get("$schema", "").startswith("https://json-schema.org/draft/2020-12/")
+          and "slice" in slice_schema["$defs"]
+          and all(x in slice_schema["$defs"]["slice"]["properties"]["layers"]["properties"]
+                  for x in ("assets", "code", "target", "contract")))
+    anchors = load("orchestration/slice-anchors.json")
+    check("锚点规则含 workaround_catalog 与参数化规则",
+          bool(anchors.get("workaround_catalog", {}).get("skeletal_animation", {}).get("limitations"))
+          and len(anchors["state_parameter_rules"]) >= 2
+          and len(anchors["anchors"]) >= 8)
+    fs = load("reports/m2-feature-slices.json")
+    check("跨层切片四层齐全、closed 且无未匹配状态",
+          fs["validation"]["closed"] and fs["validation"]["target_symbols_resolved"]
+          and not fs["unmatched_states"]
+          and all(s["state_parameters"]["roundtrip_closed"] for s in fs["slices"])
+          and all(all(k in s["layers"] for k in ("assets", "code", "target", "contract"))
+                  for s in fs["slices"]))
+    check("切片 verdict 三态且硬缺口不伪装成 portable",
+          all(s["verdict"] in ("portable", "needs_workaround", "blocked") for s in fs["slices"])
+          and all(s["gaps"] or s["verdict"] == "portable" for s in fs["slices"])
+          and any(s["verdict"] == "needs_workaround" and
+                  "animation_driver" in s["layers"]["target"]["capability_gap"]
+                  for s in fs["slices"]))
+    check("所有 needs_workaround 切片都挂了具体 workaround",
+          all("workaround" in s["layers"]["target"] for s in fs["slices"]
+              if s["verdict"] == "needs_workaround"))
+
+    # 15. v0.7 · 技术性格式等价转换
+    conv = load("reports/m2-conversion.json")
+    check("5 个转换器 roundtrip 全闭合",
+          conv["closed"] and len(conv["converters"]) == 5
+          and all(c["roundtrip_closed"] for c in conv["converters"]))
+    check("转换产物只留 work/ 且 schema 状态诚实分级",
+          "work" in Path(conv["output_dir"]).parts
+          and set(conv["totals"]["schema_status"]) == {"bound", "partial", "unbound"}
+          and all(c["schema_status"] in ("bound", "partial", "unbound")
+                  for c in conv["converters"]))
+    check("转换政策三维为 technical-only / local-only",
+          conv["policy"]["transformation"] == "technical-only"
+          and conv["policy"]["distribution"] == "local-only")
+
+    # 16. 回归：ADR 0008 放宽政策后，执行层必须真的允许转换（v0.6 曾断在这里）
+    role_map = {r["id"]: r for r in roles_doc["roles"]}
+    check("政策断点回归：资产角色 allowed_actions 含技术性转换",
+          all("technical_format_conversion" in role_map[r]["allowed_actions"]
+              for r in ("geometry-asset", "animation-asset", "texture-asset",
+                        "audio-asset", "display-index", "asset-conversion")))
+    check("政策断点回归：目标侧角色 allowed_actions 含读 Horizon 源码",
+          all("read_horizon_source" in role_map[r]["allowed_actions"]
+              for r in ("target-study-render", "target-study-assets", "target-study-mod-api")))
+    check("政策白名单包含 read_horizon_source 与 build_cross_layer_slice",
+          all(x in load("policy/license-profiles.json")["modes"]["full-inspection"]["allowed_actions"]
+              for x in ("read_horizon_source", "build_cross_layer_slice")))
+    if dispatch_index.is_file():
+        by_id = {p["task_id"]: p for p in packs}
+        check("任务包实际下发转换与研读权限（不是只在文档里）",
+              "technical_format_conversion" in by_id["m2-17-conversion"]["allowed_actions"]
+              and "read_horizon_source" in by_id["m2-13-target-render"]["allowed_actions"]
+              and "build_cross_layer_slice" in by_id["m2-16-feature-slices"]["allowed_actions"])
+        check("派发为 17 任务 / 4 wave 且目标侧研读在首波",
+              len(di["packs"]) == 17 and len(di["waves"]) == 4
+              and "m2-13-target-render" in di["waves"][0]
+              and "m2-16-feature-slices" in di["waves"][1])
+    check("M2 汇总 COMPLETE 且零越界",
+          coll["verdict"] == "COMPLETE" and coll["total"] == len(template["tasks"])
+          and coll["missing"] == 0 and not coll["violations"])
 
     print("=" * 68)
     for name in PASSED:

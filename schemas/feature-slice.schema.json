@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rustmc-skills.local/schemas/feature-slice.schema.json",
+  "title": "Cross-layer feature slice",
+  "description": "跨层特性切片：把一个用户可感知行为特性（如换弹）所牵涉的资产、Java 代码、Horizon 目标能力与状态契约绑成单一可判定迁移单元。用于解决按文件分工时无人负责缝合的问题。",
+  "type": "object",
+  "required": ["schema_version", "generated_by", "source_artifact", "policy", "summary", "slices", "unmatched_states", "validation"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "generated_by": {"type": "string"},
+    "source_artifact": {"type": "string"},
+    "policy": {
+      "type": "object",
+      "required": ["inspection", "transformation", "distribution"],
+      "properties": {
+        "inspection": {"type": "string"},
+        "transformation": {"type": "string", "enum": ["technical-only", "creative", "port", "none"]},
+        "distribution": {"type": "string", "enum": ["local-only", "redistributable"]}
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": ["slice_count", "raw_state_count", "canonical_state_count", "parameter_compression_ratio", "bone_name_count", "animation_file_count", "code_unit_count", "verdicts"],
+      "properties": {
+        "slice_count": {"type": "integer"},
+        "raw_state_count": {"type": "integer"},
+        "canonical_state_count": {"type": "integer"},
+        "parameter_compression_ratio": {"type": "number"},
+        "bone_name_count": {"type": "integer"},
+        "animation_file_count": {"type": "integer"},
+        "code_unit_count": {"type": "integer"},
+        "verdicts": {"type": "object"}
+      },
+      "additionalProperties": false
+    },
+    "slices": {"type": "array", "items": {"$ref": "#/$defs/slice"}},
+    "unmatched_states": {"type": "array", "items": {"type": "string"}},
+    "validation": {
+      "type": "object",
+      "required": ["target_symbols_resolved", "unknown_hooks", "unknown_helpers", "closed"],
+      "properties": {
+        "target_symbols_resolved": {"type": "boolean"},
+        "unknown_hooks": {"type": "array", "items": {"type": "string"}},
+        "unknown_helpers": {"type": "array", "items": {"type": "string"}},
+        "closed": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "slice": {
+      "type": "object",
+      "required": ["slice_id", "anchor", "summary", "shared_states", "state_parameters", "layers", "verdict", "gaps", "evidence"],
+      "properties": {
+        "slice_id": {"type": "string"},
+        "anchor": {"type": "string"},
+        "summary": {"type": "string"},
+        "shared_states": {"type": "array", "items": {"type": "string"}},
+        "state_parameters": {
+          "type": "object",
+          "required": ["raw_count", "canonical_count", "parameters"],
+          "properties": {
+            "raw_count": {"type": "integer"},
+            "canonical_count": {"type": "integer"},
+            "parameters": {"type": "array", "items": {"type": "string"}},
+            "roundtrip_closed": {"type": "boolean"}
+          },
+          "additionalProperties": false
+        },
+        "layers": {
+          "type": "object",
+          "required": ["assets", "code", "target", "contract"],
+          "properties": {
+            "assets": {"$ref": "#/$defs/assets"},
+            "code": {"$ref": "#/$defs/code"},
+            "target": {"$ref": "#/$defs/target"},
+            "contract": {"$ref": "#/$defs/contract"}
+          },
+          "additionalProperties": false
+        },
+        "verdict": {"type": "string", "enum": ["portable", "needs_workaround", "blocked"]},
+        "gaps": {"type": "array", "items": {"type": "string"}},
+        "evidence": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "assets": {
+      "type": "object",
+      "required": ["animation_files", "animation_states", "bone_names", "geometry_files", "display_files", "index_files", "sound_events"],
+      "properties": {
+        "animation_files": {"type": "integer"},
+        "animation_states": {"type": "array", "items": {"type": "string"}},
+        "bone_names": {"type": "array", "items": {"type": "string"}},
+        "geometry_files": {"type": "integer"},
+        "display_files": {"type": "integer"},
+        "index_files": {"type": "integer"},
+        "sound_events": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "code": {
+      "type": "object",
+      "required": ["unit_count", "units", "by_disposition", "state_machine_units"],
+      "properties": {
+        "unit_count": {"type": "integer"},
+        "units": {"type": "array", "items": {"type": "string"}},
+        "by_disposition": {"type": "object"},
+        "state_machine_units": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "target": {
+      "type": "object",
+      "required": ["hooks", "helpers", "capability_ids", "api_tier", "capability_gap"],
+      "properties": {
+        "hooks": {"type": "array", "items": {"type": "string"}},
+        "helpers": {"type": "array", "items": {"type": "string"}},
+        "capability_ids": {"type": "array", "items": {"type": "string"}},
+        "api_tier": {"type": "string"},
+        "capability_gap": {"type": "array", "items": {"type": "string"}},
+        "workaround": {
+          "type": "object",
+          "required": ["phase_a", "phase_b", "limitations"],
+          "properties": {
+            "target_reality": {"type": "string"},
+            "phase_a": {"type": "string"},
+            "phase_b": {"type": "string"},
+            "limitations": {"type": "array", "items": {"type": "string"}},
+            "evidence": {"type": "array", "items": {"type": "string"}}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "contract": {
+      "type": "object",
+      "required": ["authority", "sync_boundary", "presentation", "requires_animation_driver"],
+      "properties": {
+        "authority": {"type": "string"},
+        "sync_boundary": {"type": "string"},
+        "presentation": {"type": "array", "items": {"type": "string"}},
+        "requires_animation_driver": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  }
+}
