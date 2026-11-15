@@ -926,6 +926,21 @@ def main() -> int:
     check("M5k: 如实写明手动换弹需要客户端输入上行",
           any("native_net_from_client" in item for item in m5k["not_verified"]))
 
+    # 36. v0.10 · M5l 手动换弹：key 钩子在无头客户端里确实触发
+    m5l = load("reports/m5l-manual-reload.json")
+    seq = m5l["assertions"]["sequence"]
+    check("M5l: 5 注入且 key 钩子在无头客户端触发",
+          m5l["stages"]["plan"]["injections"] == 5
+          and m5l["assertions"]["key_hook_fires_headless"] is True)
+    check("M5l: 按 R → 换弹 → 回满 → 再开火（逐步对得上）",
+          seq[0].endswith("ammo=28") and "manual reload started" in seq[1]
+          and "ammo=30" in seq[2] and seq[3].endswith("ammo=29"))
+    check("M5l: 说明走的是战术换弹 40 tick 分支",
+          "40" in m5l["assertions"]["tactical_branch"]
+          and "非空" in m5l["assertions"]["tactical_branch"])
+    check("M5l: 记录 sandbox 故障与重跑，且限制写得具体",
+          "0xFFFFF826" in m5l["environment_note"]["first_attempt"]
+          and any("单机" in item for item in m5l["limitations"]))
 
     print("=" * 68)
     for name in PASSED:

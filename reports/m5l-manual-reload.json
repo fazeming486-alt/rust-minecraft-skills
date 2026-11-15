@@ -1,0 +1,47 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5l · R 键手动换弹在无头客户端里跑通（战术换弹 40 tick）",
+  "verification_level": "fired_in_game",
+  "note": "第 5 个注入 key 在无头客户端里确实触发：按 R → manual reload started → reload finished ammo=30 → 下一发 29。中途曾被本机 sandbox 故障挡住一次（0xFFFFF826），重跑后拿到结果。",
+  "what_changed": {
+    "runtime": "manual_reload() -> bool：满弹或已在换弹返回 false，否则 begin_reload()",
+    "helper": "on_key.rs：pressed && key == \"key.keyboard.r\" → manual_reload()，成功打印 `manual reload started`",
+    "injection": "第 5 个注入 hook=key，bindings 为 game / key: &str / pressed: bool",
+    "engine": "未改（20/20）"
+  },
+  "stages": {
+    "generate": "states=18 / engine tests 20/20 / hooks=5",
+    "plan": {"status": "ok", "seconds": 63.55, "injections": 5, "crates": 1, "data": 1},
+    "apply": {"status": "ok", "seconds": 99.0, "stage": "work/m5/stage-n"},
+    "build": {"status": "ok", "seconds": 569}
+  },
+  "assertions": {
+    "key_hook_fires_headless": true,
+    "sequence": [
+      "[tacz_ak47_pilot] shot, ammo=28",
+      "[tacz_ak47_pilot] manual reload started",
+      "[tacz_ak47_pilot] reload finished, ammo=30",
+      "[tacz_ak47_pilot] shot, ammo=29"
+    ],
+    "tactical_branch": "换弹开始时弹匣是 28（非空），engine 走 RELOAD_TACTICAL_COOLDOWN_TICKS=40；脚本在 key r tap 之后等 45 tick，观察到回满，因此 40 tick 战术换弹在游戏内成立",
+    "fired_again_after_reload": "回满后下一发 ammo=29",
+    "log": "work/m5/ctl-home/_run24.log",
+    "log_bytes": 1043,
+    "log_sha256": "a84e6bca59685428a3f533e09d8b9af8d372169834a7a6293bda11a5e7e6e60f"
+  },
+  "environment_note": {
+    "first_attempt": "01:43 那次测试没有执行：工具调用无输出，随后 Bash/PowerShell 全部 SandboxError 0xFFFFF826（center 规则快照不可用），_run23.log 只有 load probe 与 on_tick 心跳",
+    "recovered": "重试后 shell 自行恢复，同一二进制、同一脚本跑通"
+  },
+  "limitations": [
+    "R 是临时键位：mod 没有自己的键位系统，Horizon 的 Options > Controls 也列不出 mod 按键",
+    "单机成立是因为客户端与集成服务端同进程、共享 GunState；多人需要 native_net_send_to_server 上行（单机该函数返回 Err，见 docs/10 §6）",
+    "切枪仍未实测：没有两把 AK 的样本",
+    "子弹、命中、伤害、音效、动画仍没有"
+  ],
+  "next": [
+    "切枪：两把 AK 各带弹匣的实测",
+    "命中：DDA 射线 + native_hurt_entity",
+    "多人：专用服务器 + 模组消息"
+  ]
+}

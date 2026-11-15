@@ -281,6 +281,18 @@ $compatibility
     bindings = []
 
     [[injection]]
+    id = "ak47-key"
+    hook = "key"
+    hook_version = 1
+    kind = "HEAD"
+    helper = "on_key.rs"
+    bindings = [
+        { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+        { name = "key", ty = "&str", value = "key" },
+        { name = "pressed", ty = "bool", value = "pressed" },
+    ]
+
+    [[injection]]
     id = "ak47-inventory-tick"
     hook = "inventory_tick"
     hook_version = 1
@@ -412,6 +424,14 @@ pub fn tick_once() -> Vec<Event> {
         });
     }
     with_gun(|gun| gun.tick(None))
+}
+
+/// Start a reload from outside the tick (M5l): a key, not a trigger.
+///
+/// Returns whether a reload started: false when one is already running or the
+/// magazine is full. Tactical (40 ticks) when rounds are left, empty (52) at 0.
+pub fn manual_reload() -> bool {
+    with_gun(|gun| !gun.begin_reload().is_empty())
 }
 
 /// Mirror the magazine onto the stack that holds the gun (M5j).
@@ -620,6 +640,29 @@ fn on_use(game: &mut crate::game::Game<'_>, stack: &crate::items::ItemStack, cla
                 "[tacz_ak47_pilot] blocked: {from}->{to} cooldown={cooldown} reloading={reloading}"
             );
         }
+    }
+}
+"""
+
+ON_KEY_RS = """\
+// AK-47 key helper — R reloads (M5l).
+//
+// Bound to `native_key(&mut self, key: &str, pressed: bool)`: vanilla key names,
+// keys on any screen, repeats left out. In single player the server half shares
+// this process, so the shared magazine can be reloaded straight from here; a
+// remote server would need `native_net_send_to_server` (the window's game only,
+// and single player carries no mod messages).
+//
+// R is a stand-in: the mod has no keybind of its own yet, and Horizon's own
+// Options > Controls cannot list a mod's keys.
+
+fn on_key(game: &mut crate::game::Game<'_>, key: &str, pressed: bool) {
+    let _ = game;
+    if !pressed || key != "key.keyboard.r" {
+        return;
+    }
+    if ak47_engine::runtime::manual_reload() {
+        eprintln!("[tacz_ak47_pilot] manual reload started");
     }
 }
 """
@@ -1643,6 +1686,7 @@ def build_bundle(args) -> int:
         # 只清理由本生成器拥有的文件，避免误删外部文件。
         for relative in (
             "horizon-mixin.toml", "on_use.rs", "on_tick.rs", "on_inventory_tick.rs",
+            "on_key.rs",
             "data/ak47.json", "engine/data/ak47.json",
             "engine/Cargo.toml", "engine/src/lib.rs", "engine/src/consts.rs",
             "engine/src/states.rs", "engine/src/runtime.rs", "engine/src/bin/trace.rs",
@@ -1680,6 +1724,7 @@ def build_bundle(args) -> int:
     write_text(out_dir / "on_tick.rs", ON_TICK_RS)
     write_text(out_dir / "on_load.rs", ON_LOAD_RS)
     write_text(out_dir / "on_inventory_tick.rs", ON_INVENTORY_TICK_RS)
+    write_text(out_dir / "on_key.rs", ON_KEY_RS)
 
     # --- data：bundle 根与 crate 内各一份（内容相同；crate 打包时只带自己的目录）---
     data = {
@@ -1760,6 +1805,7 @@ def build_bundle(args) -> int:
         ("player_tick", 1),
         ("server_tick", 1),
         ("inventory_tick", 1),
+        ("key", 1),
     ]
     catalog_info = check_catalog(catalog_path, hooks) if catalog_path else {"checked": False}
 

@@ -146,7 +146,8 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 研究线 | `docs/09`（世界/生物）、`docs/10`（战斗/物品）由两个并行子 agent 产出，带 `路径:行号` 与置信度分级；关键结论：弹药可用 `native_carried_stack` 写回、无自定义弹射物 API、服务端读不到扳机 |
 | M5j | **已完成**：第 4 个注入 `inventory_tick` + `native_carried_stack` 把弹药写进 `custom_data.ammo`；A 打 5 发存档、B 重启后首发 `ammo=24`（从栈上 25 起算）；engine 18/18（reports/m5j-stack-magazine.json） |
 | M5k | **已完成**：`begin_reload()` 不推进时钟；空仓干火即启动 52 tick 换弹；游戏内 24→空→`reload finished, ammo=30`→`ammo=29`；换弹中 8 次点击全部 `reloading=true` 被拒（reports/m5k-reload.json） |
-| 下一步 | ① 手动换弹/切枪需客户端 hook + `native_net_from_client`；② 命中（DDA 射线 + `native_hurt_entity`）；③ 同槽换枪身份；④ 音效与第一人称 |
+| M5l | **已完成**：第 5 个注入 `key`；无头客户端里按 R 真的触发 → `manual reload started` → 40 tick 战术换弹 → `reload finished, ammo=30` → 下一发 29（reports/m5l-manual-reload.json） |
+| 下一步 | ① 命中（DDA 射线 + `native_hurt_entity`）；② 切枪（两把 AK）；③ 多人（专用服务器 + 模组消息）；④ 音效与第一人称 |
 
 ## 4. 度量（每次里程碑后记录）
 
@@ -164,7 +165,7 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 格式等价转换 | **5 个转换器 / 3683 源文件 / roundtrip 全闭合 / 1 partial + 2 unbound + 2 bound** | 内容级转换需在可运行环境验证 |
 | 目标侧源码探针 | **3 路 / 25 文件 / 424 声明 / missing_files 全空** | 随 Horizon 快照重跑比对 |
 | M3 harness 对接 | **离线闭环完成（23 契约 / PASS 68 项 / FAIL 抓 3 类失配）** | M3b 真机录制 |
-| `validate.py` 检查数 | **153** | 随里程碑递增，始终全绿 |
+| `validate.py` 检查数 | **157** | 随里程碑递增，始终全绿 |
 | **M5 内容包** | **官方 check ok=true / 6227 B / 两次打包同 SHA-256** | 游戏内注册与显示 |
 | **M5 状态机 IR** | **18 状态 / 44 转移 / 22 输入 / 26 unresolved 带原因** | 与运行时转移序列对齐（需 oracle） |
 | **M5 原生模块** | **cargo test 13/13 / 状态集合与 IR 相等 / bindings 已绑定并在游戏内命中** | 可变状态钩子 |
@@ -177,6 +178,7 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | **M5h 全自动** | **engine 18/18；单击 1 发；按住连发（≈8.8/s）** | 对表 600 RPM |
 | **M5j 弹匣持久化** | **4 注入；custom_data.ammo；重启后首发 24（栈上 25）** | 换弹与命中 |
 | **M5k 空仓换弹** | **engine 20/20；干火即换弹；52 tick 回 30；换弹中拒绝开火** | 手动换弹与音效 |
+| **M5l 手动换弹** | **5 注入；R → 战术换弹 40 tick → 回 30；无头客户端 key 钩子有效** | 命中与切枪 |
 | **M5 差分** | **23/23 事件、drift 0、负例失败** | 覆盖后坐/散布/命中/同步 |
 | **M5 子 agent** | **5 任务 / 3 wave / 5 COMPLETE / 0 越界** | 与 M2 的 17 任务对比并行收益 |
 

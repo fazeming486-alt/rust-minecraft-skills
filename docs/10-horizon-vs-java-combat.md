@@ -305,3 +305,18 @@
 **社区说法**
 
 - 本次未采信任何社区说法。（第 09 篇已记录第三方站点多处与源码矛盾的例子，这里不再复述。）
+
+## 6. 附：单机（LAN 房主）里哪些输入服务端看得见
+
+M5l 想把「按 R 换弹」接进 gun mod，逐条核对后结论是**单机房主没有可用的按键载体**，只能走客户端钩子直接改进程内状态（仅单机成立）或专用服务器 + 模组消息。
+
+| 入口 | 单机房主 | 证据 | 备注 |
+|---|---|---|---|
+| `key` / `input_key` / `mouse_button_pre` | **不确定** | 由 winit 事件派发（`native_hooks.rs:2729-2749`），无头客户端没有窗口；`horizon-ctl key` 是否走同一条路径未实测 | 窗口客户端可用；这是客户端半边的入口，不是服务端 |
+| `player_swap_hands`（F 键） | **听不到** | 注释原文「Not heard: the same swap made in an open inventory … and the host of a LAN world」（`native_hooks.rs:8759-8767`） | 专用服务器的玩家能听到 |
+| `player_toggle_sneak` | **听不到** | 「A guest's client changed sneaking」（`native_hooks.rs:4560-4562`） | 只对 guest |
+| `native_net_send_to_server` | **报错** | 单机 `remote: None`（`game.rs:2880-2890`），函数返回 `Err("the server carries no mod messages")`（`native_net.rs:230-240`） | 模组消息只在多人成立 |
+| `use_item` / `inventory_tick` / `attack_entity` | 可见 | 已有 M5c/M5j 的游戏内实证 | 枪的现有全部行为都建在这三个上 |
+
+**对移植的含义**：扳机、换弹、开镜、切枪这些"一次性按键"在单机下没有服务端事件；`use_item` 之所以能用，是因为它是**游戏行为**而不是**输入**。所以要么接受「客户端钩子 + 进程内状态」（单机成立、多人不成立），要么上专用服务器并把输入通过模组消息上行。
+

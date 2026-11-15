@@ -405,7 +405,28 @@ engine 单测 18 → **20/20**（新增 `begin_reload_fills_after_the_empty_cool
 
 **没做到**：手动/战术换弹（40 tick）需要换弹键，只能走「客户端 hook + `native_net_from_client` 上行」；换弹动画与音效也没有。
 
-## 14. 边界与下一步
+## 14. M5l：R 键手动换弹（无头客户端里 key 钩子真的会触发）
+
+换弹键在服务端没有载体（`docs/10` §6：`player_swap_hands` 不听 LAN 房主、`native_net_send_to_server` 在单机直接报错），所以先试最直接的：接 **`key` 钩子**，按 R 调 `runtime::manual_reload()`。
+
+结果比预期好——**无头客户端里这个钩子会触发**：
+
+```
+[tacz_ak47_pilot] shot, ammo=28
+[tacz_ak47_pilot] manual reload started
+[tacz_ak47_pilot] reload finished, ammo=30
+[tacz_ak47_pilot] shot, ammo=29
+```
+
+（`_run24.log`，sha256 `a84e6bc…`）。换弹开始时弹匣是 28，engine 走 `RELOAD_TACTICAL_COOLDOWN_TICKS=40`；脚本在按键后等 45 tick，看到回满，所以**战术换弹 40 tick 在游戏内成立**（空仓 52 tick 已在 M5k 验过）。
+
+**单机能成立的原因**：客户端与集成服务端同进程，共享同一个 `GunState`；多人要 `native_net_send_to_server` 上行，那是另一条线。
+
+**中途的坑**：第一次测试时本机 sandbox 基础设施故障（`SandboxError 0xFFFFF826`），Bash 与 PS 两个工具全部起不来，`_run23.log` 只有 load probe 与 `on_tick` 心跳。重试后 shell 自行恢复，同一二进制同一脚本跑通——所以报告里同时记了「未跑」与「重跑成功」两段，不掩盖。
+
+**没做到**：R 是临时键位（mod 没有键位系统，Options 里列不出来）；切枪没有两把 AK 的样本；子弹、命中、伤害、音效、动画仍然没有。
+
+## 15. 边界与下一步
 
 - **接线、全自动、弹匣持久化都已成立，但仍不是「真的枪」**：单击一发、按住连发、空仓拒绝、弹匣跟着物品栈跨重启都在真实右键里成立；子弹实体、命中、伤害、音效、换弹全都没有。
 - **速率**：`player_tick` 实测 0.976 次/tick，2-tick 间隔在游戏内约 8.8 发/秒（标称 10），差在测量窗口。
@@ -413,7 +434,7 @@ engine 单测 18 → **20/20**（新增 `begin_reload_fills_after_the_empty_cool
 - **动画仍 `unbound`**：IR 里的 44 条转移只是状态层，73 个 animation.json 与骨骼插值在 Horizon 侧仍无消费者。
 - **期望值不是 oracle**：来自 TaCZ 的 `ak47_data.json`，不是真机录制；M3b 仍未做。
 
-下一步，按依赖排序：① 手动换弹与切枪——客户端 hook（`input_key` / `mouse_button_pre`）+ `native_net_from_client` 上行；② 命中——自写 DDA 射线（`native_block_at`）+ `native_hurt_entity`，或 `native_summon` 雪球模板；③ 同槽换枪的身份问题；④ 音效与第一人称。
+下一步，按依赖排序：① 命中——自写 DDA 射线（`native_block_at`）+ `native_hurt_entity`，或 `native_summon` 雪球模板；② 切枪：两把 AK 的槽位弹匣实测；③ 多人：专用服务器 + `native_net_send_to_server`；④ 音效与第一人称。
 
 在那之前，「AK-47 已经搬过来」仍不成立——现在可以说的是：**物品能注册、右键能进我们的代码、单击一发、按住全自动、弹药与节奏都由 18 状态的状态机持有；枪还不会打子弹**。
 
