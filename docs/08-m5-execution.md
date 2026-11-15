@@ -229,13 +229,65 @@ mod tacz_ak47_pilot content not loaded: tacz_ak47_pilot:ak47: minecraft:custom_d
 
 因此 M5d **没有产生新的验证等级**：弹药逻辑只存在于生成器里，没有在游戏内观测；干净 `apply → build` 仍是欠账。详见 `reports/m5d-attempt.json`。
 
-## 8. 边界与下一步
+## 8. M5e：弹匣语义在真实进程里闭环
 
-- **接线已验证，但只到 claim**：`(game, stack, claimed)` 在真实右键里命中；弹药、子弹、伤害都还没有。
-- **行为只覆盖 C1**：engine 的射速/弹匣/换弹在单测与 trace 里成立，但**没有接进游戏**——游戏内的 `GunState` 还没被任何地方持有。
+M5d 卡住的其实是**启动参数**，不是构建。把两处搞对之后，`--dedicated` 与无头客户端都能稳定跑起来：
+
+- `--resources` 必须指向 `third_party/horizon/.local/horizon-client/26.3`（带 `horizon-resources.json`）。`minecraft-26.3/` 只是原版安装，报的是 `prepared game files are missing`。
+- `eula.txt` / `server.properties` 读的是**进程 cwd**，`--universe` 不管这件事；要么用 `--game-dir` 明确指，要么在 cwd 写 `eula=true`。
+
+复跑命令（153 s 完成加载，`content from 1 mod(s)`，items 1659）：
+
+```
+horizon-client.exe --resources <…>/.local/horizon-client/26.3 \
+  --game-dir work/m5/ctl-home --home work/m5/ctl-home \
+  --headless --control-socket work/m5/ctl-home/control.json \
+  --dev-mod work/m5/tacz_ak47_pilot.hmod --quickPlaySingleplayer ak47probe
+```
+
+`horizon-ctl use-item` 连点 31 次的结果（`work/m5/ctl-home/_run7.log`，sha256 `9f29368…`）：
+
+```
+[ak47_probe] shot, ammo=29
+…
+[ak47_probe] shot, ammo=0
+[ak47_probe] trigger on empty magazine
+```
+
+| 断言 | 观测 |
+| --- | --- |
+| 每次右键恰好一发 | 30 次点击 → 30 行 shot，ammo 29→0 |
+| 空仓拒绝 | 第 31 次打印 empty，不再 shot |
+| 空仓不 claim | `state.swings` 停在 30（claim 才挥手），且没走 vanilla 使用 |
+| 只对自己的物品生效 | 切到 `minecraft:apple` 右键，日志无新增 |
+| 空仓不自愈 | 之后两次点击仍是 empty |
+
+**这不是真正的弹药**：`AMMO` 是 helper 里的 `static AtomicU32`，进程级、不是每玩家/每物品栈。`use_item` 只给 `&ItemStack`（不可变），写不回物品数据；换弹、子弹、命中、伤害都还没有。详见 `reports/m5e-ammo.json`。
+
+### 干净 apply 的欠账消了（源码层）
+
+用 `probe/ak47_probe` 这个带 `bindings` 的 bundle 从 pristine 重跑：
+
+```
+horizon-mixins apply --workspace work/m5/src --mods work/m5/probe --out work/m5/stage-probe
+→ status: ok, 1 injection, 19 s（M5d 那次 22 分钟没输出，这次 19 秒；IO 恢复正常）
+```
+
+对照 `stage-probe` 与 `third_party/horizon` 里那份就地补丁：`native_use_item` 的注入块**逐 token 一致**，差异只有两处非语义的——mixins 丢掉了 helper 文件首行注释、没做 rustfmt（`fn on_use(…)` 参数被拆行）。整文件 3592 行差异全是 `use` 换行。
+
+两条新的环境事实：`horizon-mixins` 需要 PATH 里有 cargo（否则 `E_METADATA`，61 s 退出）；一次 apply 曾崩在 `memory allocation of 131072 bytes failed`，同命令立即重试就过——属于瞬时分配失败，别为此改工作区。
+
+**还没做**：没有用 `stage-probe` 重编（`CARGO_INCREMENTAL=0` 全量约 26 分钟），所以「同源同二进制」只有源码级证据；`stage-probe` 的 bundle 是 `crates=0`，**不含 engine 的 18 状态机**——状态机链接的证据仍只属于 M5b 那个二进制。一次 apply 出全量钩子（crate + on_load + on_tick + on_use）还没做。
+
+## 9. 边界与下一步
+
+- **接线已验证，弹药已验证，但都不是「真的枪」**：claim 与扣弹都在真实右键里成立；子弹实体、命中、伤害、音效、换弹全都没有。
+- **两套证据分属两个二进制**：M5b 证明 engine 18 状态能链接并首 tick 被调用；M5e 证明扣弹与空仓。**没有一份二进制同时做到两件事**。
+- **弹药是进程级静态量**：不是物品 NBT，也不 per-player；多人会串。
 - **动画仍 `unbound`**：IR 里的 44 条转移只是状态层，73 个 animation.json 与骨骼插值在 Horizon 侧仍无消费者。
 - **期望值不是 oracle**：来自 TaCZ 的 `ak47_data.json`，不是真机录制；M3b 仍未做。
 
-下一步（M5d）三件事，按依赖排序：① 用当前 bundle 重跑一次干净的 `apply → build`，消掉就地补丁欠账；② 把弹药状态放到可变钩子（背包/玩家存储），让每次 claim 扣一发、空仓打不出；③ 用 `horizon-ctl` 的 `state.inventory` 与 `events` 做断言，而不是只看日志。
+下一步，按依赖排序：① 把 probe bundle 扩成 crate + 三个钩子的完整 bundle，一次 apply → 一次 build → 一份二进制同时验状态机与开火；② 弹药落到可变钩子（背包/玩家存储），而不是 `static`；③ 子弹实体 + 射线命中 + 伤害最小闭环；④ 用 `events` / `inventory` 做断言，而不只看日志。
 
-在那之前，「AK-47 已经搬过来」仍不成立——现在可以说的是：**物品能注册、右键能进我们的代码、逻辑单元对得上；枪还不会打子弹**。
+在那之前，「AK-47 已经搬过来」仍不成立——现在可以说的是：**物品能注册、右键能进我们的代码并扣弹、空仓会拒绝；枪还不会打子弹**。
+

@@ -135,10 +135,11 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 交付 | 5 个 skill（`translate-lua-statemachine` / `build-content-mod` / `port-native-module` / `verify-hook-catalog` / `playable-diff-harness`）、新 stage `05-port`、`schemas/state-machine-ir.schema.json`、`orchestration/m5-slice.json`、`task-templates/m5.json`、5 份报告 |
 | 验收 | IR 18 状态 / 44 转移且幂等；`.hmod` 过官方 `check`（`ok:true`）且两次打包同 SHA；engine `cargo test` 13/13 且状态集合与 IR 相等；注入点预检 0 错误、负例 `E_HOOK_UNKNOWN`；差分 23/23、drift 0、负例失败 |
 | 关键事实 | 内容与逻辑必须分离：`.hmod` 只装 data/assets（官方拒绝 `Cargo.toml`），行为只能进 `.hnmod` bundle；crate 不允许依赖 `horizon-client`，反而给出可离线 `cargo test` 的纯逻辑单元 |
-| 风险 / 未决 | `bindings = []`，游戏内还没开过火；动画仍 `unbound`；差分期望值来自数据文件而非 oracle；快照无 `.git`，`horizon_revision` 只能留空 |
+| 风险 / 未决 | `bindings = []` 已在 M5c 解决；动画仍 `unbound`；差分期望值来自数据文件而非 oracle；快照无 `.git`，`horizon_revision` 只能留空 |
 | M5b/M5c | **已完成**：`plan/apply` → 编译 7 min → 无头探针命中；真实 `(game, stack, claimed)` 绑定，`horizon-ctl use-item` 4 次点击 4 次 claim。5 条硬约束与 3 条环境修复已回写 |
-| M5d 状态 | **被本机 IO 阻塞**：apply 的 scratch 拷贝退化到 2s/文件，build 27 分钟未完成；弹药逻辑已进生成器但未在游戏内观测（reports/m5d-attempt.json） |
-| 下一步 | 清掉 `work/m5/stage.old*` 与旧 lock 目录后重试干净 apply，再验 31 次点击 = 30 发 + 1 空仓 |
+| M5d 状态 | **已解除**：不是 IO 崩溃，是启动参数错（resources 指向未 prepare 的 `minecraft-26.3/`、`eula.txt` 读进程 cwd）。改正后 `--dedicated` 34.5 s 起服、无头客户端 153 s 进世界 |
+| M5e | **已完成**：31 次 `use-item` → 30 发（ammo 29→0）+ 1 空仓拒绝；`swings` 停在 30 证明空仓不 claim；异物不触发；干净 apply 19 s 且产物与已验证源码逐 token 一致（reports/m5e-ammo.json、m5e-clean-apply.json） |
+| 下一步 | ① probe bundle 扩成 crate + 三个钩子，一次 apply/build/run 同时验状态机与开火；② 弹药落可变钩子（现在是 `static AtomicU32`）；③ 子弹实体 + 射线命中 + 伤害 |
 
 ## 4. 度量（每次里程碑后记录）
 
@@ -156,12 +157,14 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 格式等价转换 | **5 个转换器 / 3683 源文件 / roundtrip 全闭合 / 1 partial + 2 unbound + 2 bound** | 内容级转换需在可运行环境验证 |
 | 目标侧源码探针 | **3 路 / 25 文件 / 424 声明 / missing_files 全空** | 随 Horizon 快照重跑比对 |
 | M3 harness 对接 | **离线闭环完成（23 契约 / PASS 68 项 / FAIL 抓 3 类失配）** | M3b 真机录制 |
-| `validate.py` 检查数 | **112** | 随里程碑递增，始终全绿 |
+| `validate.py` 检查数 | **130** | 随里程碑递增，始终全绿 |
 | **M5 内容包** | **官方 check ok=true / 6227 B / 两次打包同 SHA-256** | 游戏内注册与显示 |
 | **M5 状态机 IR** | **18 状态 / 44 转移 / 22 输入 / 26 unresolved 带原因** | 与运行时转移序列对齐（需 oracle） |
-| **M5 原生模块** | **cargo test 13/13 / 状态集合与 IR 相等 / bindings 未验证** | 真实绑定 + 开火 |
+| **M5 原生模块** | **cargo test 13/13 / 状态集合与 IR 相等 / bindings 已绑定并在游戏内命中** | 可变状态钩子 |
 | **M5b 编译加载** | **plan ok / apply 110s / build 7min / 无头服务端首 tick 探针命中** | 第一人称表现 |
 | **M5c 开火路径** | **内容包注册成功（1659 items）/ 4 次右键 4 次 claim** | 弹药、子弹、命中、同步 |
+| **M5e 弹匣语义** | **31 点击 = 30 发（29→0）+ 1 空仓；swings 停在 30；异物不触发** | 每玩家/每物品栈弹药、换弹 |
+| **M5e 干净 apply** | **19 s / 1 injection / 与就地补丁逐 token 一致** | 一次 apply 出全量钩子（crate + 3 hooks） |
 | **M5 差分** | **23/23 事件、drift 0、负例失败** | 覆盖后坐/散布/命中/同步 |
 | **M5 子 agent** | **5 任务 / 3 wave / 5 COMPLETE / 0 越界** | 与 M2 的 17 任务对比并行收益 |
 

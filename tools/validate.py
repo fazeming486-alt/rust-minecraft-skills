@@ -794,6 +794,36 @@ def main() -> int:
           and any("apply" in item for item in m5d["not_verified"])
           and len(m5d["what_changed"]) >= 3)
 
+    # 29. v0.10 · M5e 弹药语义在真实进程里闭环
+    m5e = load("reports/m5e-ammo.json")
+    ea = m5e["assertions"]
+    check("M5e: 31 次右键 = 30 发 + 空仓拒绝，且逐发递减到 0",
+          ea["clicks"] == 31 and ea["shot_lines"] == 30
+          and ea["first_shot"].endswith("ammo=29") and ea["last_shot"].endswith("ammo=0")
+          and ea["one_round_per_click"] and ea["empty_refused"])
+    check("M5e: 空仓不 claim（swings 等于发数）且异物不触发",
+          ea["swings"] == ea["shot_lines"] and ea["empty_sticky"]
+          and "swings" in ea["empty_does_not_claim"]
+          and "apple" in ea["ak_only"])
+    check("M5e: 弹药是进程级静态量，未声称换弹/子弹/多人",
+          "AtomicU32" in m5e["how_ammo_is_stored"]["mechanism"]
+          and "进程级" in m5e["how_ammo_is_stored"]["grain"]
+          and any("子弹" in item for item in m5e["not_verified"])
+          and any("换弹" in item for item in m5e["not_verified"])
+          and any("多人" in item for item in m5e["not_verified"]))
+    m5ec = load("reports/m5e-clean-apply.json")
+    check("M5e: 干净 apply 成功且产物与已验证源码逻辑一致",
+          m5ec["status"] == "ok" and m5ec["apply"]["injections"] == 1
+          and m5ec["apply"]["seconds"] < 300
+          and m5ec["comparison"]["result"] == "logic_identical"
+          and len(m5ec["comparison"]["differences_only"]) == 2)
+    check("M5e: 明确写出「没有一份二进制同时做到两件事」",
+          any("二进制" in item for item in m5ec["not_done"])
+          and any("engine" in item for item in m5ec["not_done"]))
+    check("M5e: 记录启动参数两条纠正（resources / cwd-eula）",
+          {c["code"] for c in m5e["constraints_found"]} >=
+          {"resources_prepare", "eula_in_cwd"})
+
 
     print("=" * 68)
     for name in PASSED:

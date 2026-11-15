@@ -1,0 +1,75 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5e · 弹匣语义在真实进程里闭环（30 发 + 空仓拒绝）",
+  "verification_level": "fired_in_game",
+  "note": "第一次观测到「一次右键 = 扣一发、打完拒绝」。仍是进程内静态计数，不是物品 NBT 弹药，也没有子弹/命中/音效。",
+  "run": {
+    "side": "client --headless",
+    "command": "horizon-client.exe --resources <26.3 prepared> --game-dir work/m5/ctl-home --home work/m5/ctl-home --headless --control-socket work/m5/ctl-home/control.json --dev-mod work/m5/tacz_ak47_pilot.hmod --quickPlaySingleplayer ak47probe",
+    "resources": "third_party/horizon/.local/horizon-client/26.3（含 horizon-resources.json；minecraft-26.3 那份未 prepare，不能直接用）",
+    "content": "content from 1 mod(s)；items 1659（含 tacz_ak47_pilot:ak47）",
+    "startup_seconds": 153,
+    "log": "work/m5/ctl-home/_run7.log",
+    "log_sha256": "9f293685d563c22c5fc6853afaeceef1a0e7a34e0adee347d5d18e09ed58d424",
+    "log_bytes": 1808
+  },
+  "assertions": {
+    "clicks": 31,
+    "shot_lines": 30,
+    "first_shot": "ammo=29",
+    "last_shot": "ammo=0",
+    "empty_lines": 3,
+    "swings": 30,
+    "one_round_per_click": true,
+    "empty_refused": true,
+    "empty_does_not_claim": "swings 停在 30：空仓那次没有 claim，手没挥，物品也没有走 vanilla 使用",
+    "ak_only": "切到 minecraft:apple 右键一次，日志没有新增 ak47_probe 行 → 守卫按 stack.item 生效",
+    "empty_sticky": "空仓后再点两次仍为 empty，没有自动回填"
+  },
+  "evidence_lines": [
+    "[ak47_probe] shot, ammo=29",
+    "...",
+    "[ak47_probe] shot, ammo=0",
+    "[ak47_probe] trigger on empty magazine"
+  ],
+  "how_ammo_is_stored": {
+    "mechanism": "helper 内的 static AMMO: AtomicU32 = 30，load/store Relaxed",
+    "grain": "进程级，不是每玩家/每物品栈",
+    "why": "use_item 只给 &ItemStack（不可变），写不回物品数据；每玩家可变状态缺少可写钩子",
+    "reload": "未实现（没有换弹输入，也没有把 AMMO 复位）"
+  },
+  "constraints_found": [
+    {
+      "code": "resources_prepare",
+      "detail": "minecraft-26.3 只是原版安装，没有 horizon-resources.json；必须指向 .local/horizon-client/26.3。报错是「prepared game files are missing」，不是构建问题",
+      "impact": "之前被判为「运行期卡死」的两次尝试里，至少有一次是路径/资源问题"
+    },
+    {
+      "code": "eula_in_cwd",
+      "detail": "--universe 不会被当成 eula/服务端目录；eula.txt 与 server.properties 落在进程 cwd。要么用 --game-dir 明确指，要么在 cwd 放 eula.txt",
+      "impact": "--dedicated 会直接退出，日志只有一行 EULA 提示"
+    },
+    {
+      "code": "reg_exe_blocked",
+      "detail": "启动时尝试调用 reg.exe 被程序黑名单拦下；不影响加载（仅在选择 JDK/注册表探测路径上）",
+      "impact": "无"
+    }
+  ],
+  "reproducibility": {
+    "binary_source": "in-place patch 写进 third_party/horizon 的 native_hooks.rs（tag [ak47_probe]），CARGO_INCREMENTAL=0 全量重建 26m15s 得到",
+    "clean_apply": "reports/m5e-clean-apply.json：探针 bundle 从 pristine 重跑 apply（19 s，1 injection）后，注入块与上面这个已跑通的就地补丁逐 token 一致",
+    "status": "源码层等价已确认；二进制未重编（全量 26 min，留在 next）"
+  },
+  "not_verified": [
+    "子弹实体、命中判定、伤害：仍未实现",
+    "换弹/弹匣容量可视化：未实现",
+    "音效、第一人称动画、后坐：未实现；animation_driver 仍 unbound",
+    "多人同步：未测；当前 AMMO 是进程级，多人会串",
+    "engine 18 状态的链接：本次二进制不含 on_load/on_tick 探针（被就地补丁覆盖），状态机只在离线测试里验证"
+  ],
+  "next": [
+    "把弹药从 static 计数改成可写玩家/物品状态（需要 player-aware mutable hook 或组件存储）",
+    "子弹实体 + 射线命中 + 伤害最小闭环",
+    "重跑一次 bundle→apply→build，确认产物与已验证二进制同源"
+  ]
+}

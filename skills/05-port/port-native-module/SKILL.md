@@ -117,10 +117,12 @@ cargo run --offline --bin trace -- --script tests/fixtures/burst.trace
 
 | 项 | 状态 | 原因 |
 |---|---|---|
-| bindings / helper 签名 | `unverified` | 没有 horizon-mixins 生成 API 的离线副本 |
+| bindings / helper 签名 | `verified_in_game`（M5c） | `(game, stack, claimed)` 在真实右键里命中 |
 | 游戏内开火、换弹、第一人称表现 | `not_observed` | 无头服务端没有玩家，触发不了右键 |
 
 > **M5b 更新**：`native-build` 那一行已经不再是 `not_run`。bundle 经 `horizon-mixins 0.6.0` 的 `plan` / `apply` 真跑后编进了 `horizon-client`，无头服务端首 tick 打出了 `load probe … engine states=18`——证明「编进去 + 钩子被调用 + engine 链接」。仍然**没有开火**：`bindings = []` 拿不到物品栈。
+>
+> **M5c/M5e 更新**：`bindings` 换成 `(game, stack, claimed)` 后，无头客户端里真实右键 4/4 命中；再把 helper 换成 30 发弹匣后，**31 次点击 = 30 行 `shot, ammo=29…0` + 1 行 `trigger on empty magazine`**，空仓那次不 claim（`state.swings` 停在 30）。注意弹药是 helper 内的 `static AtomicU32`，**进程级**，不是物品数据；`use_item` 只给不可变 `&ItemStack`，写不回栈。每玩家弹药要等可变钩子。详见 `reports/m5e-ammo.json`。
 
 ### horizon-mixins 0.6.0 的四条硬约束（M5b 实测，已写进生成器）
 

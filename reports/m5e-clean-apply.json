@@ -1,0 +1,64 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5e · 干净 apply 复现已验证源码（消除就地补丁欠账）",
+  "status": "ok",
+  "note": "用带 bindings 的探针 bundle 从 pristine 源码重跑 apply，产物里 native_use_item 的注入块与 M5c/M5d 就地补丁逐 token 一致。欠账在源码层已消除；二进制未重编（见 not_done）。",
+  "apply": {
+    "command": "horizon-mixins apply --workspace work/m5/src --mods work/m5/probe --out work/m5/stage-probe",
+    "status": "ok",
+    "seconds": 18.93,
+    "injections": 1,
+    "crates": 0,
+    "data": 0,
+    "bridges": 0,
+    "modules": 0,
+    "post_build": 0,
+    "stage_changed": true,
+    "stage": "work/m5/stage-probe",
+    "workspace": "work/m5/src（pristine，829 MB / 31464 文件）"
+  },
+  "comparison": {
+    "file": "crates/horizon-client/src/game/native_hooks.rs",
+    "patched_bytes": 574710,
+    "stage_bytes": 585718,
+    "method": "定位 pub(super) fn native_use_item( 到 dispatch_use_item( 之间，逐行对照 + 去注释去空白比对",
+    "result": "logic_identical",
+    "differences_only": [
+      "mixins 丢掉 helper 文件首行注释（// AK-47 probe: one round per right click, refuses when empty.）",
+      "mixins 不做 rustfmt：fn on_use(game:…, stack:…, claimed:…) 被拆成多行参数（纯格式）"
+    ],
+    "identical": [
+      "static AMMO: AtomicU32 = AtomicU32::new(30)",
+      "if &*stack.item != \"tacz_ak47_pilot:ak47\" { return; }",
+      "left == 0 → eprintln!(\"[ak47_probe] trigger on empty magazine\"); return;",
+      "AMMO.store(left - 1, Relaxed); *claimed = true; eprintln!(\"[ak47_probe] shot, ammo={}\", left - 1);",
+      "on_use(&mut *self, stack, &mut *claimed); mod_api::dispatch_use_item(…)"
+    ],
+    "whole_file_diff": "3592 行差异全部是 use 语句换行（pristine 未格式化 vs stage 保持原格式），无语义差异"
+  },
+  "environment_notes": [
+    {
+      "code": "E_METADATA",
+      "detail": "horizon-mixins 需要 PATH 里有 cargo（cargo metadata）。未设 CARGO_HOME/RUSTUP_HOME/PATH 时报 program not found，61 秒后退出",
+      "fix": "export CARGO_HOME=dev/cargo RUSTUP_HOME=dev/rustup PATH=dev/cargo/bin:$PATH"
+    },
+    {
+      "code": "OOM_TRANSIENT",
+      "detail": "一次 apply 在 10.7 秒崩于 memory allocation of 131072 bytes failed；同命令立即重试成功（19 秒）。当时物理内存 15.8 GB / 余 5.5 GB，判断是瞬时分配/扫描干扰，不是工作区过大",
+      "fix": "直接重试；不要为此改工作区"
+    },
+    {
+      "code": "run_goes_to_cwd",
+      "detail": "apply 只写 --out 目录；构建/运行仍要在 stage-probe 或 third_party/horizon 里做，eula.txt/server.properties 落在进程 cwd"
+    }
+  ],
+  "not_done": [
+    "没有用 stage-probe 重新编译 horizon-client（CARGO_INCREMENTAL=0 全量约 26 分钟）：因此「同一份源码产出同一个二进制」只有源码级证据，没有二进制级",
+    "stage-probe 的 bundle 不含 crate（crates=0），所以它不链接 ak47_engine 的 18 状态机；engine 链接证据仍然只属于 M5b 那个二进制",
+    "没有把 on_load/on_tick 探针与 use_item 弹药放进同一个 bundle —— 一次 apply 出全量钩子仍未做"
+  ],
+  "next": [
+    "把 probe bundle 扩成 crate + on_load + on_tick + on_use 的完整 bundle，一次 apply → 一次 build → 一份二进制同时验「状态机链接」和「开火弹药」",
+    "或直接以 stage-probe 为 workspace 重编，替换 third_party/horizon 的临时补丁树"
+  ]
+}

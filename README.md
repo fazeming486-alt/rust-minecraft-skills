@@ -169,15 +169,36 @@ M0–M4 证明了「判断得对」，M5 证明「交得出去」。选 AK-47 �
 
 **四条边界**：`.hmod` 只证明内容被加载器接受；右键只证明进了我们的代码，**没有弹药、没有子弹**；动画仍 `unbound`；差分的期望值来自数据文件，不是真机录制。详见 [08 · M5 执行报告](docs/08-m5-execution.md) 与 [ADR 0011](docs/adr/0011-vertical-slice-and-native-module.md)。
 
+## v0.10 · M5e 弹匣语义在真实进程里闭环（不是「枪能打」）
+
+M5c 只做到「右键进了我们的代码」。这一版把**扣弹与空仓拒绝**在真实无头客户端里观测到：
+
+| 断言 | 观测 |
+| --- | --- |
+| 一次右键一发 | 30 次 `use-item` → 30 行 `shot, ammo=29…0` |
+| 空仓拒绝 | 第 31 次打印 `trigger on empty magazine`，不再 shot |
+| 空仓不 claim | `state.swings` 停在 30，物品也没走 vanilla 使用 |
+| 只对自己的物品生效 | 切到 `minecraft:apple` 右键，日志无新增 |
+| 空仓不自愈 | 之后两次点击仍是 empty |
+
+顺带把两次「运行期卡死」的错误结论纠正了：真正的原因是 ① `--resources` 必须指向 `.local/horizon-client/26.3`（带 `horizon-resources.json`），`minecraft-26.3/` 只是原版安装；② `eula.txt` / `server.properties` 读的是进程 cwd，`--universe` 不负责这件事。
+
+**干净 apply 的欠账消了（源码层）**：`probe/ak47_probe` 带 `bindings` 从 pristine 重跑 `horizon-mixins apply` → `ok`、1 injection、**19 秒**（M5d 那次 22 分钟无输出）。产物里的注入块与那份就地补丁**逐 token 一致**，差异只有「首行注释被丢」和「不做 rustfmt」。
+
+**仍然是进程级静态量**：`AMMO` 是 `static AtomicU32`，不是物品 NBT、不是每玩家；换弹、子弹、命中、伤害、音效全没有。而且 **engine 18 状态机的链接证据仍只属于 M5b 那个二进制**——没有任何一份二进制同时做到「链接状态机」和「扣弹」。
+
+详见 [08 · M5 执行报告](docs/08-m5-execution.md) 的 §8–9、`reports/m5e-ammo.json`、`reports/m5e-clean-apply.json`。
+
 ## 状态与下一步
 
-**v0.9 — M5 单枪竖切完成**：28 个 skill、**112 项自检全绿**、5 个任务包 5/5 COMPLETE、SSH 持续推送。
+**v0.10 — M5e 弹药语义在游戏内闭环**：28 个 skill、**130 项自检全绿**、SSH 持续推送。
 
 按 `docs/04-roadmap.md` 推进：
 
-- **M5b**：`horizon-launcher native-build` 把 bundle 编进游戏，在可运行实例里用 `use_item` 打出第一发；这一步才能把 `source_only` 升到 `verified_in_game`。
+- **M5f**：把探针 bundle 扩成 crate + `on_load`/`on_tick`/`on_use` 的完整 bundle，一次 apply → 一次 build → 一份二进制同时验状态机与开火。
+- **M5g**：弹药落到可变钩子（背包/玩家存储），再用子弹实体 + 射线命中 + 伤害做最小闭环。
 - **M3b**：搭最小可运行 Java oracle，把 23 个契约的 `oracle.status` 从 `pending` 推到 `recorded → replayed → verified`。
 - **M4b**：换跨 MC 版本或混淆样本检验规则泛化，必要时新增 version profile。
-- 用实际耗时校准复杂度模型九信号权重（ADR 0007 复核条件）。
 
 五条边界保持诚实：C6 = 0 只是「四个 mod / 同一版本 / 带调试信息」的样本结论；`animation_driver` 仍 **unbound**；`geometry_ir` / `bone_tracks` 只是可逆的中间表示，目标侧没有消费者；**离线 fixture 不等于真机录制**；**官方内容包校验通过不等于游戏里能用**。不用 workaround 冒充已解决。
+
