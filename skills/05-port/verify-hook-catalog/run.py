@@ -422,6 +422,22 @@ def error(errors: list, code: str, file: Path | str, line: int | None, detail: s
     })
 
 
+def helper_problem(path: Path) -> str | None:
+    """horizon-mixins 0.6.0: 每个 helper 恰好一个私有函数，且没有文件级属性。
+
+    `//!` 会解析成 file.attrs（`#![doc]`），触发 E_INVALID_HELPER。
+    """
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if "//!" in text or "#![" in text:
+        return "不能有文件级属性（//! 或 #![...]）；用 // 行注释"
+    functions = re.findall(r"(?m)^(pub(?:\([^)]*\))?\s+)?fn\s+([A-Za-z_]\w*)", text)
+    if len(functions) != 1:
+        return "必须恰好一个顶层函数，实际 %d 个" % len(functions)
+    if functions[0][0]:
+        return "函数必须是私有的（去掉 pub）"
+    return None
+
+
 def collect_dependencies(node, path=()):
     """遍历 crate manifest，产出 (table_path, dep_name, spec)。"""
     if not isinstance(node, dict):
@@ -510,10 +526,25 @@ def validate_bundle(bundle: Path, catalog_path: Path, horizon_root: Path) -> dic
     compat = doc.get("compatibility", {})
     declared_revision = compat.get("horizon_revision") if isinstance(compat, dict) else None
     actual_revision, revision_source, revision_verified = horizon_revision(horizon_root, catalog_path)
-    if not isinstance(declared_revision, str) or not declared_revision:
-        error(errors, "E_REVISION_MISSING", manifest, None,
-              "[compatibility].horizon_revision 缺失或不是字符串")
-    elif declared_revision != actual_revision:
+    if declared_revision is None:
+        if revision_verified:
+            error(errors, "E_REVISION_MISSING", manifest, None,
+                  "这是 git checkout，必须写 [compatibility].horizon_revision")
+        else:
+            warnings.append({
+                "code": "W_REVISION_UNPINNED",
+                "file": display_path(manifest),
+                "line": None,
+                "detail": (
+                    "bundle 未钉版本：horizon_root 没有 .git，写任何非 commit 值都会被 "
+                    "horizon-mixins 判 E_REVISION；保持留空是唯一可应用的做法"
+                ),
+            })
+    elif not isinstance(declared_revision, str) or not re.fullmatch(r"[0-9a-f]{40}", declared_revision):
+        error(errors, "E_REVISION_INVALID", manifest, None,
+              f"horizon_revision={declared_revision!r} 不是 40 位 commit；"
+              "快照指纹（snapshot:…）只能写进报告，不能写进 horizon-mixin.toml")
+    elif revision_verified and declared_revision != actual_revision:
         error(errors, "E_REVISION_MISMATCH", manifest, None,
               f"声明 {declared_revision!r} != 实际 {actual_revision!r}（{revision_source}）")
     if not revision_verified:
@@ -526,6 +557,15 @@ def validate_bundle(bundle: Path, catalog_path: Path, horizon_root: Path) -> dic
                 f"{actual_revision} 代替 commit；无法证明等于上游 HEAD"
             ),
         })
+
+    # horizon-mixins 0.6.0 的硬约束：bundle 里不能有本地 cargo 产物（E_CRATE）
+    if (bundle / "Cargo.lock").is_file():
+        error(errors, "E_CRATE_ARTIFACT", bundle / "Cargo.lock", None,
+              "bundle 里不能有 Cargo.lock：它按 Horizon 的 lock 构建（跑过 cargo test 后要删掉）")
+    for target_dir in sorted(p for p in bundle.rglob("target") if p.is_dir()):
+        error(errors, "E_CRATE_ARTIFACT", target_dir, None,
+              "bundle 里不能有 target/：本地构建产物会被一起打进 .hnmod")
+        break
 
     raw_injections = doc.get("injection", [])
     if not isinstance(raw_injections, list):
@@ -622,6 +662,12 @@ def validate_bundle(bundle: Path, catalog_path: Path, horizon_root: Path) -> dic
                     error(errors, "E_HELPER_MISSING", helper_path, None,
                           f"injection {injection_id!r} 引用的 helper 不存在")
                     record["status"] = "error"
+                else:
+                    problem = helper_problem(helper_path)
+                    if problem:
+                        error(errors, "E_INVALID_HELPER", helper_path, None,
+                              f"injection {injection_id!r}: {problem}")
+                        record["status"] = "error"
 
         bindings = entry.get("bindings")
         if bindings is not None and not isinstance(bindings, list):

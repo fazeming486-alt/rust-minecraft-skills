@@ -8,9 +8,9 @@
   },
   "checked": {
     "crates": 1,
-    "helpers": 2,
+    "helpers": 3,
     "hooks_in_catalog": 434,
-    "injections": 2
+    "injections": 3
   },
   "crates": [
     {
@@ -43,6 +43,16 @@
       "id": "ak47-on-tick",
       "kind": "HEAD",
       "status": "ok"
+    },
+    {
+      "bindings": [],
+      "bindings_count": 0,
+      "helper": "on_load.rs",
+      "hook": "server_tick",
+      "hook_version": 1,
+      "id": "ak47-load-probe",
+      "kind": "HEAD",
+      "status": "ok"
     }
   ],
   "negative_control": {
@@ -68,7 +78,7 @@
     "horizon_revision 在非 git 快照上用 native-hooks.json 指纹代替 commit，见 W_REVISION_NOT_GIT。"
   ],
   "revision": {
-    "declared": "snapshot:d709ee26dc82",
+    "declared": null,
     "resolved": "snapshot:d709ee26dc82",
     "source": "snapshot-catalog-sha256",
     "verified": false
@@ -77,6 +87,12 @@
   "status": "ok",
   "task": "m5-04-hook-catalog",
   "warnings": [
+    {
+      "code": "W_REVISION_UNPINNED",
+      "detail": "bundle 未钉版本：horizon_root 没有 .git，写任何非 commit 值都会被 horizon-mixins 判 E_REVISION；保持留空是唯一可应用的做法",
+      "file": "work/m5/native/tacz_ak47_pilot/horizon-mixin.toml",
+      "line": null
+    },
     {
       "code": "W_REVISION_NOT_GIT",
       "detail": "horizon_root 不是 git checkout（无 .git），用 native-hooks.json 内容指纹 snapshot:d709ee26dc82 代替 commit；无法证明等于上游 HEAD",

@@ -59,16 +59,18 @@ Horizon 的 crate 规则不允许 mod 的 crate 依赖 `horizon-client`（Cargo 
 
 ### D6 · 诚实分级，不用「能编译」冒充「能用」
 
-M5 的产物按四级标注，任何报告不得跨级：
+M5 的产物按五级标注，任何报告不得跨级：
 
 1. `verified_by_official_tool`：`.hmod` 过了 `cargo-horizon-mod check`；
 2. `verified_by_test`：engine `cargo test` 全绿、trace 差分 PASS；
-3. `source_only`：bundle 的注入点通过目录预检，但没 `native-build`；
-4. `unbound`：动画驱动、第一人称表现、命中与同步仍未验证。
+3. `compiled_and_loaded`：bundle 经 `horizon-mixins apply` 编进 `horizon-client`，运行时钩子被真实调用（M5b：`server_tick` 探针）；
+4. `source_only`：bundle 的注入点通过目录预检，但没编译；
+5. `unbound`：动画驱动、第一人称表现、命中与同步仍未验证。
 
 ## 3. 后果
 
 - 新增 5 个 skill（`translate-lua-statemachine`、`build-content-mod`、`port-native-module`、`verify-hook-catalog`、`playable-diff-harness`），新增 stage `05-port`。
 - 所有 TaCZ 派生内容（贴图、由 Lua 转出的 Rust）只留 `work/`，仓库只提交工具、schema、模板与统计报告。
-- 已知欠账：`bindings = []`、`native-build` 未跑、动画仍 `unbound`、真机录制（M3b）未做。
-- 下一个里程碑（M5b）只做一件事：`native-build` 把 bundle 编进游戏，并在可运行实例里观测第一人称开火；在此之前，不得对外说「AK-47 已经能打」。
+- 已知欠账：`bindings = []`、游戏内未开火、动画仍 `unbound`、真机录制（M3b）未做。
+- M5b 已补上「编译 + 加载 + 钩子被调用」这一级：`horizon-mixins 0.6.0` 的 plan/apply 真跑，`horizon-client` 用 7 分钟编出，无头服务端 48 秒启动并在首 tick 打出 `engine states=18`。代价是 `third_party/horizon` 被就地打了补丁（原始副本留在 `work/m5/src`），且快照无 `.git` 时 bundle 只能不钉版本。
+- 下一个里程碑（M5c）只做一件事：把 `bindings` 换成真实的 `(Game, Player, ItemStack)`，在可观测客户端里右键打出第一发，并用命中与弹药变化断言。在那之前，不得对外说「AK-47 已经能打」。

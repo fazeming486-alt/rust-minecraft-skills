@@ -156,6 +156,7 @@ def main() -> int:
         "reports/m5-state-ir.json", "reports/m5-content-mod.json",
         "reports/m5-native-module.json", "reports/m5-hook-catalog.json",
         "reports/m5-diff.json", "reports/m5-collection.json",
+        "reports/m5b-native-build.json",
     ]
     missing = [rel for rel in required_files if not (ROOT / rel).is_file()]
     check("核心文件齐全 (%d 项)" % len(required_files), not missing, ", ".join(missing))
@@ -739,6 +740,28 @@ def main() -> int:
                  if p.is_file() and p.suffix in (".rs", ".hmod", ".png", ".ogg")
                  and not (set(p.relative_to(ROOT).parts) & {".git", "work", "out", "tmp"})]
     check("版权边界：仓库不含 .rs/.hmod/.png/.ogg", not forbidden, ", ".join(forbidden[:5]))
+
+    # 26. v0.9 · M5b 真实编译与无头加载
+    m5b = load("reports/m5b-native-build.json")
+    check("M5b: plan/apply/build/run 四步全通过",
+          all(m5b[k]["status"] == "ok" for k in ("plan", "apply", "build", "run"))
+          and m5b["apply"]["injections"] == 3 and m5b["plan"]["injections"] == 3
+          and m5b["plan"]["crates"] == 1)
+    check("M5b: 服务端 tick 探针被真实观测到",
+          m5b["run"]["probe_observed"]
+          and "load probe" in (m5b["run"]["probe_line"] or "")
+          and "engine states=18" in (m5b["run"]["probe_line"] or ""))
+    check("M5b: 验证等级止于 compiled_and_loaded，未声称开火",
+          m5b["verification_level"] == "compiled_and_loaded"
+          and any("use_item" in item for item in m5b["not_verified"])
+          and any("animation_driver" in item for item in m5b["not_verified"]))
+    check("M5b: 记录 4 条 mixins 约束与 3 条环境修复",
+          len(m5b["constraints_found"]) >= 4 and len(m5b["build"]["env_fixes"]) == 3
+          and {"E_CRATE", "E_REVISION", "E_INVALID_HELPER"} <=
+              {c["code"] for c in m5b["constraints_found"]})
+    check("M5b: 明确记录 third_party 已被打补丁且有 pristine 备份",
+          m5b["side_effect"]["pristine_backup"].startswith("work/")
+          and "已被应用补丁" in m5b["side_effect"]["what"])
 
 
     print("=" * 68)

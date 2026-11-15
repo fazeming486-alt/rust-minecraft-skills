@@ -1,0 +1,90 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5b · horizon-mixins 应用、编译与无头加载",
+  "verification_level": "compiled_and_loaded",
+  "note": "第一次把 bundle 真正编进 Horizon 并跑起来。证明的是「编译通过 + 服务端 tick 钩子被调用 + engine 链接」，不是「枪能开火」。",
+  "toolchain": {
+    "mixins_version": "0.6.0",
+    "mixins_rev": "5a64af938ec86b00d53d16a408aabc0038fb3e57",
+    "mixins_source": "codeload tarball（git 端点在代理下不可用）",
+    "mixins_build": "cargo build --release --locked --offline -p horizon-mixins-cli",
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)"
+  },
+  "plan": {
+    "status": "ok",
+    "injections": 3,
+    "crates": 1,
+    "data": 1,
+    "seconds": 70.76,
+    "workspace": "work/m5/src（third_party/horizon 的原始副本，排除 target）"
+  },
+  "apply": {
+    "status": "ok",
+    "injections": 3,
+    "crates": 1,
+    "data": 1,
+    "seconds": 110.21,
+    "stage_changed": true,
+    "stage": "work/m5/stage",
+    "changes": [
+      "Cargo.toml 增加成员 native-crates/tacz_ak47_pilot/engine",
+      "crates/horizon-client/Cargo.toml 增加 ak47_engine path 依赖",
+      "crates/horizon-client/src/game/native_hooks.rs 注入 on_use()/on_tick()/on_load() 三处调用",
+      "Cargo.lock 由 mixins 在 scratch 副本上 cargo update 后写回"
+    ]
+  },
+  "build": {
+    "status": "ok",
+    "command": "cargo build --profile fast -p horizon-client --offline",
+    "seconds": 430,
+    "binary": "third_party/horizon/target/fast/horizon-client.exe",
+    "env_fixes": [
+      "CFLAGS=/utf-8 与 CXXFLAGS=/utf-8：MSVC 读中文路径，否则 cl.exe 报 C1083",
+      "MSYS_NO_PATHCONV=1：否则 /utf-8 被 Git Bash 转成本机路径",
+      "RC_PATH=<Windows SDK>/rc.exe：构建脚本查注册表被安全策略拦截，资源编译找不到 rc.exe"
+    ]
+  },
+  "run": {
+    "status": "ok",
+    "command": "horizon-client.exe --resources <26.3> --dedicated --nogui --universe work/m5/server --port 25599",
+    "server_done_seconds": 48.366,
+    "probe_observed": true,
+    "probe_line": "[tacz_ak47_pilot] load probe: first server tick, engine states=18",
+    "done_line": "[16:25:47] [Server thread/INFO]: Done (48.366s)! For help, type \"help\"",
+    "log": "work/m5/server/server.log",
+    "log_sha256": "20aefc2d378f65cf2c5936c3f31c8dda71a0e65a435f6f3c9b5fe21776987875"
+  },
+  "constraints_found": [
+    {
+      "code": "E_CRATE",
+      "rule": "bundle 的 crate 不能带 Cargo.lock（cargo test 后必须删）",
+      "fixed_in": "port-native-module 测试后清理 target/ 与 Cargo.lock"
+    },
+    {
+      "code": "E_REVISION",
+      "rule": "快照没有 .git 时不能写 snapshot 指纹；只能留空不钉版本",
+      "fixed_in": "生成器在无 git 时省略 [compatibility]"
+    },
+    {
+      "code": "E_INVALID_HELPER",
+      "rule": "helper 必须恰好一个私有函数，且不能有文件级属性（//! 算属性）",
+      "fixed_in": "helper 改私有 fn、//! 改 //"
+    },
+    {
+      "code": "E0425",
+      "rule": "engine 的 STATES 在 states 模块，不在 crate 根",
+      "fixed_in": "load probe 用 ak47_engine::states::STATES"
+    }
+  ],
+  "not_verified": [
+    "use_item 真正开火：无头服务端没有玩家，触发不了右键",
+    "第一人称渲染、后坐、动画（animation_driver 仍 unbound）",
+    "多人同步与伤害结算",
+    "bindings 签名：仍为空，helper 拿不到游戏上下文"
+  ],
+  "side_effect": {
+    "what": "third_party/horizon 已被应用补丁（含 native-crates/ 与注入点）",
+    "pristine_backup": "work/m5/src",
+    "note": "再次 plan/apply 前必须从备份恢复，否则报 E_INVALID_PATH（workspace 已含 staging 路径）"
+  }
+}

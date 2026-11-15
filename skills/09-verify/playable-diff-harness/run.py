@@ -78,13 +78,19 @@ def write_script(path: Path) -> None:
 
 
 def run_trace(cargo: Path, engine: Path, script: Path, out: Path) -> Dict[str, Any]:
+    target_dir = ROOT / "work/m5/diff/cargo-target"
+    had_lock = (engine / "Cargo.lock").exists()
     cmd = [
         str(cargo), "run", "--offline", "--quiet",
         "--manifest-path", "Cargo.toml",
+        "--target-dir", str(target_dir),
         "--bin", "trace", "--",
         "--script", str(script), "--out", str(out),
     ]
     proc = subprocess.run(cmd, cwd=str(engine), capture_output=True, text=True)
+    # cargo 会在 crate 目录写 Cargo.lock；bundle 里不能有它（horizon-mixins E_CRATE）
+    if not had_lock and (engine / "Cargo.lock").exists():
+        (engine / "Cargo.lock").unlink()
     shown = "cargo run --offline --quiet --bin trace -- --script %s --out %s" % (
         script.name, out.name)
     return {

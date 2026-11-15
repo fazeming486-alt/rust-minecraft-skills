@@ -165,7 +165,9 @@ M0–M4 证明了「判断得对」，M5 证明「交得出去」。选 AK-47 �
 
 三处实测纠正：① `minecraft:max_stack_size` 不能放 `components`，官方要求顶层字段；② `transitions[].on` 起初全是 `*`，输入藏在 guard 里，引擎无法消费，改为输入名（只保留 2 条 guard 非空的每 tick 条件驱动）；③ 本机 Horizon 快照没有 `.git`，`horizon_revision` 改用目录指纹并显式标注不等于上游 HEAD。
 
-**四条边界**：`.hmod` 只证明内容被加载器接受，不证明物品行为；`bindings = []`、`native-build` 未跑，游戏内还没开过火；动画仍 `unbound`；差分的期望值来自数据文件，不是真机录制。详见 [08 · M5 执行报告](docs/08-m5-execution.md) 与 [ADR 0011](docs/adr/0011-vertical-slice-and-native-module.md)。
+**M5b 已把 bundle 真的编进游戏**：`horizon-mixins plan/apply` → `cargo build -p horizon-client`（7 min）→ `--dedicated --nogui` 无头服务端启动 48 s，首 tick 打出 `load probe … engine states=18`。路上撞到 4 条 mixins 硬约束（crate 不能带 `Cargo.lock`、快照无 `.git` 时不能钉版本、helper 必须一个私有函数且无 `//!`、`STATES` 在子模块）与 3 条中文路径/安全策略环境坑，全部回写进 skill 与预检。
+
+**四条边界**：`.hmod` 只证明内容被加载器接受；`bindings = []` 仍是空接线，**没有开火**；动画仍 `unbound`；差分的期望值来自数据文件，不是真机录制。详见 [08 · M5 执行报告](docs/08-m5-execution.md) 与 [ADR 0011](docs/adr/0011-vertical-slice-and-native-module.md)。
 
 ## 状态与下一步
 

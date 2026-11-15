@@ -68,9 +68,19 @@ python skills/05-port/verify-hook-catalog/run.py \
 
 优先 `git -C <horizon-root> rev-parse HEAD`（只读 subprocess）。本机快照没有 `.git`，因此回退为 `snapshot:<sha256(native-hooks.json)[:12]>`：
 
+- git checkout 但没有声明 → `E_REVISION_MISSING`；
+- 声明值不是 40 位 commit（包括 `snapshot:…`）→ `E_REVISION_INVALID`；
 - 声明值 != 解析值 → `E_REVISION_MISMATCH`（non-zero）；
-- 回退时额外给 `W_REVISION_NOT_GIT`，报告写 `revision.verified = false`；
-- `snapshot:` **不是 commit**，只能证明“同一份快照”。真实发布前必须换成上游 commit。
+- 快照没有 `.git` 且**留空** → 只给 `W_REVISION_UNPINNED`，这是唯一能被 horizon-mixins 接受的写法（它会把任何非 commit 值判 `E_REVISION`）；
+- 回退时额外给 `W_REVISION_NOT_GIT`，报告写 `revision.verified = false`。
+
+### M5b 新增：把 mixins 的编译期错误前移
+
+| 检查 | 错误码 | 为什么 |
+|---|---|---|
+| bundle 内不得有 `Cargo.lock` | `E_CRATE_ARTIFACT` | mixins 按 Horizon 的 lock 构建，实测报 `E_CRATE` |
+| bundle 内不得有 `target/` | `E_CRATE_ARTIFACT` | 本地构建产物会被打进 `.hnmod` |
+| helper 恰好一个**私有**函数、无 `//!` / `#![...]` | `E_INVALID_HELPER` | mixins 解析成 `file.attrs` 后拒绝，实测三次才过 |
 
 ## 负例控制
 

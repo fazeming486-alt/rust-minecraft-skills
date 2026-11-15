@@ -117,9 +117,26 @@ cargo run --offline --bin trace -- --script tests/fixtures/burst.trace
 
 | 项 | 状态 | 原因 |
 |---|---|---|
-| `native-build`（把 bundle 编进 horizon-client） | `not_run` | 需要完整游戏构建，本机 headless |
 | bindings / helper 签名 | `unverified` | 没有 horizon-mixins 生成 API 的离线副本 |
-| 游戏内开火、换弹、第一人称表现 | `not_observed` | 没有可观测客户端 |
-| `horizon_revision` 等于上游 commit | `unverified` | 本机 `third_party/horizon` 不是 git checkout（无 `.git`），只能用 `native-hooks.json` 内容指纹 `snapshot:<sha12>` 标识同一份快照 |
+| 游戏内开火、换弹、第一人称表现 | `not_observed` | 无头服务端没有玩家，触发不了右键 |
 
-最后一条尤其重要：`snapshot:` 前缀**不是** commit，只用于本仓库内“同一快照”的一致性校验；真实发布前必须换成 `git rev-parse HEAD` 的值。
+> **M5b 更新**：`native-build` 那一行已经不再是 `not_run`。bundle 经 `horizon-mixins 0.6.0` 的 `plan` / `apply` 真跑后编进了 `horizon-client`，无头服务端首 tick 打出了 `load probe … engine states=18`——证明「编进去 + 钩子被调用 + engine 链接」。仍然**没有开火**：`bindings = []` 拿不到物品栈。
+
+### horizon-mixins 0.6.0 的四条硬约束（M5b 实测，已写进生成器）
+
+| 错误码 | 规则 | 本 skill 的处理 |
+|---|---|---|
+| `E_CRATE` | bundle 的 crate 不能带 `Cargo.lock` | `cargo test` 后清理 `engine/target` 与 `engine/Cargo.lock` |
+| `E_REVISION` | 快照无 `.git` 时，任何 `snapshot:` 值都被拒 | 无 git 时**省略** `[compatibility]`，不钉版本；指纹只写报告 |
+| `E_INVALID_HELPER` | helper 恰好一个**私有**函数，不能有文件级属性 | 生成 `fn on_use()` 而不是 `pub fn`；`//!` 一律改 `//`（`//!` 会变成 `file.attrs`） |
+| `E0425` | `STATES` 在 `states` 模块，不在 crate 根 | load probe 用 `ak47_engine::states::STATES` |
+
+### 运行时探针
+
+bundle 里除了 `use_item` / `player_tick`，还注入一个 `server_tick` 的 `on_load.rs`：只在第一次 tick 打印一行，然后什么都不做。
+
+```
+[tacz_ak47_pilot] load probe: first server tick, engine states=18
+```
+
+它**不是玩法**，只用来在无头服务端上证明三件事：bundle 编进去了、钩子点活着、engine 链接成功。别拿它当「mod 能用了」。

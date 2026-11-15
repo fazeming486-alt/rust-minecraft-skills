@@ -1,6 +1,6 @@
 # 08 · M5 执行报告：AK-47 单枪竖切
 
-> 状态：v0.9（2026-11-15）。M5 第一次产出**能被目标侧工具接受**的东西：一个官方校验通过的 `.hmod`、一个 `cargo test` 全绿的纯 Rust engine、一份逐 tick 对得上的行为差分。没有 `native-build`，所以还不能说「游戏里能打」——这条边界写在每一份报告里。
+> 状态：v0.9（2026-11-15）。M5 第一次产出**能被目标侧工具接受**的东西：一个官方校验通过的 `.hmod`、一个 `cargo test` 全绿的纯 Rust engine、一份逐 tick 对得上的行为差分；M5b 又把它**真的编进 Horizon 并跑起来**（无头服务端首 tick 探针命中）。仍然没有开火——`bindings` 还是空的，这条边界写在每一份报告里。
 
 ## 1. 这一步到底证明了什么
 
@@ -11,8 +11,9 @@
 | 逻辑 | `work/m5/native/tacz_ak47_pilot/engine` | `cargo test --offline` 13/13，纯 std、零依赖 | `verified_by_test` |
 | 接线 | `horizon-mixin.toml`（2 个注入点） | 与 `native-hooks.json` 目录逐条对上，负例报 `E_HOOK_UNKNOWN` | `source_only` |
 | 行为 | `reports/m5-diff.json` | 200 tick 剧本 23/23 事件匹配、drift 0；负例失败 | `verified_by_test` |
+| 编译加载 | `reports/m5b-native-build.json` | 编进 `horizon-client`，无头服务端首 tick 打出 `load probe … engine states=18` | `compiled_and_loaded` |
 
-**没证明**：物品在游戏里出现、开火被真正调用、第一人称表现、动画、网络同步、伤害结算。`bindings = []`，`native-build` 未跑。
+**没证明**：物品在游戏里出现、开火被真正调用、第一人称表现、动画、网络同步、伤害结算。`bindings = []`，右键触发没有玩家可测。
 
 ## 2. 五步链路
 
@@ -120,11 +121,58 @@ python skills/09-verify/playable-diff-harness/run.py --slice orchestration/m5-sl
   --cargo D:/RUST重写mc项目/dev/cargo/bin/cargo.exe --report reports/m5-diff.json
 ```
 
-## 5. 边界与下一步
+## 5. M5b：真的编进游戏并跑起来
 
-- **接线未验证**：`bindings = []`，helper 的函数签名没有和 horizon-mixins 生成的 Host API 对过；`native-build` 未跑。
+M5 收尾后立刻做了 M5b——不满足于「源码看起来对」。四步全部真跑：
+
+| 步 | 工具 | 结果 |
+|---|---|---|
+| 目录预检 | `horizon-mixins plan` | `status: ok`，3 injections / 1 crate / 1 data，70.8 s |
+| 应用补丁 | `horizon-mixins apply` | `stage_changed: true`，110.2 s；workspace 加成员、客户端加依赖、3 处调用注入 |
+| 编译 | `cargo build --profile fast -p horizon-client --offline` | **成功**，7 min 10 s |
+| 运行 | `horizon-client --dedicated --nogui` | 服务端 48.4 s 启动完成，首 tick 打出探针 |
+
+探针不是摆设：bundle 里加了一个 `server_tick` 注入，只在第一次 tick 打印一行：
+
+```
+[tacz_ak47_pilot] load probe: first server tick, engine states=18
+```
+
+这一行同时证明三件事：bundle 被编进游戏、钩子点真的被调用、`ak47_engine` 被链接且 18 个状态在运行时可见。
+
+### 路上撞到的四条硬约束（都回写进了 skill）
+
+| 错误 | 规则 | 修法 |
+|---|---|---|
+| `E_CRATE` | bundle 的 crate 不能带 `Cargo.lock` | 生成器在 `cargo test` 后清掉 `target/` 与 `Cargo.lock` |
+| `E_REVISION` | 快照没有 `.git` 时，任何 `snapshot:` 值都被拒 | 无 git 时**省略** `[compatibility]`，不钉版本；指纹只写进报告 |
+| `E_INVALID_HELPER` | helper 必须恰好一个**私有**函数，且不能有文件级属性 | `pub fn` → `fn`；`//!` → `//`（`//!` 会变成 `file.attrs`） |
+| `E0425` | `STATES` 在 `states` 模块而不是 crate 根 | 探针改用 `ak47_engine::states::STATES` |
+
+`verify-hook-catalog` 已把前三条做成编译前检查（`E_CRATE_ARTIFACT` / `E_REVISION_INVALID` / `E_INVALID_HELPER`），下次不用等 `apply` 才发现。
+
+### 三条环境修复（中文路径 + 安全策略）
+
+- `CFLAGS=/utf-8`、`CXXFLAGS=/utf-8`：MSVC 才能读中文路径，否则 `cl.exe` 报 C1083；
+- `MSYS_NO_PATHCONV=1`：否则 Git Bash 把 `/utf-8` 转成本机路径（实测 `CL=/utf-8` 会被转坏）；
+- `RC_PATH=<Windows SDK>/rc.exe`：构建脚本查注册表被安全策略拦（`reg.exe` 在黑名单），资源编译找不到 `rc.exe`。
+
+### 副作用与恢复
+
+`third_party/horizon` 现在**已是被打过补丁的树**（含 `native-crates/` 与三处注入）。原始副本在 `work/m5/src`；再次 `plan/apply` 前必须从它恢复，否则 mixins 会报 `E_INVALID_PATH`（workspace 里已存在 staging 路径）。
+
+### M5b 仍然没有证明什么
+
+- **没有开火**：无头服务端没有玩家，`use_item` 触发不了；`bindings = []` 也拿不到物品栈。
+- **没有第一人称**：渲染、后坐、换弹动作需要可观测客户端。
+- **动画仍 unbound**：`animation_driver` 的缺口没有被 M5b 触碰。
+- 探针证明的是「钩子被调用」，不是「弹道/伤害/同步正确」。
+
+## 6. 边界与下一步
+
+- **接线未验证**：`bindings = []`，helper 的函数签名没有和 horizon-mixins 生成的 Host API 对过；游戏内右键还没试过。
 - **行为只覆盖 C1**：开火/换弹/切模式/弹药；后坐、散布、命中、伤害、同步都没有。
 - **动画仍 `unbound`**：IR 里的 44 条转移只是状态层，73 个 animation.json 与骨骼插值在 Horizon 侧仍无消费者。
 - **期望值不是 oracle**：来自 TaCZ 的 `ak47_data.json`，不是真机录制；M3b 仍未做。
 
-M5b 只做一件事：`horizon-launcher native-build` 把 bundle 编进游戏，在可运行实例里用 `use_item` 真正打出第一发。在那之前，任何「AK-47 已经搬过来」的说法都不成立。
+下一步（M5c）只有一件事：把 `bindings` 从空数组换成真实的 `(Game, Player, ItemStack)` 绑定，在可观测客户端里右键打出第一发，并用命中/弹药变化做断言。那一步完成前，「AK-47 已经搬过来」仍然不成立——现在只能说「它被编进游戏、钩子被调用、逻辑单元对得上」。

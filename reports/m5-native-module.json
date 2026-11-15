@@ -8,7 +8,7 @@
     }
   ],
   "bundle": {
-    "files": 12,
+    "files": 13,
     "mod_id": "tacz_ak47_pilot",
     "path": "work/m5/native/tacz_ak47_pilot",
     "version": "0.1.0"
@@ -74,6 +74,11 @@
     },
     {
       "name": "player_tick",
+      "source": "third_party/horizon/native-hooks.json",
+      "version": 1
+    },
+    {
+      "name": "server_tick",
       "source": "third_party/horizon/native-hooks.json",
       "version": 1
     }
@@ -188,29 +193,29 @@
       "sha256": "0081333a2d503a5c15fa8a13a2da5e4bf4d57acb32ad7133326aa0f4d49ace38"
     },
     {
-      "bytes": 5860,
+      "bytes": 5852,
       "path": "engine/src/bin/trace.rs",
-      "sha256": "b77ddcdbb93c84ff6604ae9b6c00f51d71687295c23d6030b8549247dde04f54"
+      "sha256": "090ef51a0710affb81d6afb5daff9871c40d05883f882352851f640643cddd8d"
     },
     {
-      "bytes": 1153,
+      "bytes": 1147,
       "path": "engine/src/consts.rs",
-      "sha256": "bddb7d101c7c12a24bd9b938e023d3e85e7b2c695a4f57d608f50bc5da72db21"
+      "sha256": "4a695da5e91b8463bf3fb8a329b7a58e006b3187068bd8d5d1e368ccae1f2c5c"
     },
     {
-      "bytes": 10234,
+      "bytes": 10226,
       "path": "engine/src/lib.rs",
-      "sha256": "9f59c4178b9151c835ce4a6a72b8c547666e3b663500ebab9648441fd1372a62"
+      "sha256": "7e00f0bdffd4b548728991b6dd4cadc7972f63908cfb3e0f2bb1f3af80d6b59f"
     },
     {
-      "bytes": 2177,
+      "bytes": 2171,
       "path": "engine/src/states.rs",
-      "sha256": "2e64a2a3aea1d2c96fbe2a355d13220bf5d7843b8c8d1da555ad5c0f0d5cb1ce"
+      "sha256": "81fed219b0362fe7e22d00035f464742d36294a416e875db8331cb0709422eb0"
     },
     {
-      "bytes": 2309,
+      "bytes": 2307,
       "path": "engine/tests/ak47.rs",
-      "sha256": "9b20668de765d026000e1b1e6168e5cb10856460eb8f20f1c22e41c14ef6af56"
+      "sha256": "a1e5764dd144676aecc833df92f528b055a2b2d18c580368249fb803ed903c51"
     },
     {
       "bytes": 107,
@@ -218,19 +223,24 @@
       "sha256": "07efd15dcb2f5e53c2c298b218693641b450b95fea5040bed65628cc59ef3c6a"
     },
     {
-      "bytes": 720,
+      "bytes": 1019,
       "path": "horizon-mixin.toml",
-      "sha256": "974ca0c6e896a9b3332964cd3393c2937366dd7e4f09edba861800f99f0826a9"
+      "sha256": "7b88293599401aca02a57cb0176d5b899ca008bfbcb04c5a881dcfe7e0047cf3"
     },
     {
-      "bytes": 777,
+      "bytes": 696,
+      "path": "on_load.rs",
+      "sha256": "a1156a534031f949b02028606ef4ae15cb286d169b4290c7982e8a408383ba2e"
+    },
+    {
+      "bytes": 747,
       "path": "on_tick.rs",
-      "sha256": "e5e2587220dc0c5ff68282960b7ec0dba6e6e36875f16118026d4702fd2a2ff2"
+      "sha256": "c0aa4963594844b9619e825666be6036a1498ffa3a14fe86a7afab872159ad5f"
     },
     {
-      "bytes": 946,
+      "bytes": 913,
       "path": "on_use.rs",
-      "sha256": "9d51f81cab1236773e100b181d99f1e4bf3a34e00a4c7e3c37f5288c5656a382"
+      "sha256": "991a61ae44af8d50250d16ada4c51819d3bb944a3212c331b7111643adb51954"
     }
   ],
   "params": [
