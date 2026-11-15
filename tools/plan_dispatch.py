@@ -64,8 +64,11 @@ def main(argv=None) -> int:
         mode = task["policy_mode"]
         mode_spec = modes[mode]
         allowed = [x for x in role["allowed_actions"] if x in mode_spec["allowed_actions"]]
+        compliance = template.get("compliance", {})
         forbidden = list(dict.fromkeys(
-            mode_spec["forbidden_actions"] + ["communicate_with_other_subagents", "self_assess_complexity"]))
+            mode_spec["forbidden_actions"]
+            + profiles.get("global_forbidden_actions", [])
+            + compliance.get("forbidden_actions", [])))
         if role.get("can_parallel"):
             assigned = "worker-%d" % (parallel_index % max(workers, 1) + 1)
             parallel_index += 1
@@ -83,6 +86,9 @@ def main(argv=None) -> int:
             "goal": task["goal"],
             "milestone": template["milestone"],
             "policy_mode": mode,
+            "transformation": compliance.get("transformation", "none"),
+            "distribution": compliance.get("distribution", "local-only"),
+            "distribution_conditions": compliance.get("distribution_conditions", []),
             "allowed_actions": allowed,
             "forbidden_actions": forbidden,
             "inputs": task["inputs"],

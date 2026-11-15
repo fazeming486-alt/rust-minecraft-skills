@@ -65,9 +65,9 @@ Horizon 官方的「每个 mod 一个 harness：dev-only Java oracle vs port」�
 | B 完全对齐 cleanroom | 事实提取降级为 `metadata-only`（只读 jar 元数据、资源清单、注解签名，不读方法体/常量池字符串），用行为 oracle 替代 | v0.2 的双轨实验与 665 个常量池证据失效，规则需重做 |
 | **C 混合（推荐）** | 按许可证分档：自有代码 / MIT 等明确授权 → 完整双轨；ARR / NC / ND / 未授权 → 强制 `metadata-only` + 行为 oracle。新增 `policy profile` 作为 intake 的必填输入 | 需给 `parse-bytecode` 加模式开关、给 manifest 加 `policy_mode` 字段 |
 
-注意 TaCZ 本身：代码 GPL-3.0、**资产 CC BY-NC-ND 4.0（禁止演绎）**，本地研究可行，发布需授权。当前仓库只存统计，未越界；但需要把这个判断写进流程，而不是靠人记着。
+注意 TaCZ 本身：代码 GPL-3.0、**资产 CC BY-NC-ND 4.0**（ND 限制的是分享改编版与商用，NC 限制商用；本地语义不变的技术性格式转换可行，见 ADR 0008）。当前仓库只存统计，未越界；发布需授权。这个判断已写进 `policy-gate` 流程，而不是靠人记着。
 
-**落地状态**：C 已由 ADR 0006 正式化，`policy-gate`、三档降级提取、`default_deny` 与 `review_required` 在 v0.4 实现；执行顺序见 `docs/04-roadmap.md` M0。v0.2 的代码侧双轨实验在授权范围内保留，资产侧按 ND 降级为 `oracle-only`。
+**落地状态**：C 已由 ADR 0006 正式化，`policy-gate`、三档降级提取、`default_deny` 与 `review_required` 在 v0.4 实现；执行顺序见 `docs/04-roadmap.md` M0。v0.2 的代码侧双轨实验始终在授权范围内保留；资产侧曾按 ND 降级为 `oracle-only`，**该判定已由 ADR 0008 修正为 `full-inspection / technical-only / local-only`**。
 
 ## 后果
 

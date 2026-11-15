@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 FORBIDDEN_RESULT_KEYS = {
-    "asset_content", "source_text", "constant_strings", "string_literals",
-    "annotation_values", "method_bodies", "raw_bytes",
+    "raw_bytes", "published", "published_url", "redistributed",
+    "creative_adaptation", "commercial_use",
 }
 
 
@@ -55,10 +55,17 @@ def main(argv=None) -> int:
                 problems.append("task_id 不匹配")
             if not result.get("evidence"):
                 problems.append("缺 evidence")
+            leaked = FORBIDDEN_RESULT_KEYS & set(result)
+            if leaked:
+                problems.append("发布/商用/原始字节越界字段: %s" % sorted(leaked))
+            if result.get("distribution") not in (None, "local-only"):
+                problems.append("distribution 必须为 local-only")
+            if result.get("transformation") == "creative":
+                problems.append("禁止创造性改编（technical-only）")
             if entry["policy_mode"] == "oracle-only":
-                leaked = FORBIDDEN_RESULT_KEYS & set(result)
-                if leaked:
-                    problems.append("oracle-only 越界字段: %s" % sorted(leaked))
+                content_leaked = {"asset_content", "source_text", "constant_strings"} & set(result)
+                if content_leaked:
+                    problems.append("oracle-only 越界字段: %s" % sorted(content_leaked))
             if pack["input_hash"] != result.get("input_hash"):
                 problems.append("input_hash 不匹配（任务包已变更）")
             if problems:

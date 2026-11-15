@@ -24,7 +24,7 @@ acceptance: ["每个任务包自包含且带 policy_mode 与 forbidden_actions",
 
 `task_id` / `role` / `goal` / `inputs` / **`policy_mode` + `allowed_actions` + `forbidden_actions`** / `output_contract` / `output_path` / `acceptance` / `depends_on` / `complexity{band,score}` / `input_hash` / `invariants` / `assigned_worker`。
 
-**policy 传导是硬约束**：TaCZ 资产是 CC BY-NC-ND 4.0，所有资产类任务一律 `oracle-only`，任务包里明确禁止读取资产内容、禁止与其他子 agent 通信、禁止自评复杂度。越界由 `collect-results` 拦截。
+**三维合规传导是硬约束**（ADR 0008）：任务包携带 `policy_mode` / `transformation` / `distribution` / `distribution_conditions`。M2 资产任务为 `full-inspection` + `technical-only` + `local-only`，`forbidden_actions` 明确禁止 `creative_adaptation`（重绘/改造型）、`publish_adapted_material`、`commercial_use`，以及与其他子 agent 通信、自评复杂度。越界由 `collect-results` 拦截。
 
 ## 拓扑分批
 

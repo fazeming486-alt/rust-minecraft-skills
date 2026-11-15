@@ -12,7 +12,7 @@
 
 `unit_count` / `asset_count` / `format_diversity` / `content_pack_ratio` / `unsupported_format_ratio` / `capability_gap_count` / `policy_strictness` / `c6_ratio` / `cross_layer_contracts`，权重与 S/M/L/XL 分档在 `orchestration/complexity-model.json`。
 
-权重最高的是 `unsupported_format_ratio`(0.20) 与 `capability_gap_count`(0.15)：目标侧不接受的格式与硬缺口才是真正的工作量来源，不是文件总数。`capability_gap_count > 0`、`policy_mode == oracle-only`、`unsupported_format_ratio > 0.30` 任一成立即强制 `human_gate`。
+权重最高的是 `unsupported_format_ratio`(0.20) 与 `capability_gap_count`(0.15)：目标侧不接受的格式与硬缺口才是真正的工作量来源，不是文件总数。`capability_gap_count > 0`、`distribution == local-only`、`unsupported_format_ratio > 0.30` 任一成立即强制 `human_gate`（第二项在 v0.6 按 ADR 0008 由 `policy_mode == oracle-only` 改来）。
 
 人工可覆盖 band，但必须记录理由并写入 `dispatch/index.json`。**模型只做语义裁决，不做资源规划。**
 
@@ -26,7 +26,7 @@
 
 每个 dispatch pack 必须含 `task_id` / `role` / `goal` / `inputs` / **`policy_mode` + `allowed_actions` + `forbidden_actions`** / `output_contract` / `output_path` / `acceptance` / `depends_on` / `complexity{band,score}` / `input_hash` / `invariants` / `assigned_worker`。
 
-M2 的资产类任务一律 `oracle-only`（TaCZ 资产 CC BY-NC-ND 4.0），任务包显式禁止读资产内容、禁止与其他子 agent 通信、禁止自评复杂度。**合规不是主 agent 记在心里，而是随任务包下发到每个执行者。**
+M2 任务包按 ADR 0008 传导三个维度：`policy_mode: full-inspection`、`transformation: technical-only`、`distribution: local-only`，并显式禁止 `creative_adaptation` / `publish_adapted_material` / `commercial_use`、禁止与其他子 agent 通信、禁止自评复杂度。**合规不是主 agent 记在心里，而是随任务包下发到每个执行者。**
 
 `input_hash = sha256(task_id + role + mode + band + template)`：模板、角色、band 或 policy 一变，所有旧 result 立即作废。否则会出现「换了合规档位却沿用旧结论」这种最难查的错误。
 
@@ -36,13 +36,13 @@ M2 的资产类任务一律 `oracle-only`（TaCZ 资产 CC BY-NC-ND 4.0），任
 
 ## 决策 5：`collect-results` 是唯一汇总入口
 
-子 agent 不互相通信，只把 result 写约定路径。汇总器校验 `task_id` / `input_hash` / `evidence`，并对 `oracle-only` 结果做越界字段扫描（`asset_content` / `source_text` / `constant_strings` / `raw_bytes` 等）。`verdict` 三态：`COMPLETE` / `PARTIAL`（有缺失）/ `BLOCKED`（有越界，整体中止）。
+子 agent 不互相通信，只把 result 写约定路径。汇总器校验 `task_id` / `input_hash` / `evidence`，并扫描发布/商用/创造性改编越界字段（`published` / `redistributed` / `creative_adaptation` / `commercial_use` / `raw_bytes`），要求 `distribution` 为 `local-only`、`transformation` 不为 `creative`；`oracle-only` 任务另禁内容字段。`verdict` 三态：`COMPLETE` / `PARTIAL`（有缺失）/ `BLOCKED`（有越界，整体中止）。
 
 ## 落地与实测（M2）
 
 - 3 个新 skill：`estimate-complexity` / `plan-dispatch` / `collect-results`（stage `98-orchestrate`），共 **17 个 skill**。
 - 4 个编排数据文件：`roles.json`（12 角色）、`complexity-model.json`、`task-templates/m2.json`（12 任务）、`dispatch-pack.schema.json`。
-- 真实输入实测：**score 0.5255 → band L → 4 workers → human_gate true**，硬门槛 2 条；生成 **12 个任务包 / 4 wave**。
+- 真实输入实测：**score 0.4255 → band M → 2 workers → human_gate true**，硬门槛 2 条；生成 **12 个任务包 / 4 wave**。（v0.5 时为 0.5255/L/4；ADR 0008 解除过严的合规收紧后 `policy_strictness` 归零，复杂度下降 0.1。这是一次真实校准，不是数字修饰。）
 - 实际派出 2 个调研子 agent 并行复核（资产清单 / 动画缺口）。其中一个**纠正了主 agent 对 `roadmap.json:712` 的过度推断**："set aside" 只针对 whole-modpacks 总目标，不能据此判定 0.5 动画搁置；0.5 仍是 `docs/modpacks.md:183` 的 Planned / 未实现。这条纠错已同步修正 ADR 0005、README、roadmap 与能力绑定表。**这是分工复核带来的直接价值。**
 
 ## 后果

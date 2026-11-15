@@ -32,57 +32,57 @@
     {
       "task_id": "m2-01-inventory",
       "role": "art-inventory",
-      "policy_mode": "oracle-only",
+      "policy_mode": "full-inspection",
       "assigned_worker": "worker-1",
       "status": "completed"
     },
     {
       "task_id": "m2-02-geometry",
       "role": "geometry-asset",
-      "policy_mode": "oracle-only",
+      "policy_mode": "full-inspection",
       "assigned_worker": "worker-2",
       "status": "missing"
     },
     {
       "task_id": "m2-03-animation",
       "role": "animation-asset",
-      "policy_mode": "oracle-only",
-      "assigned_worker": "worker-3",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-1",
       "status": "missing"
     },
     {
       "task_id": "m2-04-texture",
       "role": "texture-asset",
-      "policy_mode": "oracle-only",
-      "assigned_worker": "worker-4",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-2",
       "status": "missing"
     },
     {
       "task_id": "m2-05-audio",
       "role": "audio-asset",
-      "policy_mode": "oracle-only",
+      "policy_mode": "full-inspection",
       "assigned_worker": "worker-1",
       "status": "missing"
     },
     {
       "task_id": "m2-06-display-index",
       "role": "display-index",
-      "policy_mode": "oracle-only",
+      "policy_mode": "full-inspection",
       "assigned_worker": "worker-2",
       "status": "missing"
     },
     {
       "task_id": "m2-07-data-registry",
       "role": "data-registry",
-      "policy_mode": "oracle-only",
-      "assigned_worker": "worker-3",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-1",
       "status": "missing"
     },
     {
       "task_id": "m2-08-loc-shader",
       "role": "localization-shader",
-      "policy_mode": "oracle-only",
-      "assigned_worker": "worker-4",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-2",
       "status": "missing"
     },
     {

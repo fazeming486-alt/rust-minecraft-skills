@@ -53,9 +53,13 @@ def match_segment(segment: str, profiles: Dict[str, Any]) -> Dict[str, Any]:
             continue
         return {"pattern_id": pattern["id"], "scope": pattern["scope"],
                 "mode": pattern["mode"], "redistribution": pattern["redistribution"],
+                "transformation": pattern.get("transformation", profiles["default_transformation"]),
+                "distribution": pattern.get("distribution", profiles["default_distribution"]),
                 "matched": True, "note": pattern.get("note")}
     return {"pattern_id": None, "scope": None, "mode": profiles["default_mode"],
             "redistribution": profiles["default_redistribution"],
+            "transformation": profiles["default_transformation"],
+            "distribution": profiles["default_distribution"],
             "matched": False, "note": "未匹配规则，default_deny"}
 
 
@@ -70,18 +74,24 @@ def decide(license_raw: str, profiles: Dict[str, Any], artifact_id: str,
         findings.append(finding)
 
     scope_decisions: Dict[str, Dict[str, Any]] = {}
+    t_sev = {"none": 2, "technical-only": 1, "creative": 0, "port": 0}
+    d_sev = {"local-only": 1, "redistributable": 0}
     for scope in profiles["scopes"]:
         scoped = [f for f in findings if f["scope"] == scope and f["matched"]]
         if scoped:
             strictest = max(scoped, key=lambda f: severity[f["mode"]])
             scope_decisions[scope] = {
                 "mode": strictest["mode"],
+                "transformation": max((f["transformation"] for f in scoped), key=lambda t: t_sev[t]),
+                "distribution": max((f["distribution"] for f in scoped), key=lambda d: d_sev[d]),
                 "redistribution": all(f["redistribution"] for f in scoped),
                 "based_on": [f["pattern_id"] for f in scoped],
             }
         else:
             scope_decisions[scope] = {
                 "mode": "oracle-only" if scope == "assets" else profiles["default_mode"],
+                "transformation": profiles["default_transformation"],
+                "distribution": profiles["default_distribution"],
                 "redistribution": profiles["default_redistribution"],
                 "based_on": [],
             }
@@ -93,21 +103,28 @@ def decide(license_raw: str, profiles: Dict[str, Any], artifact_id: str,
 
     modes = [d["mode"] for d in scope_decisions.values()]
     overall = max(modes, key=lambda m: severity[m])
+    overall_transform = max((d["transformation"] for d in scope_decisions.values()),
+                            key=lambda t: t_sev[t])
+    overall_distribution = max((d["distribution"] for d in scope_decisions.values()),
+                               key=lambda d: d_sev[d])
     review = (not license_raw.strip()) or any(not f["matched"] for f in findings) or bool(override)
 
     return {
-        "schema_version": "0.1.0",
+        "schema_version": "0.2.0",
         "artifact_id": artifact_id,
         "license_raw": license_raw,
         "segments": findings,
         "scope_decisions": scope_decisions,
         "mode": overall,
         "policy_mode": overall,
+        "transformation": overall_transform,
+        "distribution": overall_distribution,
+        "distribution_conditions": profiles["distribution_conditions"].get(overall_distribution, []),
         "redistribution": all(d["redistribution"] for d in scope_decisions.values()),
         "review_required": review,
-        "decided_by": "policy-gate@0.1.0",
+        "decided_by": "policy-gate@0.2.0",
         "ruleset": "policy/license-profiles.json",
-        "note": "下游解析器必须按 policy_mode 降级；review_required 时必须人工签署后再继续",
+        "note": "三维度决策（ADR 0008）：inspection / transformation / distribution。技术性转换可做，改编版不得发布或商用。",
     }
 
 
@@ -138,7 +155,9 @@ def main(argv=None) -> int:
           % (raw, decision["policy_mode"], decision["redistribution"],
              decision["review_required"], args.out))
     for scope, value in decision["scope_decisions"].items():
-        print("    %-7s %-16s based_on=%s" % (scope, value["mode"], value["based_on"]))
+        print("    %-7s %-16s transform=%-15s distribution=%-14s based_on=%s"
+              % (scope, value["mode"], value["transformation"], value["distribution"],
+                 value["based_on"]))
     return 0
 
 

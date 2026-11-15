@@ -17,7 +17,7 @@
       ".vsh": 3
     },
     "unsupported_assets": 939,
-    "policy_mode": "oracle-only",
+    "policy_mode": "full-inspection",
     "capability_gaps": 1
   },
   "signals": {
@@ -58,9 +58,9 @@
       "source": "target 绑定表中 unbound 能力数"
     },
     "policy_strictness": {
-      "value": 1.0,
-      "normalized": 1.0,
-      "weighted": 0.1,
+      "value": 0.0,
+      "normalized": 0.0,
+      "weighted": 0.0,
       "source": "full=0 / metadata=0.5 / oracle=1"
     },
     "c6_ratio": {
@@ -76,15 +76,15 @@
       "source": "跨层契约条目数"
     }
   },
-  "score": 0.5255,
-  "band": "L",
-  "recommended_workers": 4,
+  "score": 0.4255,
+  "band": "M",
+  "recommended_workers": 2,
   "split": true,
   "human_gate": true,
   "hard_gates": [
     "capability_gap_count > 0 (1)",
-    "policy_mode == oracle-only"
+    "distribution == local-only (改编版不得发布)"
   ],
-  "input_hash": "sha256:5f25878e129d2e57cc5993b0",
+  "input_hash": "sha256:a9cd66c2d245523c5ad05b5a",
   "note": "确定性评估；模型不得自评复杂度。人工覆盖需记录理由。"
 }

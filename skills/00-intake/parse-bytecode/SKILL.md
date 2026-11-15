@@ -45,4 +45,4 @@ python skills/00-intake/parse-bytecode/run.py \
   --out work/index.bytecode.json
 ```
 
-**合规降级（ADR 0006）**：同 `parse-java-source`。`metadata-only` 只输出类签名（注解类型名、父类/接口、类型引用、declared_kind），不输出方法名、常量池字符串；`oracle-only` 连 class 字节都不读，只按 jar 内路径生成 unit 清单。决策写入 `artifact-index.source.policy`。
+**合规降级（ADR 0006）**：同 `parse-java-source`。`metadata-only` 只输出类签名（注解类型名、父类/接口、类型引用、declared_kind），不输出方法名、常量池字符串；`oracle-only` 连 class 字节都不读，只按 jar 内路径生成 unit 清单。决策写入 `artifact-index.source.policy`。ADR 0008 后资产侧改为 `full-inspection / technical-only / local-only`，本 skill 仍只处理代码轨，`transformation` / `distribution` 由 `plan-dispatch` 下发。

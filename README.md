@@ -104,34 +104,41 @@ python tools/experiment.py --profile profiles/forge/1.20.1.json \
 
 26 个 capability 现有 **17 implemented / 8 declared / 1 明确缺口： `animation_driver`**（骨骼动画驱动，0.5 规划未落地）。上游规则、schema、12 个 skill 一行未改——ADR 0001 的隔离设计得到验证。详见 [ADR 0005](docs/adr/0005-horizon-target-binding-and-policy-boundary.md)。
 
-**一处必须知道的边界**：Horizon 官方 `docs/modpacks.md` 的 cleanroom 政策是「第三方 mod 代码不反编译、不阅读，只从行为 oracle / 公开文档 / 自有数据文件移植」。本仓库 v0.2 的双轨事实提取与之不一致。ADR 0005 §4 给出 A/B/C 三个处理方向（推荐按许可证分档的混合模式），**待用户拍板前不改变仓库定位**。
+**一处必须知道的边界**：Horizon 官方 `docs/modpacks.md` 的 cleanroom 政策禁止读第三方 **mod code**，但明确允许 *"its own data files"*，且自述为发布侧工程政策（`:153` "engineering policy, not legal advice"）。本仓库是独立方法论仓库、本地研究，读代码在 GPL-3.0 下可行；若要贡献上游或发布，才需切回「不读 mod code」模式。ADR 0005 §4 的方案 C 已拍板，ADR 0008 修正了资产侧边界。
 
 ## v0.4 · 方案 C 落地与 M0/M1 交付
 
-- **方案 C 已拍板并工程化**（[ADR 0006](docs/adr/0006-policy-tiered-inspection.md)）：`policy-gate` 是 S0 第一道门禁；三档 `full-inspection / metadata-only / oracle-only`；`(scope × license)` 双维度分档；`default_deny`。实测 TaCZ 的 `GPL3 / CC BY-NC-ND 4.0` → 代码 `full-inspection`、资产 `oracle-only`、`redistribution: false`。
+- **方案 C 已拍板并工程化**（[ADR 0006](docs/adr/0006-policy-tiered-inspection.md)，资产侧判定已被 **[ADR 0008](docs/adr/0008-policy-three-dimensions.md)** 修正）：`policy-gate` 是 S0 第一道门禁；`(scope × license)` 分档；`default_deny`。
 - **M0**：`policy/license-profiles.json`、`policy-gate` skill、两个解析器的 `--policy-mode`、schema 的 `source.policy`。
 - **M1**：`mappings/forge-to-horizon.json`（从 Horizon `native-hooks.json` 生成 **162 条事件映射**）、`mappings/disposition-to-tier.json`（C1–C6 → API tier）、`build-hook-mapping` skill。
 - **路线图**：[docs/04-roadmap.md](docs/04-roadmap.md)（M0–M4，含验收、依赖、风险与度量）。
-- **合规保证**：`metadata-only` 产物不含方法名/字符串字面量，`oracle-only` 完全不读内容；`validate.py` 检查越界。
-- **合规成本实测**（TaCZ 799 单元）：`full-inspection` C6 = 0；`metadata-only` C6 = 0.0013、C1 从 21 降到 17、warnings 4 → 660。签名级元数据仍够用，代价在证据强度而非覆盖率；详见 `docs/04-roadmap.md` §4。
-- **双维度生效**：门禁整体档为 `oracle-only`（资产 ND 拉严），但代码侧自动取 `scope_decisions.code = full-inspection`，v0.2 的 4156 个方法 / 3184 个字符串事实得以保留，不会被资产许可证误伤。
+- **合规成本实测**（TaCZ 799 单元）：`full-inspection` C6 = 0；`metadata-only` C6 = 0.0013、C1 从 21 降到 17、warnings 4 → 660。签名级元数据仍够用，代价在证据强度而非覆盖率。
+- **代码侧始终 `full-inspection`**：v0.2 的 4156 方法 / 3184 字符串事实保留，`oracle-only` 从未作用于代码。
 
 ## v0.5 · 子 agent 分工与 M2 规划
 
 - **开箱即用的分工能力**（[ADR 0007](docs/adr/0007-subagent-dispatch.md)）：`estimate-complexity → plan-dispatch → collect-results` 三个 skill；复杂度由**九信号确定性评估器**给出，禁止模型自评；角色与模板由主 agent 维护，子 agent 只收自包含任务包。
 - 任务包含 `policy_mode` / `allowed_actions` / `forbidden_actions` / `input_hash` / `acceptance`；子 agent 禁止互相通信，结果由唯一入口汇总并做越界扫描。
-- **M2 规划完成**（[docs/05-m2-plan.md](docs/05-m2-plan.md)）：真实输入 4436 资产（94.5% 在内置枪包）；实测 **score 0.5255 → L 档 → 4 workers → 12 任务包 / 4 wave → human_gate**。
+- **M2 规划完成**（[docs/05-m2-plan.md](docs/05-m2-plan.md)）：真实输入 4436 资产（94.5% 在内置枪包）；当前实测 **score 0.4255 → M 档 → 2 workers → 12 任务包 / 4 wave → human_gate**（v0.5 时为 0.5255/L/4，合规收紧解除后下降）。
 - 实际派出 2 个调研子 agent 并行复核，并**纠正了一处推断偏差**：`roadmap.json:712` 的 set aside 只针对整包移植总目标，0.5 动画仍是 Planned 未实现。
 - 硬缺口 `animation_driver` 不变；不依赖 0.5 的两阶段路径：**A** 布尔条件模型 + 静态注册保证逻辑闭环，**B** `render_hand`(cancel) + `render_hand_pose` + `draw_*` + `camera_pose` 做逐块姿态近似。
 
+## v0.6 · 合规模型三维度修正（ADR 0008）
+
+- **上一版收得过紧**：把 CC BY-NC-ND 4.0 的 ND 条款误当成「不能读、不能转」。核查 CC 官方 deed（「若你重混、轉換本素材…**則你不得散佈改作後的素材**」）、CC 官方 QA（*"Format-shifting alone is not an adaptation"*）与 Horizon `modpacks.md:131/141/143/153` 后修正。
+- **三维度正交**：`inspection`（能否读）/ `transformation`（能否转，`technical-only` = 语义不变的格式等价转换）/ `distribution`（能否发，`local-only`）。
+- **TaCZ 实测修正**：代码 `full-inspection / port / local-only`；资产 `full-inspection / technical-only / local-only`。
+- **因此 M2 能做真实转换了**：可读取 `geo_models/*.json`、`*.animation.json`、`display/*.json`、`index/*.json`、PNG、OGG 并做格式等价转换；产物只留 `work/`，**不发布、不商用、不重绘**。
+- 发布、商用、贡献上游仍须另走授权或换样本流程；本结论是工程政策判断，**非法律意见**。
+
 ## 状态与下一步
 
-**v0.5 — 分工机制与 M2 规划已就位**：17 个 skill、49 项自检全绿、SSH 持续推送。
+**v0.6 — 合规边界已修正，M2 可实际执行转换**：17 个 skill、49 项自检全绿、SSH 持续推送。
 
 按 `docs/04-roadmap.md` 推进：
 
-- **执行 M2 剩余 10 个任务包**（wave 2 七个资产族可并行，随后契约对齐与汇总验收）
+- **执行 M2 剩余 10 个任务包**（现在可做真实格式等价转换，不再只是路径清单）
 - **M3 接 `horizon-ctl` 官方 harness**
 - **M4 第二个真实 mod 验证泛化**
 
-C6 归零仍只是单一样本结果，不可外推；`metadata-only` 精度下降与 `animation_driver` 缺口都必须如实记录，不用 workaround 冒充已解决。
+C6 归零仍只是单一样本结果，不可外推；`animation_driver` 缺口必须如实记录，不用 workaround 冒充已解决。

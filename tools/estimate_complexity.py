@@ -105,8 +105,8 @@ def main(argv=None) -> int:
     hard_gates = []
     if gap_count > 0:
         hard_gates.append("capability_gap_count > 0 (%d)" % gap_count)
-    if policy_mode == "oracle-only":
-        hard_gates.append("policy_mode == oracle-only")
+    if policy_raw.get("distribution") == "local-only":
+        hard_gates.append("distribution == local-only (改编版不得发布)")
     if values["unsupported_format_ratio"] > 0.30:
         hard_gates.append("unsupported_format_ratio = %.4f > 0.30" % values["unsupported_format_ratio"])
 

@@ -28,7 +28,9 @@ S0 的**第一道合规门禁**（ADR 0006 方案 C）。在任何事实提取�
 | `metadata-only` | 类签名（FQN / 注解类型名 / 父类 / 接口 / 声明类型） | 方法名、方法体、常量池字符串、注解参数值、源码正文 |
 | `oracle-only` | 行为观测、公开文档、自有数据文件 | 上述全部，含签名级提取 |
 
-TaCZ 的判定结果：代码 GPL-3.0 → `full-inspection` / `redistribution: false`（copyleft，本地研究可行、发布衍生需同协议）；资产 CC BY-NC-ND 4.0 → `oracle-only` / `redistribution: false`（禁止演绎）。这解释了 M2 美术链为什么必须降级。
+**v0.6 按 ADR 0008 改为三维度输出**：`inspection`（上表三档）/ `transformation`（`technical-only` | `creative` | `port` | `none`）/ `distribution`（`local-only` | `redistributable`）。ND 只限制**分享改编版与商用**，本地语义不变的格式等价转换可行；CC 官方称 format-shifting 不构成改编。
+
+TaCZ 实测：代码 `full-inspection / port / local-only`；资产 **`full-inspection / technical-only / local-only`**（v0.4 曾误判为 `oracle-only`，已废止）。因此 M2 可以读取资产数据文件并做格式等价转换，产物只留 `work/`，不发布、不商用、不重绘。
 
 ## 决策规则
 

@@ -38,33 +38,41 @@ license = "GPL3 / CC BY-NC-ND 4.0"
 
 即**代码与资产适用不同许可证**，且不是 SPDX 标准串。因此分档是 `(scope: code | assets) × (license)`，并强制 `default_deny`：解析不出来就取最严格档。
 
-| 档位 | 允许 | 禁止 | 典型触发 |
-|---|---|---|---|
-| `full-inspection` | 完整双轨：源码正文、class 常量池、字符串字面量、注解参数值 | — | 自有代码、MIT/Apache/BSD/CC0/CC-BY、书面授权 |
-| `metadata-only` | jar 元数据、资源清单、类签名（FQN/注解类型名/父类/接口/声明类型） | 方法名、方法体、常量池字符串、注解参数值、源码正文 | ARR、未知、ND 资产 |
-| `oracle-only` | 仅行为观测（dev-only Java oracle 的输入/输出）、公开文档、自有数据文件 | 上述全部，含签名级提取 | 明确禁止分析、法务要求、解析失败 |
+单一 `policy_mode` 一刀切被证明过严：v0.4 曾把 ND 资产判为 `oracle-only`，导致 M2 根本无法做转换。**v0.6 按 ADR 0008 改为三个正交维度**：
 
-外加独立的 `redistribution` 布尔量：GPL 类 copyleft 可本地研究但**发布衍生需同协议开源**；CC BY-NC-ND 禁止演绎，本地转换产物也不得发布。`policy_mode` 与 `redistribution` 是两件事，不能混。
+| 维度 | 取值 | 说明 |
+|---|---|---|
+| `inspection` | `full-inspection` / `metadata-only` / `oracle-only` | 能否读、读到什么深度（保留给两个代码解析器） |
+| `transformation` | `technical-only` / `creative` / `port` / `none` | `technical-only` = 语义不变的格式等价转换；CC 官方称 format-shifting 不构成改编 |
+| `distribution` | `local-only` / `redistributable` | ND 限制的是**分享改编版**与商用，不是本地制作；默认 `local-only` |
+
+TaCZ 实测判定：
+
+| scope | inspection | transformation | distribution |
+|---|---|---|---|
+| code | `full-inspection` | `port`（Rust 重写） | `local-only` |
+| assets | **`full-inspection`** | **`technical-only`** | **`local-only`** |
+
+硬边界：产物只留 `work/`，不发布、不商用、不做创造性改编（重绘/改造型/改写动画表现）；「是否属技术性修改」不确定时 `review_required`；发布须先取得授权或换自有资产。工程政策判断，非法律意见。
 
 ### 2.2 门禁位置
 
 ```
-fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source + parse-bytecode（现状）
+fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source + parse-bytecode（代码，现状）
                                   ├─> metadata-only  : 两个解析器降级，只出签名
-                                  └─> oracle-only    : 不解析内容，只出路径清单；交给行为 oracle
+                                  ├─> oracle-only    : 不解析内容，只出路径清单；交给行为 oracle
+                                  └─> 资产链          : technical-only 格式等价转换，local-only 不发布
 ```
 
-`policy-gate` 是 **S0 的第一道工序**，输出 `work/policy-decision.json` 与 `artifact-index.source.policy`。下游 skill 必须读取并遵守；`validate.py` 检查降级产物里没有越界字段。
+`policy-gate` 是 **S0 的第一道工序**，输出 `work/policy-decision.json` 与 `artifact-index.source.policy`。任务包把三个维度一起下发；`collect-results` 检查发布/商用/创造性改编越界。
 
 ### 2.3 与 Horizon 官方政策的对齐程度
 
-官方 `docs/modpacks.md` §Licences 第 4 条要求「mod 代码不反编译、不阅读」。方案 C 的对齐是**分档的**：
+官方 `docs/modpacks.md` §Licences 是**发布侧工程政策**：`:131` local by default、`:141-142` ND/NC 的本地 port 只给警告且从不发布、`:143-149` 禁止读的是 **mod code** 并明确允许 *"its own data files"*、`:153` 自述 "engineering policy, not legal advice"。
 
-- 对未授权 / ND 资产：完整对齐（`oracle-only` / `metadata-only`）；
-- 对自有代码与宽松许可：保留完整双轨，因为这是本项目的研究对象与授权范围；
-- 本仓库**不复制、不引用、不复述**任何第三方 mod 的实现，报告只含统计与 unit_id，这条始终成立。
-
-结论：C 让成果在「贡献给 Horizon 上游」时有一条清晰路径——把 `full-inspection` 的样本替换为自有/授权样本即可，方法本身不变。
+- **本地研究**：代码 GPL-3.0 可读、资产可做技术性转换，与官方 local by default 一致；
+- **贡献上游 / 发布时**：切回「不读 mod code」模式，用行为 oracle + 自有数据文件复现结论，方法本身不变；
+- 始终**不复制、不引用、不复述**第三方实现，报告只含统计与 unit_id。
 
 ## 3. 里程碑
 
@@ -94,7 +102,7 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 |---|---|
 | 交付 | TaCZ 资产清单与格式差异报告（Bedrock geometry / glTF 动画 / 贴图通道 / 音效）；`art-asset-classify` 执行层；0.5 落地前的两阶段渲染方案；跨层契约 `shared_states` 用例 |
 | 验收 | 资产完整性清单闭合；逻辑状态机与动画状态机状态枚举一致；产出「不依赖 0.5」的最小可玩表现路径 |
-| 依赖 | M0（资产是 CC BY-NC-ND，强制 `oracle-only` + 本地不发布）、M1 |
+| 依赖 | M0（三维度门禁：`technical-only` + `local-only`）、M1 |
 | 风险 | **全项目最大技术风险**：当前 Horizon 无任何骨骼动画 hook/helper；0.5 为 Planned 未实现（`docs/modpacks.md:183`），`roadmap.json:712` 的 set aside 只针对整包移植总目标，不可据此判定 0.5 状态（M2 子 agent 复核纠正，见 ADR 0007）。不赌排期，先做 `item_model_property` + `standalone_models` 压缩姿态，再用 `render_hand`/`render_hand_pose`/draw-list 自建插值 |
 
 ### M3 · 对接官方 harness
@@ -124,7 +132,7 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | Horizon 能力缺口 | 1（`animation_driver`） | 明确临时方案，不假装已解决 |
 | policy 覆盖率 | 100% 样本过门禁 | 解析失败强制 review |
 | NeoForge → hook 映射 | 162 条 / 156 事件 | 随 Horizon 快照重生成 |
-| 子 agent 任务包 | 12（4 wave / 4 worker，2 已完成） | M2 全部 result 闭合 |
+| 子 agent 任务包 | 12（4 wave / 2 worker，2 已完成） | M2 全部 result 闭合 |
 | `validate.py` 检查数 | 49 | 随里程碑递增，始终全绿 |
 
 **合规成本实测（M0，TaCZ 799 单元，同一套 20 条规则）**：
@@ -153,4 +161,6 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 0003 | skill 集群双形态 + 仅经 delta 交互 |
 | 0004 | 规则升级由真实样本驱动，判定以字节码轨为准 |
 | 0005 | Horizon 目标侧绑定、tier 路由、cleanroom 政策边界 |
-| 0006 | **方案 C：按许可证分档的合规门禁（本轮）** |
+| 0006 | 方案 C：按许可证分档的合规门禁（资产侧判定已被 0008 修正） |
+| 0007 | 子 agent 分工：确定性复杂度 + 自包含任务包 |
+| 0008 | **合规模型三维度：技术性转换可做、分发受限（v0.6）** |

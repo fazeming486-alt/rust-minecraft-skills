@@ -5,18 +5,24 @@
 
 ## 0. 一句话结论
 
-M2 的难点不是「资产多」，而是**目标侧根本不接受 TaCZ 的核心资产格式**：Bedrock geometry、`*.animation.json`、`display/`、`index/`、`*.lua`、`.bbmodel` 都不是 Horizon 26.3 的 vanilla 资产类型，`.hmod` 不直接消费。叠加唯一 unbound 能力 `animation_driver`，M2 的主体工作是**格式差异分析 + 临时渲染路径设计**，不是机械搬运。
+M2 的难点不是「资产多」，而是**目标侧根本不接受 TaCZ 的核心资产格式**：Bedrock geometry、`*.animation.json`、`display/`、`index/`、`*.lua`、`.bbmodel` 都不是 Horizon 26.3 的 vanilla 资产类型，`.hmod` 不直接消费。叠加唯一 unbound 能力 `animation_driver`，M2 的主体工作是**格式等价转换 + 跨层契约对齐 + 临时渲染路径设计**，不是机械搬运。
+
+> v0.6 更新：ADR 0008 修正合规边界后，M2 **可以真实读取资产数据文件并执行格式等价转换**（本地、非商用、不发布改编版），不再只做路径级规格差异分析。
 
 ## 1. 合规前置（不可绕过）
 
-TaCZ 资产是 **CC BY-NC-ND 4.0（禁止演绎）**。`policy-gate` 对 `GPL3 / CC BY-NC-ND 4.0` 的判定是：
+`mods.toml` 是 `GPL3 / CC BY-NC-ND 4.0`：**代码 GPL-3.0、资产 CC BY-NC-ND 4.0**，两者分开判定。按 ADR 0008 的三维度模型，`policy-gate` 实测输出：
 
-| scope | mode | redistribution |
-|---|---|---|
-| code | `full-inspection` | false |
-| assets | **`oracle-only`** | false |
+| scope | inspection | transformation | distribution |
+|---|---|---|---|
+| code | `full-inspection` | `port`（Rust 重写） | `local-only` |
+| assets | **`full-inspection`** | **`technical-only`** | **`local-only`** |
 
-因此 M2 的资产类子 agent **只能**：列 jar 条目名 / 路径 / 扩展名 / 数量、读 Horizon 公开文档、做行为观测。**禁止**读取任何 `.png` / `.ogg` / `.json` / `.bbmodel` 内容，禁止产出可发布的格式转换物。所有任务包都带 `policy_mode: oracle-only` 与 `forbidden_actions`，越界由 `collect-results` 整体判 `BLOCKED`。
+**修正说明（v0.6）**：本文件 v0.5 版曾把资产判为 `oracle-only`、只许列路径，这是把「ND 禁止**分享**改编版」误当成「不能读、不能转」。CC 官方 deed 的措辞是「若你重混、轉換本素材…**則你不得散佈改作後的素材**」，CC 官方 QA 明确 *"Format-shifting alone is not an adaptation"*；Horizon `modpacks.md:131` local by default、`:141-142` 对 ND/NC 只是本地 port 给警告且从不发布、`:143-149` 禁止读的是 mod code 并允许 *"its own data files"*、`:153` 自述非法律意见。
+
+因此 **M2 可以真实执行转换**：读取 `geo_models/*.json`、`*.animation.json`、`display/*.json`、`index/*.json`、PNG、OGG，做**语义不变的格式等价转换**（Bedrock geometry → 目标侧等价结构、动画时间轴 → 目标侧时间轴、贴图/音效必要的技术性重编码），产物只留 `work/`。
+
+硬边界仍由任务包传导并受 `collect-results` 检查：`distribution: local-only`（不发布/不上传/不进发布链）、非商业、禁止 `creative_adaptation`（重绘、改模型造型、改写动画表现）。「是否属于技术性修改」不确定时 `review_required`。若要发布，须先取得权利人授权或换成自有资产。工程政策判断，非法律意见。
 
 ## 2. 真实输入规模（只读条目名统计）
 
@@ -73,7 +79,9 @@ TaCZ 资产是 **CC BY-NC-ND 4.0（禁止演绎）**。`policy-gate` 对 `GPL3 /
 
 ## 4. 分工方案（主 agent 规划，子 agent 执行）
 
-确定性评估 `tools/estimate_complexity.py` 对真实输入算出 **score = 0.5255 → band L → 4 workers → human_gate = true**，硬门槛 2 条（`capability_gap_count = 1`、`policy_mode = oracle-only`）。主要信号：`asset_count` 0.150、`policy_strictness` 0.100、`unit_count` 0.080、`format_diversity` 0.056、`capability_gap_count` 0.050。
+确定性评估 `tools/estimate_complexity.py` 对真实输入算出 **score = 0.4255 → band M → 2 workers → human_gate = true**，硬门槛 2 条（`capability_gap_count = 1`、`distribution == local-only`）。主要信号：`asset_count` 0.150、`unit_count` 0.080、`format_diversity` 0.056、`capability_gap_count` 0.050、`policy_strictness` 0.000。
+
+> 合规修正前为 0.5255 / L / 4 workers（当时 `policy_strictness = 0.100` 来自资产 `oracle-only`）。**收紧解除后复杂度下降 0.1，说明虚增的合规成本本来就不该计入工作量**；`human_gate` 仍因能力缺口与不可发布而保持开启。
 
 `tools/plan_dispatch.py` 生成 **12 个任务包 / 4 个 wave**：
 
@@ -101,15 +109,15 @@ TaCZ 资产是 **CC BY-NC-ND 4.0（禁止演绎）**。`policy-gate` 对 `GPL3 /
 
 | 交付 | 验收 |
 |---|---|
-| 各族资产差异报告（7 份） | 计数闭合、不含资产内容、明确可迁移/需转译 |
+| 各族格式差异报告 + 格式等价转换产物（7 份，仅 `work/`） | 计数闭合、语义不变、明确可原样迁移/需转译、`local-only` 不发布 |
 | `animation_driver` 缺口与两阶段方案 | 区分硬缺口与 workaround，每条附 Horizon 路径/行号 |
 | 跨层契约 `shared_states` 用例 | 逻辑状态机 ↔ 动画状态机双向可查，不一致即失败 |
-| 合规审查报告 | 所有 `oracle-only` result 无越界字段 |
+| 合规审查报告 | 所有 result 为 `local-only`，无发布/商用/创造性改编字段 |
 | M2 验收清单 | 12 个任务各有 result 或明确阻塞原因 |
 
 ## 7. 风险与未决
 
 - **最大风险**：0.5 未实现且不赌排期；阶段 B 的逐块矩阵近似只是 workaround，不能写成「已支持动画」。
-- **合规风险**：ND 资产下所有分析只能是路径级 + 公开文档，无法做真实格式转换验证；这会让 M2 的「格式差异」停留在规格层面。若需要内容级验证，必须换有授权的自有资产样本。
+- **发布风险**：ADR 0008 之后本地技术性转换可以做，但产物受 `local-only` 约束，只能本地验证，不能进入发布链或商用；若要发布须取得权利人授权或换成自有资产。这是当前最大的非技术约束。
 - **未决**：`*.lua` 在目标侧无运行时（Horizon 脚本层 Later），66 个脚本的处置需单独决策；core shader 多数未跑（#13218）。
 - **待 M3**：视觉快照与 `horizon-ctl` 自动验收需要可运行实例，M2 只设计用例不执行。

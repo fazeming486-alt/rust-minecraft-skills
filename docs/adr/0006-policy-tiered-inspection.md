@@ -1,7 +1,8 @@
 # ADR 0006 · 方案 C：按许可证分档的合规门禁
 
-- **状态**：Accepted（v0.4，2026-11-15，用户拍板）
+- **状态**：Accepted（v0.4，2026-11-15，用户拍板）；**部分被 ADR 0008 修正（v0.6）**
 - **取代**：ADR 0005 §4 的「待拍板项」
+- **修正提示**：本 ADR 中「ND 资产 → `oracle-only` / 不读内容」的判定**已废止**。CC BY-NC-ND 4.0 的 ND 只限制分享改编版与商用，本地语义不变的技术性格式转换可行；现行三维度模型见 [ADR 0008](0008-policy-three-dimensions.md)。以下原文保留作为决策历史。
 - **相关**：`docs/04-roadmap.md`、`policy/license-profiles.json`、`skills/00-intake/policy-gate/`
 
 ## 背景
@@ -34,7 +35,7 @@ TaCZ 的判定示例：
 | scope | license | mode | redistribution |
 |---|---|---|---|
 | code | GPL-3.0 | `full-inspection` | false（copyleft，衍生需同协议） |
-| assets | CC BY-NC-ND 4.0 | `oracle-only` | false（禁止演绎） |
+| assets | CC BY-NC-ND 4.0 | ~~`oracle-only`~~ → **`full-inspection` / `technical-only` / `local-only`**（ADR 0008 修正） | false（不得发布改编版、不得商用） |
 
 这解释了为什么 v0.2 的**代码侧**双轨实验可以保留（本地研究、报告只含统计），而 **M2 美术链必须降级**：资产是 ND，不能做格式转换产物并发布。
 

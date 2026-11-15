@@ -26,11 +26,11 @@ acceptance: ["复杂度由真实输入计算而非模型自评", "只读 jar 条
 
 ## 硬门槛
 
-`capability_gap_count > 0`、`policy_mode == oracle-only`、`unsupported_format_ratio > 0.30` 任一成立即强制 `human_gate`，不受 band 覆盖。
+`capability_gap_count > 0`、`distribution == local-only`、`unsupported_format_ratio > 0.30` 任一成立即强制 `human_gate`，不受 band 覆盖（第二项 v0.6 按 ADR 0008 由 `policy_mode == oracle-only` 改来）。
 
 ## 边界
 
-- 只读 jar 的**条目名**，因此可在 `oracle-only` 下运行；绝不读取资产内容。
+- 只读 jar 的**条目名**以保持确定性；ADR 0008 后资产可做技术性转换，但那是下游子 agent 的职责，评估器不读内容。
 - 不生成任务包（属于 `plan-dispatch`），不调度子 agent。
 - 不根据模型对任务描述的主观感受调整分数。
 

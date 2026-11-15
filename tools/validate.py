@@ -106,6 +106,7 @@ def main() -> int:
         "policy/license-profiles.json", "mappings/forge-to-horizon.json",
         "mappings/disposition-to-tier.json", "tools/build_hook_mapping.py",
         "docs/05-m2-plan.md", "docs/adr/0007-subagent-dispatch.md",
+        "docs/adr/0008-policy-three-dimensions.md",
         "orchestration/roles.json", "orchestration/complexity-model.json",
         "orchestration/task-templates/m2.json", "orchestration/dispatch-pack.schema.json",
         "tools/estimate_complexity.py", "tools/plan_dispatch.py", "tools/collect_results.py",
@@ -284,9 +285,12 @@ def main() -> int:
     pg = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(pg)
     tacz = pg.decide("GPL3 / CC BY-NC-ND 4.0", profiles, "tacz")
-    check("方案 C：非标准 license 串按 scope 拆分",
+    check("ADR 0008：非标准 license 串按 scope 三维分档",
           tacz["scope_decisions"]["code"]["mode"] == "full-inspection"
-          and tacz["scope_decisions"]["assets"]["mode"] == "oracle-only"
+          and tacz["scope_decisions"]["assets"]["mode"] == "full-inspection"
+          and tacz["scope_decisions"]["assets"]["transformation"] == "technical-only"
+          and tacz["scope_decisions"]["assets"]["distribution"] == "local-only"
+          and tacz["distribution"] == "local-only"
           and tacz["redistribution"] is False)
     unknown = pg.decide("SomeWeirdLicense 9.9", profiles, "unknown")
     check("default_deny：未知许可证强制 oracle-only + review_required",
@@ -351,10 +355,12 @@ def main() -> int:
         check("每个任务包携带 policy 约束与 input_hash",
               all(p.get("policy_mode") and p.get("forbidden_actions")
                   and p.get("input_hash") and p.get("allowed_actions") for p in packs))
-        check("oracle-only 任务包禁止读取源码/资产内容",
-              all("read_source_text" in p["forbidden_actions"] and "read_class_constant_pool"
-                  in p["forbidden_actions"] for p in packs
-                  if p["policy_mode"] == "oracle-only"))
+        check("任务包三维度合规：技术性转换 + local-only + 禁止发布/商用",
+              all(p.get("transformation") in ("technical-only", "port", "none")
+                  and p.get("distribution") == "local-only"
+                  and all(x in p["forbidden_actions"] for x in
+                          ("creative_adaptation", "publish_adapted_material", "commercial_use"))
+                  for p in packs))
     else:
         check("派发产物存在（work/dispatch/index.json）", False, "未生成")
 

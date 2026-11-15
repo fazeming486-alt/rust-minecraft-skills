@@ -7,7 +7,7 @@ status: implemented
 reads: []
 writes: []
 depends_on: ["plan-dispatch"]
-acceptance: ["每个 result 校验 task_id 与 input_hash", "oracle-only 结果不得含资产内容字段", "缺失或越界整体判为 BLOCKED 或 PARTIAL"]
+acceptance: ["每个 result 校验 task_id 与 input_hash", "结果不得含发布/商用/创造性改编字段且 distribution 为 local-only", "缺失或越界整体判为 BLOCKED 或 PARTIAL"]
 ---
 
 # collect-results
@@ -23,7 +23,7 @@ acceptance: ["每个 result 校验 task_id 与 input_hash", "oracle-only 结果�
 | `task_id` 与任务包一致 | violation |
 | `input_hash` 与任务包一致 | violation（任务包已变更，结果作废） |
 | `evidence` 非空 | violation |
-| `oracle-only` 结果不含 `asset_content` / `source_text` / `constant_strings` / `raw_bytes` 等字段 | violation，整体中止 |
+| 结果不含 `published` / `redistributed` / `creative_adaptation` / `commercial_use` / `raw_bytes`，且 `distribution` 为 `local-only`、`transformation` 不为 `creative`（ADR 0008） | violation，整体中止 |
 | result 文件存在 | 缺失计入 `missing`，判 PARTIAL |
 
 `verdict` 三态：`COMPLETE` / `PARTIAL`（有缺失）/ `BLOCKED`（有越界）。规划阶段可用 `--allow-missing` 只生成清单不判失败。

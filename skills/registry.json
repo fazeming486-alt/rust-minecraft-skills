@@ -262,7 +262,7 @@
       "reads": [],
       "writes": [],
       "depends_on": ["plan-dispatch"],
-      "acceptance": ["每个 result 校验 task_id 与 input_hash", "oracle-only 结果不得含资产内容字段", "缺失或越界整体判为 BLOCKED 或 PARTIAL"],
+      "acceptance": ["每个 result 校验 task_id 与 input_hash", "结果不得含发布/商用/创造性改编字段且 distribution 为 local-only", "缺失或越界整体判为 BLOCKED 或 PARTIAL"],
       "summary": "唯一汇总入口：校验契约、policy 越界并给出全局 verdict"
     }
   ]
