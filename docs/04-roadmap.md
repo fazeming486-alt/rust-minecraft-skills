@@ -136,8 +136,8 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 验收 | IR 18 状态 / 44 转移且幂等；`.hmod` 过官方 `check`（`ok:true`）且两次打包同 SHA；engine `cargo test` 13/13 且状态集合与 IR 相等；注入点预检 0 错误、负例 `E_HOOK_UNKNOWN`；差分 23/23、drift 0、负例失败 |
 | 关键事实 | 内容与逻辑必须分离：`.hmod` 只装 data/assets（官方拒绝 `Cargo.toml`），行为只能进 `.hnmod` bundle；crate 不允许依赖 `horizon-client`，反而给出可离线 `cargo test` 的纯逻辑单元 |
 | 风险 / 未决 | `bindings = []`，游戏内还没开过火；动画仍 `unbound`；差分期望值来自数据文件而非 oracle；快照无 `.git`，`horizon_revision` 只能留空 |
-| M5b | **已完成**：`horizon-mixins plan/apply`（3 注入 / 1 crate）→ 编译 `horizon-client` 7 min → 无头服务端首 tick 探针命中 `engine states=18`；4 条 mixins 约束与 3 条环境修复已回写 |
-| 下一步 | M5c：把 `bindings` 换成真实 `(Game, Player, ItemStack)`，在可观测客户端右键打出第一发 |
+| M5b/M5c | **已完成**：`plan/apply` → 编译 7 min → 无头探针命中；真实 `(game, stack, claimed)` 绑定，`horizon-ctl use-item` 4 次点击 4 次 claim。5 条硬约束与 3 条环境修复已回写 |
+| 下一步 | M5d：干净的 apply 重跑 + 弹药状态（可变钩子）+ 用 inventory/events 断言 |
 
 ## 4. 度量（每次里程碑后记录）
 
@@ -159,7 +159,8 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | **M5 内容包** | **官方 check ok=true / 6227 B / 两次打包同 SHA-256** | 游戏内注册与显示 |
 | **M5 状态机 IR** | **18 状态 / 44 转移 / 22 输入 / 26 unresolved 带原因** | 与运行时转移序列对齐（需 oracle） |
 | **M5 原生模块** | **cargo test 13/13 / 状态集合与 IR 相等 / bindings 未验证** | 真实绑定 + 开火 |
-| **M5b 编译加载** | **plan ok / apply 110s / build 7min / 无头服务端首 tick 探针命中** | 开火与第一人称表现 |
+| **M5b 编译加载** | **plan ok / apply 110s / build 7min / 无头服务端首 tick 探针命中** | 第一人称表现 |
+| **M5c 开火路径** | **内容包注册成功（1659 items）/ 4 次右键 4 次 claim** | 弹药、子弹、命中、同步 |
 | **M5 差分** | **23/23 事件、drift 0、负例失败** | 覆盖后坐/散布/命中/同步 |
 | **M5 子 agent** | **5 任务 / 3 wave / 5 COMPLETE / 0 越界** | 与 M2 的 17 任务对比并行收益 |
 

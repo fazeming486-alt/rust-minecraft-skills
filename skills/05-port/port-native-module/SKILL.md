@@ -140,3 +140,19 @@ bundle 里除了 `use_item` / `player_tick`，还注入一个 `server_tick` 的 
 ```
 
 它**不是玩法**，只用来在无头服务端上证明三件事：bundle 编进去了、钩子点活着、engine 链接成功。别拿它当「mod 能用了」。
+
+### 真实绑定（M5c 已验证）
+
+`use_item` 的注入点签名是 `native_use_item(&mut self, stack: &ItemStack, claimed: &mut bool)`，对应的 `bindings`：
+
+```toml
+bindings = [
+  { name = "game",    ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+  { name = "stack",   ty = "&crate::items::ItemStack",   value = "stack" },
+  { name = "claimed", ty = "&mut bool",                   value = "&mut *claimed" },
+]
+```
+
+helper 只在 `stack.item` 是自己的物品时把 `*claimed = true`。实测用 `horizon-client --headless --control-socket` + `horizon-ctl use-item`，4 次点击 4 次命中。
+
+**这条钩子只给 `&ItemStack`，写不了弹药**。要做扣弹/换弹，得换可变背包钩子或玩家状态存储——不要在这里假装能改栈。

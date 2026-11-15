@@ -25,8 +25,24 @@
   "horizon_root": "third_party/horizon",
   "injections": [
     {
-      "bindings": [],
-      "bindings_count": 0,
+      "bindings": [
+        {
+          "name": "game",
+          "ty": "&mut crate::game::Game<'_>",
+          "value": "&mut *self"
+        },
+        {
+          "name": "stack",
+          "ty": "&crate::items::ItemStack",
+          "value": "stack"
+        },
+        {
+          "name": "claimed",
+          "ty": "&mut bool",
+          "value": "&mut *claimed"
+        }
+      ],
+      "bindings_count": 3,
       "helper": "on_use.rs",
       "hook": "use_item",
       "hook_version": 1,
@@ -96,6 +112,12 @@
     {
       "code": "W_REVISION_NOT_GIT",
       "detail": "horizon_root 不是 git checkout（无 .git），用 native-hooks.json 内容指纹 snapshot:d709ee26dc82 代替 commit；无法证明等于上游 HEAD",
+      "file": "work/m5/native/tacz_ak47_pilot/horizon-mixin.toml",
+      "line": null
+    },
+    {
+      "code": "W_BINDINGS_UNVERIFIED",
+      "detail": "injection 'ak47-on-use' 有 3 条 bindings，签名未离线验证",
       "file": "work/m5/native/tacz_ak47_pilot/horizon-mixin.toml",
       "line": null
     }

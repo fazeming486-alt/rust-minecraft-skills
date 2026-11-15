@@ -157,6 +157,7 @@ def main() -> int:
         "reports/m5-native-module.json", "reports/m5-hook-catalog.json",
         "reports/m5-diff.json", "reports/m5-collection.json",
         "reports/m5b-native-build.json",
+        "reports/m5c-firing.json",
     ]
     missing = [rel for rel in required_files if not (ROOT / rel).is_file()]
     check("核心文件齐全 (%d 项)" % len(required_files), not missing, ", ".join(missing))
@@ -715,7 +716,7 @@ def main() -> int:
     check("引擎状态集合与 IR 完全相等（改名即失败）",
           m5_nm["state_alignment"]["equal"]
           and set(m5_nm["state_alignment"]["engine_states"]) == set(m5_nm["state_alignment"]["ir_states"]))
-    check("原生模块诚实分级：bindings/native_build 未验证",
+    check("原生模块诚实分级：生成器不声称已验证绑定/构建（验证见 M5b/M5c 报告）",
           m5_nm["honesty"]["native_build"] == "not_run"
           and m5_nm["honesty"]["bindings"] == "unverified"
           and m5_nm["honesty"]["wiring"] == "placeholder")
@@ -762,6 +763,26 @@ def main() -> int:
     check("M5b: 明确记录 third_party 已被打补丁且有 pristine 备份",
           m5b["side_effect"]["pristine_backup"].startswith("work/")
           and "已被应用补丁" in m5b["side_effect"]["what"])
+
+    # 27. v0.9 · M5c 真实绑定与开火路径
+    m5c = load("reports/m5c-firing.json")
+    check("M5c: 物品在游戏内注册成功且无未知组件",
+          m5c["item_registration"]["ok"]
+          and m5c["item_registration"]["items_after_load"] > 0
+          and m5c["item_registration"]["content_error"] is None
+          and m5c["constraint_found"]["code"] == "content_not_loaded")
+    check("M5c: 每次右键都命中 native_use_item（4 次点击 4 次 claim）",
+          m5c["evidence"]["claims"] == 4 and m5c["evidence"]["one_per_click"]
+          and len(m5c["evidence"]["claim_lines"]) == 4)
+    check("M5c: 绑定三元组为 game/stack/claimed",
+          [b.split(":")[0] for b in m5c["bindings"]] == ["game", "stack", "claimed"])
+    check("M5c: 验证等级 fired_in_game 且未声称弹药/子弹/同步",
+          m5c["verification_level"] == "fired_in_game"
+          and any("弹药" in item for item in m5c["not_verified"])
+          and any("子弹" in item for item in m5c["not_verified"]))
+    check("M5c: 如实记录就地补丁与待重跑的干净 apply",
+          "apply" in m5c["reproducibility_note"]["follow_up"]
+          and "mods.incoming" in m5c["reproducibility_note"]["why"])
 
 
     print("=" * 68)

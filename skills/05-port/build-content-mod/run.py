@@ -136,17 +136,17 @@ def read_inputs(slice_doc: Dict[str, Any], workspace_root: Path) -> Dict[str, An
 
 
 def item_declaration(inp: Dict[str, Any]) -> Dict[str, Any]:
-    """物品声明：template + 顶层 max_stack_size + custom_data。
+    """物品声明：template + 顶层 max_stack_size，不带任何组件。
 
-    `minecraft:max_stack_size` 不能出现在 components 里：content::check_item 要求
-    「set max_stack_size instead」，所以上限写在顶层，components 只承担身份标记。
+    两条都是实测约束：
+    - `minecraft:max_stack_size` 不能出现在 components 里：`content::check_item` 要求
+      「set max_stack_size instead」，所以上限写在顶层。
+    - 26.3 的 `minecraft:custom_data` **不是已知组件类型**，写上会让整个内容包拒绝加载
+      （`content not loaded: … is not a known component type`）。身份直接用物品 id 判断。
     """
     return {
         "template": inp["template_item"],
         "max_stack_size": 1,
-        "components": {
-            "minecraft:custom_data": {"tacz:gun": inp["item_path"]},
-        },
     }
 
 
@@ -336,9 +336,9 @@ def check_item_declaration(mod_dir: Path, inp: Dict[str, Any]) -> Tuple[List[Dic
          "detail": f"template={decl.get('template')}"},
         {"name": "item_max_stack_size", "ok": decl.get("max_stack_size") == 1,
          "detail": f"顶层 max_stack_size={decl.get('max_stack_size')}"},
-        {"name": "item_custom_data",
-         "ok": (decl.get("components") or {}).get("minecraft:custom_data") == {"tacz:gun": item},
-         "detail": f"components={json.dumps(decl.get('components'), ensure_ascii=False)}"},
+        {"name": "item_no_unknown_components",
+         "ok": not (decl.get("components") or {}),
+         "detail": "components 为空：26.3 的 minecraft:custom_data 不是已知组件，会拒绝整个内容包"},
     ]
     return checks, decl
 
@@ -567,7 +567,7 @@ def main() -> int:
         },
         "notes": [
             "minecraft:max_stack_size 不能写进 components：官方工具实测报 component \"minecraft:max_stack_size\": set max_stack_size instead，上限因此写在顶层 max_stack_size",
-            "components 只保留 minecraft:custom_data 作为身份标记，是否在游戏内产生实际行为未验证",
+            "不写 components：26.3 的 minecraft:custom_data 不是已知组件类型，写上会让内容包拒绝加载",
             "官方 check 通过只代表声明与包结构合法，不代表物品能在游戏里出现或开火",
         ],
     }

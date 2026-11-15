@@ -7,15 +7,42 @@
     "description": "按 depends_on 与 reads/writes 建 DAG、检测写冲突、按序应用 delta 并重算 content_hash。不是 skill，不参与 manifest 读写。"
   },
   "stages": [
-    {"id": "00-intake", "summary": "规范化与事实提取"},
-    {"id": "01-classify", "summary": "五维机械分诊"},
-    {"id": "02-contract", "summary": "行为契约抽取"},
-    {"id": "03-map", "summary": "能力映射与目标绑定"},
-    {"id": "04-art", "summary": "美术资产分类与转换"},
-    {"id": "05-port", "summary": "落地为可加载产物：内容包、原生模块、状态机翻译与注入点预检"},
-    {"id": "06-target-study", "summary": "Horizon 目标侧 Rust 源码取证（渲染 / 资产 / mod API）"},
-    {"id": "09-verify", "summary": "验收与回归"},
-    {"id": "98-orchestrate", "summary": "复杂度评估、子 agent 任务派发与结果汇总"}
+    {
+      "id": "00-intake",
+      "summary": "规范化与事实提取"
+    },
+    {
+      "id": "01-classify",
+      "summary": "五维机械分诊"
+    },
+    {
+      "id": "02-contract",
+      "summary": "行为契约抽取"
+    },
+    {
+      "id": "03-map",
+      "summary": "能力映射与目标绑定"
+    },
+    {
+      "id": "04-art",
+      "summary": "美术资产分类与转换"
+    },
+    {
+      "id": "05-port",
+      "summary": "落地为可加载产物：内容包、原生模块、状态机翻译与注入点预检"
+    },
+    {
+      "id": "06-target-study",
+      "summary": "Horizon 目标侧 Rust 源码取证（渲染 / 资产 / mod API）"
+    },
+    {
+      "id": "09-verify",
+      "summary": "验收与回归"
+    },
+    {
+      "id": "98-orchestrate",
+      "summary": "复杂度评估、子 agent 任务派发与结果汇总"
+    }
   ],
   "skills": [
     {
@@ -26,7 +53,10 @@
       "execution": "deterministic",
       "status": "specified",
       "reads": [],
-      "writes": ["source", "units[]"],
+      "writes": [
+        "source",
+        "units[]"
+      ],
       "depends_on": [],
       "acceptance": [
         "源码与字节码双轨留存",
@@ -43,9 +73,28 @@
       "execution": "deterministic",
       "status": "implemented",
       "runner": "tools/classify.py",
-      "reads": ["source", "units[].path", "units[].kind", "units[].symbols", "units[].flags"],
-      "writes": ["units[].carrier", "units[].semantic", "units[].semantic_subtype", "units[].disposition", "units[].evidence", "units[].confidence", "units[].review_state", "units[].requires_drilldown", "units[].behavior_delta", "units[].provenance"],
-      "depends_on": ["intake-jar"],
+      "reads": [
+        "source",
+        "units[].path",
+        "units[].kind",
+        "units[].symbols",
+        "units[].flags"
+      ],
+      "writes": [
+        "units[].carrier",
+        "units[].semantic",
+        "units[].semantic_subtype",
+        "units[].disposition",
+        "units[].evidence",
+        "units[].confidence",
+        "units[].review_state",
+        "units[].requires_drilldown",
+        "units[].behavior_delta",
+        "units[].provenance"
+      ],
+      "depends_on": [
+        "intake-jar"
+      ],
       "acceptance": [
         "每个 unit 都有 disposition",
         "每条标签至少 1 条 evidence",
@@ -62,9 +111,19 @@
       "path": "skills/02-contract/extract-behavior-contract",
       "execution": "assisted",
       "status": "specified",
-      "reads": ["units[].semantic", "units[].disposition", "units[].behavior_delta", "units[].graph"],
-      "writes": ["units[].target.capabilities", "cross_layer_contracts[]"],
-      "depends_on": ["classify-java-decompiled"],
+      "reads": [
+        "units[].semantic",
+        "units[].disposition",
+        "units[].behavior_delta",
+        "units[].graph"
+      ],
+      "writes": [
+        "units[].target.capabilities",
+        "cross_layer_contracts[]"
+      ],
+      "depends_on": [
+        "classify-java-decompiled"
+      ],
       "acceptance": [
         "每个 C1/C2 单元有状态机或纯函数契约",
         "每个 behavior_delta 成对记录 delta_target 与 delta_semantics",
@@ -80,9 +139,17 @@
       "path": "skills/03-map/api-mapping-table",
       "execution": "human",
       "status": "specified",
-      "reads": ["units[].target.capabilities", "capability_gaps"],
-      "writes": ["capability_gaps[]"],
-      "depends_on": ["extract-behavior-contract", "build-hook-mapping"],
+      "reads": [
+        "units[].target.capabilities",
+        "capability_gaps"
+      ],
+      "writes": [
+        "capability_gaps[]"
+      ],
+      "depends_on": [
+        "extract-behavior-contract",
+        "build-hook-mapping"
+      ],
       "acceptance": [
         "每个引用的 capability id 存在于 vocabulary",
         "语义等价项必须人工确认",
@@ -97,9 +164,19 @@
       "path": "skills/04-art/art-asset-classify",
       "execution": "deterministic",
       "status": "specified",
-      "reads": ["units[].carrier", "units[].semantic", "units[].disposition", "units[].graph"],
-      "writes": ["units[].semantic_subtype", "cross_layer_contracts[]"],
-      "depends_on": ["classify-java-decompiled"],
+      "reads": [
+        "units[].carrier",
+        "units[].semantic",
+        "units[].disposition",
+        "units[].graph"
+      ],
+      "writes": [
+        "units[].semantic_subtype",
+        "cross_layer_contracts[]"
+      ],
+      "depends_on": [
+        "classify-java-decompiled"
+      ],
       "acceptance": [
         "每个 C4 资源有资产类别与完整性清单",
         "模型/贴图/动画/音效分类互斥且全覆盖",
@@ -114,9 +191,25 @@
       "path": "skills/09-verify/diff-test-harness",
       "execution": "deterministic",
       "status": "implemented",
-      "reads": ["work/delta.source.json", "work/policy-decision.json", "reports/m2-feature-slices.json", "reports/m2-conversion.json", "tests/fixtures/recording-contract.sample.json", "mappings/harness-contract.json"],
-      "writes": ["work/m3/recording-contracts.json", "work/m3/harness-*/result.json", "reports/m3-diff-*.json"],
-      "depends_on": ["build-feature-slices", "technical-convert-assets", "extract-behavior-contract", "art-asset-classify"],
+      "reads": [
+        "work/delta.source.json",
+        "work/policy-decision.json",
+        "reports/m2-feature-slices.json",
+        "reports/m2-conversion.json",
+        "tests/fixtures/recording-contract.sample.json",
+        "mappings/harness-contract.json"
+      ],
+      "writes": [
+        "work/m3/recording-contracts.json",
+        "work/m3/harness-*/result.json",
+        "reports/m3-diff-*.json"
+      ],
+      "depends_on": [
+        "build-feature-slices",
+        "technical-convert-assets",
+        "extract-behavior-contract",
+        "art-asset-classify"
+      ],
       "acceptance": [
         "C1/C2 单元有平台无关录制契约且只引用 capability id",
         "重放差异逐条可定位到 contract_id 与 tick",
@@ -136,7 +229,11 @@
       "reads": [],
       "writes": [],
       "depends_on": [],
-      "acceptance": ["下载产物记录 url / size / sha256", "产物只落在 work/ 等被 .gitignore 排除的目录", "校验和不一致即失败"],
+      "acceptance": [
+        "下载产物记录 url / size / sha256",
+        "产物只落在 work/ 等被 .gitignore 排除的目录",
+        "校验和不一致即失败"
+      ],
       "summary": "从官方源获取第三方产物并记录 provenance，产物绝不入库"
     },
     {
@@ -148,8 +245,14 @@
       "status": "implemented",
       "reads": [],
       "writes": [],
-      "depends_on": ["fetch-mod-artifact"],
-      "acceptance": ["记录反编译器文件名与反编译出的 java 文件数", "输出目录位于 work/", "明确标注反编译源码不是 ground truth"],
+      "depends_on": [
+        "fetch-mod-artifact"
+      ],
+      "acceptance": [
+        "记录反编译器文件名与反编译出的 java 文件数",
+        "输出目录位于 work/",
+        "明确标注反编译源码不是 ground truth"
+      ],
       "summary": "编排 Vineflower 形成第三条轨，量化源码→编译→反编译的信息损失"
     },
     {
@@ -161,8 +264,14 @@
       "status": "implemented",
       "reads": [],
       "writes": [],
-      "depends_on": ["fetch-mod-artifact"],
-      "acceptance": ["每个 .java 生成一个 unit", "注解简单名必须解析成 FQN", "字符串字面量与 .register 调用计数全部保留"],
+      "depends_on": [
+        "fetch-mod-artifact"
+      ],
+      "acceptance": [
+        "每个 .java 生成一个 unit",
+        "注解简单名必须解析成 FQN",
+        "字符串字面量与 .register 调用计数全部保留"
+      ],
       "summary": "解析 Java 源码树生成 artifact-index（源码轨）"
     },
     {
@@ -174,8 +283,14 @@
       "status": "implemented",
       "reads": [],
       "writes": [],
-      "depends_on": ["fetch-mod-artifact"],
-      "acceptance": ["每个 .class 生成一个 unit", "注解描述符与字符串常量来自常量池而非反编译文本", "Long/Double 双槽与 $ 嵌套类正确处理"],
+      "depends_on": [
+        "fetch-mod-artifact"
+      ],
+      "acceptance": [
+        "每个 .class 生成一个 unit",
+        "注解描述符与字符串常量来自常量池而非反编译文本",
+        "Long/Double 双槽与 $ 嵌套类正确处理"
+      ],
       "summary": "解析 class 常量池生成 artifact-index（ground truth 轨），纯标准库"
     },
     {
@@ -187,8 +302,15 @@
       "status": "implemented",
       "reads": [],
       "writes": [],
-      "depends_on": ["parse-java-source", "parse-bytecode"],
-      "acceptance": ["输出两轨的单元数差与分类一致率", "输出注解集合相等率与字节码独有字符串数", "明确写出以字节码轨为准的结论"],
+      "depends_on": [
+        "parse-java-source",
+        "parse-bytecode"
+      ],
+      "acceptance": [
+        "输出两轨的单元数差与分类一致率",
+        "输出注解集合相等率与字节码独有字符串数",
+        "明确写出以字节码轨为准的结论"
+      ],
       "summary": "量化源码轨与字节码轨的事实差异，把 ground truth 断言变成可测数字"
     },
     {
@@ -198,10 +320,22 @@
       "path": "skills/01-classify/calibrate-classification",
       "execution": "deterministic",
       "status": "implemented",
-      "reads": ["units[].semantic", "units[].disposition", "units[].evidence"],
+      "reads": [
+        "units[].semantic",
+        "units[].disposition",
+        "units[].evidence"
+      ],
       "writes": [],
-      "depends_on": ["compare-tracks", "classify-java-decompiled"],
-      "acceptance": ["输出校准前后 C6 占比与兜底单元数", "报告只含统计与 unit_id，不含第三方源码", "每条新增规则都有 golden 用例覆盖", "规则升级后 validate.py 全绿"],
+      "depends_on": [
+        "compare-tracks",
+        "classify-java-decompiled"
+      ],
+      "acceptance": [
+        "输出校准前后 C6 占比与兜底单元数",
+        "报告只含统计与 unit_id，不含第三方源码",
+        "每条新增规则都有 golden 用例覆盖",
+        "规则升级后 validate.py 全绿"
+      ],
       "summary": "三轨实验 + 规则命中统计 + 脱敏校准报告，用数据驱动规则升级"
     },
     {
@@ -212,9 +346,19 @@
       "execution": "deterministic",
       "status": "implemented",
       "reads": [],
-      "writes": ["source.policy"],
-      "depends_on": ["fetch-mod-artifact"],
-      "acceptance": ["非标准 license 串按 scope 拆分", "解析失败强制 oracle-only + review_required", "下游解析器按 policy_mode 降级", "单段许可证广播到所有 scope 且强制 review_required", "多段许可证不触发广播、基线判定零变化"],
+      "writes": [
+        "source.policy"
+      ],
+      "depends_on": [
+        "fetch-mod-artifact"
+      ],
+      "acceptance": [
+        "非标准 license 串按 scope 拆分",
+        "解析失败强制 oracle-only + review_required",
+        "下游解析器按 policy_mode 降级",
+        "单段许可证广播到所有 scope 且强制 review_required",
+        "多段许可证不触发广播、基线判定零变化"
+      ],
       "summary": "S0 第一道合规门禁：按 (scope × license) 判定三维度，单段广播 + default_deny"
     },
     {
@@ -227,7 +371,11 @@
       "reads": [],
       "writes": [],
       "depends_on": [],
-      "acceptance": ["映射条目可回溯到 hook 名 / side / contract", "none (无对应事件) 与真实映射分开统计", "生成物不含任何 Horizon 源码"],
+      "acceptance": [
+        "映射条目可回溯到 hook 名 / side / contract",
+        "none (无对应事件) 与真实映射分开统计",
+        "生成物不含任何 Horizon 源码"
+      ],
       "summary": "从 Horizon native-hooks.json 生成 NeoForge 事件 → 命名 hook 映射表"
     },
     {
@@ -239,8 +387,15 @@
       "status": "implemented",
       "reads": [],
       "writes": [],
-      "depends_on": ["policy-gate", "classify-java-decompiled"],
-      "acceptance": ["复杂度由真实输入计算而非模型自评", "只读 jar 条目名不读资产内容", "硬门槛触发时强制 human_gate"],
+      "depends_on": [
+        "policy-gate",
+        "classify-java-decompiled"
+      ],
+      "acceptance": [
+        "复杂度由真实输入计算而非模型自评",
+        "只读 jar 条目名不读资产内容",
+        "硬门槛触发时强制 human_gate"
+      ],
       "summary": "九信号确定性复杂度评估，决定拆分粒度、并行度与人工关卡"
     },
     {
@@ -252,8 +407,14 @@
       "status": "implemented",
       "reads": [],
       "writes": [],
-      "depends_on": ["estimate-complexity"],
-      "acceptance": ["每个任务包自包含且带 policy_mode 与 forbidden_actions", "任务按 depends_on 拓扑分批", "并行任务按 band 的 workers 数分配"],
+      "depends_on": [
+        "estimate-complexity"
+      ],
+      "acceptance": [
+        "每个任务包自包含且带 policy_mode 与 forbidden_actions",
+        "任务按 depends_on 拓扑分批",
+        "并行任务按 band 的 workers 数分配"
+      ],
       "summary": "把里程碑模板切成自包含子 agent 任务包并按依赖分 wave"
     },
     {
@@ -265,8 +426,14 @@
       "status": "implemented",
       "reads": [],
       "writes": [],
-      "depends_on": ["plan-dispatch"],
-      "acceptance": ["每个 result 校验 task_id 与 input_hash", "结果不得含发布/商用/创造性改编字段且 distribution 为 local-only", "缺失或越界整体判为 BLOCKED 或 PARTIAL"],
+      "depends_on": [
+        "plan-dispatch"
+      ],
+      "acceptance": [
+        "每个 result 校验 task_id 与 input_hash",
+        "结果不得含发布/商用/创造性改编字段且 distribution 为 local-only",
+        "缺失或越界整体判为 BLOCKED 或 PARTIAL"
+      ],
       "summary": "唯一汇总入口：校验契约、policy 越界并给出全局 verdict"
     },
     {
@@ -276,10 +443,20 @@
       "path": "skills/06-target-study/study-horizon-render-pipeline",
       "execution": "deterministic",
       "status": "implemented",
-      "reads": ["third_party/horizon/crates/**/*.rs", "orchestration/horizon-probes/render-pipeline.json"],
-      "writes": ["reports/horizon-render-pipeline.json"],
+      "reads": [
+        "third_party/horizon/crates/**/*.rs",
+        "orchestration/horizon-probes/render-pipeline.json"
+      ],
+      "writes": [
+        "reports/horizon-render-pipeline.json"
+      ],
       "depends_on": [],
-      "acceptance": ["三路探针 missing_files 为空", "tree_keywords 命中数如实记录且与文档结论一致", "只记录行号与 <=160 字符短签名，不复制源码正文", "换 Horizon 快照后重跑可对比"],
+      "acceptance": [
+        "三路探针 missing_files 为空",
+        "tree_keywords 命中数如实记录且与文档结论一致",
+        "只记录行号与 <=160 字符短签名，不复制源码正文",
+        "换 Horizon 快照后重跑可对比"
+      ],
       "summary": "取证 Horizon 客户端渲染 / 手部 / 逐部件姿态管线，判定骨骼动画能力是否缺席"
     },
     {
@@ -289,10 +466,20 @@
       "path": "skills/06-target-study/study-horizon-asset-schema",
       "execution": "deterministic",
       "status": "implemented",
-      "reads": ["third_party/horizon/crates/horizon-assets/**/*.rs", "orchestration/horizon-probes/asset-schema.json"],
-      "writes": ["reports/horizon-asset-schema.json"],
+      "reads": [
+        "third_party/horizon/crates/horizon-assets/**/*.rs",
+        "orchestration/horizon-probes/asset-schema.json"
+      ],
+      "writes": [
+        "reports/horizon-asset-schema.json"
+      ],
       "depends_on": [],
-      "acceptance": ["判定 AnimationClip 为贴图精灵帧动画而非骨骼动画并附声明行号", "Custom 布尔限制与 foreign.rs 静默降级有行号证据", "Bedrock geometry / glTF / .bbmodel 读取器缺席由 tree_scan 0 命中证明", "报告不含源码正文"],
+      "acceptance": [
+        "判定 AnimationClip 为贴图精灵帧动画而非骨骼动画并附声明行号",
+        "Custom 布尔限制与 foreign.rs 静默降级有行号证据",
+        "Bedrock geometry / glTF / .bbmodel 读取器缺席由 tree_scan 0 命中证明",
+        "报告不含源码正文"
+      ],
       "summary": "取证 Horizon 26.3 资产模型 / 动画元数据 / item model 条件系统"
     },
     {
@@ -302,10 +489,22 @@
       "path": "skills/06-target-study/study-horizon-mod-api",
       "execution": "deterministic",
       "status": "implemented",
-      "reads": ["third_party/horizon/crates/horizon-mod-api-gen/**/*.rs", "third_party/horizon/crates/horizon-mods/**/*.rs", "third_party/horizon/crates/horizon-port-pack/**/*.rs", "orchestration/horizon-probes/mod-api.json"],
-      "writes": ["reports/horizon-mod-api.json"],
+      "reads": [
+        "third_party/horizon/crates/horizon-mod-api-gen/**/*.rs",
+        "third_party/horizon/crates/horizon-mods/**/*.rs",
+        "third_party/horizon/crates/horizon-port-pack/**/*.rs",
+        "orchestration/horizon-probes/mod-api.json"
+      ],
+      "writes": [
+        "reports/horizon-mod-api.json"
+      ],
       "depends_on": [],
-      "acceptance": ["证明 mod_api 不含 tier 字段且 tier 归属 horizon-port-pack 分类逻辑", "0.5 仅声明未实现有行号证据", "dev-only Java oracle / coverage 实现存在且 M3 应对接", "报告不含源码正文"],
+      "acceptance": [
+        "证明 mod_api 不含 tier 字段且 tier 归属 horizon-port-pack 分类逻辑",
+        "0.5 仅声明未实现有行号证据",
+        "dev-only Java oracle / coverage 实现存在且 M3 应对接",
+        "报告不含源码正文"
+      ],
       "summary": "取证 mod API 生成 / hook 分发 / API tier 归属与 .hmod 加载链"
     },
     {
@@ -315,10 +514,32 @@
       "path": "skills/02-contract/build-feature-slices",
       "execution": "deterministic",
       "status": "implemented",
-      "reads": ["work/index.source.json", "work/delta.source.json", "jar:*.animation.json", "orchestration/slice-anchors.json", "target/horizon.capabilities.json", "third_party/horizon/native-hooks.json"],
-      "writes": ["work/feature-slices.json", "reports/m2-feature-slices.json"],
-      "depends_on": ["parse-java-source", "classify-java-decompiled", "policy-gate", "study-horizon-render-pipeline", "study-horizon-asset-schema", "study-horizon-mod-api"],
-      "acceptance": ["每个切片四层齐全且 shared_states 是唯一状态来源", "目标侧 hook/helper 名称全部可解析，未知符号即报错", "状态参数化 roundtrip 闭合且未匹配状态为 0", "verdict 三态判定可复核，硬缺口不得伪装成 portable"],
+      "reads": [
+        "work/index.source.json",
+        "work/delta.source.json",
+        "jar:*.animation.json",
+        "orchestration/slice-anchors.json",
+        "target/horizon.capabilities.json",
+        "third_party/horizon/native-hooks.json"
+      ],
+      "writes": [
+        "work/feature-slices.json",
+        "reports/m2-feature-slices.json"
+      ],
+      "depends_on": [
+        "parse-java-source",
+        "classify-java-decompiled",
+        "policy-gate",
+        "study-horizon-render-pipeline",
+        "study-horizon-asset-schema",
+        "study-horizon-mod-api"
+      ],
+      "acceptance": [
+        "每个切片四层齐全且 shared_states 是唯一状态来源",
+        "目标侧 hook/helper 名称全部可解析，未知符号即报错",
+        "状态参数化 roundtrip 闭合且未匹配状态为 0",
+        "verdict 三态判定可复核，硬缺口不得伪装成 portable"
+      ],
       "summary": "把动画这类跨层特性缝成资产/代码/目标/契约四层单一迁移单元"
     },
     {
@@ -328,10 +549,27 @@
       "path": "skills/09-verify/verify-generalization",
       "execution": "deterministic",
       "status": "implemented",
-      "reads": ["orchestration/m4-samples.json", "profiles/forge/1.20.1.json", "rules/classification.rules.json", "work/m4/*.jar", "work/m4/*.policy.json"],
-      "writes": ["reports/m4-generalization.json"],
-      "depends_on": ["classify-java-decompiled", "policy-gate", "parse-bytecode"],
-      "acceptance": ["至少两个与基线形态不同的真实 mod 参与", "阈值先于实验写死且不事后调参", "报告只含统计与包名计数，不复制第三方实现", "发现新盲区时必须新增规则并附 golden 用例，随后复跑归零"],
+      "reads": [
+        "orchestration/m4-samples.json",
+        "profiles/forge/1.20.1.json",
+        "rules/classification.rules.json",
+        "work/m4/*.jar",
+        "work/m4/*.policy.json"
+      ],
+      "writes": [
+        "reports/m4-generalization.json"
+      ],
+      "depends_on": [
+        "classify-java-decompiled",
+        "policy-gate",
+        "parse-bytecode"
+      ],
+      "acceptance": [
+        "至少两个与基线形态不同的真实 mod 参与",
+        "阈值先于实验写死且不事后调参",
+        "报告只含统计与包名计数，不复制第三方实现",
+        "发现新盲区时必须新增规则并附 golden 用例，随后复跑归零"
+      ],
       "summary": "同一套规则跑多个真实 mod，检验 C6=0 是否过拟合"
     },
     {
@@ -341,10 +579,32 @@
       "path": "skills/04-art/technical-convert-assets",
       "execution": "deterministic",
       "status": "implemented",
-      "reads": ["jar:*.animation.json", "jar:**/geo_models/**", "jar:**/display/**", "jar:**/index/**", "jar:**/*.png", "jar:**/*.ogg", "work/policy-decision.json", "orchestration/slice-anchors.json"],
-      "writes": ["work/converted/**", "reports/m2-conversion.json"],
-      "depends_on": ["policy-gate", "build-feature-slices", "study-horizon-asset-schema"],
-      "acceptance": ["政策三维必须为 full-inspection / technical-only / local-only，否则拒绝运行", "产物目录必须在 work/ 下", "每个转换器 roundtrip_closed 为 true，整体 closed 为 true", "目标侧无消费者的转换必须标 unbound，不得声称已转换完成", "仓库内只放脱敏统计报告"],
+      "reads": [
+        "jar:*.animation.json",
+        "jar:**/geo_models/**",
+        "jar:**/display/**",
+        "jar:**/index/**",
+        "jar:**/*.png",
+        "jar:**/*.ogg",
+        "work/policy-decision.json",
+        "orchestration/slice-anchors.json"
+      ],
+      "writes": [
+        "work/converted/**",
+        "reports/m2-conversion.json"
+      ],
+      "depends_on": [
+        "policy-gate",
+        "build-feature-slices",
+        "study-horizon-asset-schema"
+      ],
+      "acceptance": [
+        "政策三维必须为 full-inspection / technical-only / local-only，否则拒绝运行",
+        "产物目录必须在 work/ 下",
+        "每个转换器 roundtrip_closed 为 true，整体 closed 为 true",
+        "目标侧无消费者的转换必须标 unbound，不得声称已转换完成",
+        "仓库内只放脱敏统计报告"
+      ],
       "summary": "语义不变的格式等价转换，每个转换器都用 roundtrip 证明可逆"
     },
     {
@@ -396,7 +656,7 @@
       "acceptance": [
         "目录符合 docs/modpacks.md 的 .hmod 布局（horizon-mod.toml + data/ + assets/，无代码）",
         "官方 cargo-horizon-mod build 打包后，check --kind mod --json 返回 ok=true",
-        "item 声明 template 等于 slice，max_stack_size 在顶层且为 1，components 含 custom_data",
+        "item 声明 template 等于 slice，max_stack_size 在顶层且为 1，不写任何未注册组件",
         "26.3 的 items/models/item/lang 引用闭合，贴图字节与源文件逐字节一致",
         "同一输入连续两次打包的 .hmod SHA-256 一致",
         "负例（删掉 item 的 template）被官方工具拒绝"

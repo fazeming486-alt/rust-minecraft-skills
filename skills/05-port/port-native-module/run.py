@@ -265,7 +265,11 @@ $compatibility
     hook_version = 1
     kind = "HEAD"
     helper = "on_use.rs"
-    bindings = []
+    bindings = [
+        { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+        { name = "stack", ty = "&crate::items::ItemStack", value = "stack" },
+        { name = "claimed", ty = "&mut bool", value = "&mut *claimed" },
+    ]
 
     [[injection]]
     id = "ak47-on-tick"
@@ -310,23 +314,22 @@ fn on_load() {
 """
 
 ON_USE_RS = """\
-// AK-47 on-use helper — placeholder wiring.
+// AK-47 use_item helper — real bindings (M5c).
 //
-// `horizon-mixin.toml` keeps `bindings = []`, so this function receives no
-// `Game`, player, item stack or level. It cannot read the trigger or write ammo
-// yet. The behaviour lives in the `engine` crate (`ak47_engine`), which is pure
-// Rust and covered by `cargo test`; this helper is the seam to wire later.
+// Bound to `native_use_item(&mut self, stack: &ItemStack, claimed: &mut bool)`:
+// `game` is the Game, `stack` the held stack, `claimed` the flag that takes the
+// use. It claims only our own item, so every other item keeps vanilla behaviour.
 //
-// The signature is unverified: horizon-mixins' generated `Host` API is not
-// checked offline. Do not claim this runs in game.
+// Ammo and reload are NOT here yet: this hook hands `&ItemStack`, which cannot be
+// written; the next step moves them to a mutable inventory hook.
 
-fn on_use() {
-    // The seam is real: the crate is added to horizon-client's dependencies by
-    // `[[crate]]`, so this name resolves once the bundle is staged. There is no
-    // game context to read a trigger or a magazine from yet, so this only proves
-    // the engine links. Replace with the verified binding signature later.
-    let mut gun = ak47_engine::GunState::new();
-    let _events = gun.tick(None);
+fn on_use(game: &mut crate::game::Game<'_>, stack: &crate::items::ItemStack, claimed: &mut bool) {
+    let _ = game;
+    if &*stack.item != "tacz_ak47_pilot:ak47" {
+        return;
+    }
+    *claimed = true;
+    eprintln!("[tacz_ak47_pilot] use_item claimed: {}", stack.item);
 }
 """
 

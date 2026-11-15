@@ -7,7 +7,7 @@ status: implemented
 reads: ["orchestration/m5-slice.json", "slice.source.texture_slot (PNG)", "third_party/horizon/target/debug/cargo-horizon-mod.exe"]
 writes: ["work/m5/content-mod/<mod_id>/**", "work/m5/<mod_id>.hmod", "reports/m5-content-mod.json"]
 depends_on: []
-acceptance: ["目录符合 docs/modpacks.md 的 .hmod 布局（horizon-mod.toml + data/ + assets/，无代码）", "官方 cargo-horizon-mod build 打包后，check --kind mod --json 返回 ok=true", "item 声明 template 等于 slice，max_stack_size 在顶层且为 1，components 含 custom_data", "26.3 的 items/models/item/lang 引用闭合，贴图字节与源文件逐字节一致", "同一输入连续两次打包的 .hmod SHA-256 一致", "负例（删掉 item 的 template）被官方工具拒绝"]
+acceptance: ["目录符合 docs/modpacks.md 的 .hmod 布局（horizon-mod.toml + data/ + assets/，无代码）", "官方 cargo-horizon-mod build 打包后，check --kind mod --json 返回 ok=true", "item 声明 template 等于 slice，max_stack_size 在顶层且为 1，不写任何未注册组件", "26.3 的 items/models/item/lang 引用闭合，贴图字节与源文件逐字节一致", "同一输入连续两次打包的 .hmod SHA-256 一致", "负例（删掉 item 的 template）被官方工具拒绝"]
 ---
 
 # build-content-mod
@@ -57,18 +57,20 @@ namespaces = []
 ```json
 {
   "template": "minecraft:crossbow",
-  "max_stack_size": 1,
-  "components": { "minecraft:custom_data": { "tacz:gun": "ak47" } }
+  "max_stack_size": 1
 }
 ```
 
-- `template` 必须是 vanilla 物品（`minecraft:...`）。
-- **`minecraft:max_stack_size` 不能写进 `components`**：`check_item` 对
-  `max_stack_size` / `rarity` 两个字段只认顶层。实测按旧写法（放进 `components`）运行时，
-  官方工具报 `component "minecraft:max_stack_size": set max_stack_size instead`；
-  改为顶层后通过。报告 `notes` 保留了这条原因。
-- `components` 是 26.3 数据组件补丁，只放身份标记 `minecraft:custom_data`；它是否产生
-  游戏内行为本 skill 不验证。
+两条都是实测结论，不是风格选择：
+
+- **`minecraft:max_stack_size` 不能写进 `components`**：`check_item` 对 `max_stack_size` /
+  `rarity` 只认顶层字段。写进 `components` 时官方工具报
+  `component "minecraft:max_stack_size": set max_stack_size instead`。
+- **不写 `components`**：26.3 的 `minecraft:custom_data` 不是已知组件类型，写进去会让整个
+  内容包在游戏内拒绝加载：
+  `content not loaded: <id>:<item>: minecraft:custom_data is not a known component type`。
+  注意官方 `cargo-horizon-mod check` 当时仍返回 `ok: true`——**静态校验过不代表游戏内注册成立**。
+  身份用 `stack.item` 字符串判断即可。
 
 26.3 资源包（namespace 即 mod id）：
 

@@ -17,12 +17,7 @@
     "id": "tacz_ak47_pilot:ak47",
     "declaration": {
       "template": "minecraft:crossbow",
-      "max_stack_size": 1,
-      "components": {
-        "minecraft:custom_data": {
-          "tacz:gun": "ak47"
-        }
-      }
+      "max_stack_size": 1
     },
     "display_name": "AK-47",
     "lang_name_source": "target.display_name（缺省回退 target.mod_name）",
@@ -40,10 +35,10 @@
       "id": "tacz_ak47_pilot",
       "kind": "mod",
       "requires": [],
-      "sha256": "1f5b4b501dce485994786486f06acd27fb1ea01ca48e7ff89628fc40481a761e",
+      "sha256": "ed04d8ea6e581d5183bc89743a34bc5034aa532868febd5dae58421427e1b7a1",
       "side": "both",
       "signed": false,
-      "size": 6227,
+      "size": 6177,
       "version": "0.1.0"
     }
   },
@@ -68,24 +63,24 @@
       "cmd": "cargo-horizon-mod.exe check work/m5/tacz_ak47_pilot.hmod --kind mod --json",
       "cwd": ".",
       "returncode": 0,
-      "stdout": "{\"ok\":true,\"report\":{\"api\":\"0.2\",\"api_level\":null,\"capabilities\":[\"registries\"],\"game\":null,\"id\":\"tacz_ak47_pilot\",\"kind\":\"mod\",\"requires\":[],\"sha256\":\"1f5b4b501dce485994786486f06acd27fb1ea01ca48e7ff89628fc40481a761e\",\"side\":\"both\",\"signed\":false,\"size\":6227,\"version\":\"0.1.0\"}}\n",
+      "stdout": "{\"ok\":true,\"report\":{\"api\":\"0.2\",\"api_level\":null,\"capabilities\":[\"registries\"],\"game\":null,\"id\":\"tacz_ak47_pilot\",\"kind\":\"mod\",\"requires\":[],\"sha256\":\"ed04d8ea6e581d5183bc89743a34bc5034aa532868febd5dae58421427e1b7a1\",\"side\":\"both\",\"signed\":false,\"size\":6177,\"version\":\"0.1.0\"}}\n",
       "stderr": ""
     }
   },
   "hmod": {
     "path": "work/m5/tacz_ak47_pilot.hmod",
-    "sha256": "1f5b4b501dce485994786486f06acd27fb1ea01ca48e7ff89628fc40481a761e",
-    "bytes": 6227
+    "sha256": "ed04d8ea6e581d5183bc89743a34bc5034aa532868febd5dae58421427e1b7a1",
+    "bytes": 6177
   },
   "reproducibility": {
     "runs": [
       {
-        "sha256": "1f5b4b501dce485994786486f06acd27fb1ea01ca48e7ff89628fc40481a761e",
-        "bytes": 6227
+        "sha256": "ed04d8ea6e581d5183bc89743a34bc5034aa532868febd5dae58421427e1b7a1",
+        "bytes": 6177
       },
       {
-        "sha256": "1f5b4b501dce485994786486f06acd27fb1ea01ca48e7ff89628fc40481a761e",
-        "bytes": 6227
+        "sha256": "ed04d8ea6e581d5183bc89743a34bc5034aa532868febd5dae58421427e1b7a1",
+        "bytes": 6177
       }
     ],
     "reproducible": true
@@ -119,8 +114,8 @@
     },
     {
       "path": "data/tacz_ak47_pilot/horizon/item/ak47.json",
-      "bytes": 147,
-      "sha256": "81df4e2cf8d8140c8b20a5e6e2f0696290814d602ea8911eb5a76c172420fa36"
+      "bytes": 62,
+      "sha256": "8c2d727886cd3f55e13839213fd54afa368dfd627afb1aecc84b12f81ceffe54"
     },
     {
       "path": "horizon-mod.toml",
@@ -160,9 +155,9 @@
       "detail": "顶层 max_stack_size=1"
     },
     {
-      "name": "item_custom_data",
+      "name": "item_no_unknown_components",
       "ok": true,
-      "detail": "components={\"minecraft:custom_data\": {\"tacz:gun\": \"ak47\"}}"
+      "detail": "components 为空：26.3 的 minecraft:custom_data 不是已知组件，会拒绝整个内容包"
     },
     {
       "name": "item_model_definition",
@@ -197,12 +192,12 @@
     {
       "name": "reproducible",
       "ok": true,
-      "detail": "两次 sha256 相同 1f5b4b501dce485994786486f06acd27fb1ea01ca48e7ff89628fc40481a761e"
+      "detail": "两次 sha256 相同 ed04d8ea6e581d5183bc89743a34bc5034aa532868febd5dae58421427e1b7a1"
     },
     {
       "name": "official_check",
       "ok": true,
-      "detail": "{\"ok\": true, \"report\": {\"api\": \"0.2\", \"api_level\": null, \"capabilities\": [\"registries\"], \"game\": null, \"id\": \"tacz_ak47_pilot\", \"kind\": \"mod\", \"requires\": [], \"sha256\": \"1f5b4b501dce485994786486f06acd27fb1ea01ca48e7ff89628fc40481a761e\", \"side\": \"both\", \"signed\": false, \"size\": 6227, \"version\": \"0.1.0\"}}"
+      "detail": "{\"ok\": true, \"report\": {\"api\": \"0.2\", \"api_level\": null, \"capabilities\": [\"registries\"], \"game\": null, \"id\": \"tacz_ak47_pilot\", \"kind\": \"mod\", \"requires\": [], \"sha256\": \"ed04d8ea6e581d5183bc89743a34bc5034aa532868febd5dae58421427e1b7a1\", \"side\": \"both\", \"signed\": false, \"size\": 6177, \"version\": \"0.1.0\"}}"
     },
     {
       "name": "package_layout",
@@ -227,7 +222,7 @@
     {
       "name": "negative_control",
       "ok": true,
-      "detail": "官方 build 按预期失败: error: data/tacz_ak47_pilot/horizon/item/ak47.json: missing field `template` at line 8 column 1"
+      "detail": "官方 build 按预期失败: error: data/tacz_ak47_pilot/horizon/item/ak47.json: missing field `template` at line 3 column 1"
     }
   ],
   "negative_control": {
@@ -239,11 +234,11 @@
       "cwd": "work/m5/content-mod/_negative/tacz_ak47_pilot",
       "returncode": 1,
       "stdout": "",
-      "stderr": "error: data/tacz_ak47_pilot/horizon/item/ak47.json: missing field `template` at line 8 column 1\n"
+      "stderr": "error: data/tacz_ak47_pilot/horizon/item/ak47.json: missing field `template` at line 3 column 1\n"
     },
     "check": null,
     "ok": true,
-    "detail": "官方 build 按预期失败: error: data/tacz_ak47_pilot/horizon/item/ak47.json: missing field `template` at line 8 column 1"
+    "detail": "官方 build 按预期失败: error: data/tacz_ak47_pilot/horizon/item/ak47.json: missing field `template` at line 3 column 1"
   },
   "policy": {
     "distribution": "local-only",
@@ -254,7 +249,7 @@
   },
   "notes": [
     "minecraft:max_stack_size 不能写进 components：官方工具实测报 component \"minecraft:max_stack_size\": set max_stack_size instead，上限因此写在顶层 max_stack_size",
-    "components 只保留 minecraft:custom_data 作为身份标记，是否在游戏内产生实际行为未验证",
+    "不写 components：26.3 的 minecraft:custom_data 不是已知组件类型，写上会让内容包拒绝加载",
     "官方 check 通过只代表声明与包结构合法，不代表物品能在游戏里出现或开火"
   ]
 }

@@ -1,6 +1,6 @@
 # 08 · M5 执行报告：AK-47 单枪竖切
 
-> 状态：v0.9（2026-11-15）。M5 第一次产出**能被目标侧工具接受**的东西：一个官方校验通过的 `.hmod`、一个 `cargo test` 全绿的纯 Rust engine、一份逐 tick 对得上的行为差分；M5b 又把它**真的编进 Horizon 并跑起来**（无头服务端首 tick 探针命中）。仍然没有开火——`bindings` 还是空的，这条边界写在每一份报告里。
+> 状态：v0.9（2026-11-15）。M5 第一次产出**能被目标侧工具接受**的东西：一个官方校验通过的 `.hmod`、一个 `cargo test` 全绿的纯 Rust engine、一份逐 tick 对得上的行为差分；M5b 把它**真的编进 Horizon 并跑起来**；M5c 让真实玩家右键**命中我们的 `use_item`**（4/4）。仍然没有子弹——弹药状态还没接，这条边界写在每一份报告里。
 
 ## 1. 这一步到底证明了什么
 
@@ -12,6 +12,7 @@
 | 接线 | `horizon-mixin.toml`（2 个注入点） | 与 `native-hooks.json` 目录逐条对上，负例报 `E_HOOK_UNKNOWN` | `source_only` |
 | 行为 | `reports/m5-diff.json` | 200 tick 剧本 23/23 事件匹配、drift 0；负例失败 | `verified_by_test` |
 | 编译加载 | `reports/m5b-native-build.json` | 编进 `horizon-client`，无头服务端首 tick 打出 `load probe … engine states=18` | `compiled_and_loaded` |
+| 开火路径 | `reports/m5c-firing.json` | 无头玩家 4 次右键，4 次命中 `native_use_item`，helper 拿到 `(game, stack, claimed)` | `fired_in_game` |
 
 **没证明**：物品在游戏里出现、开火被真正调用、第一人称表现、动画、网络同步、伤害结算。`bindings = []`，右键触发没有玩家可测。
 
@@ -168,11 +169,63 @@ M5 收尾后立刻做了 M5b——不满足于「源码看起来对」。四步�
 - **动画仍 unbound**：`animation_driver` 的缺口没有被 M5b 触碰。
 - 探针证明的是「钩子被调用」，不是「弹道/伤害/同步正确」。
 
-## 6. 边界与下一步
+## 6. M5c：真实绑定与开火路径贯通
 
-- **接线未验证**：`bindings = []`，helper 的函数签名没有和 horizon-mixins 生成的 Host API 对过；游戏内右键还没试过。
-- **行为只覆盖 C1**：开火/换弹/切模式/弹药；后坐、散布、命中、伤害、同步都没有。
+M5b 只证明「钩子被调用」，helper 还是空参。M5c 把 `bindings` 换成真实三元组，并让一个真实玩家在真实进程里右键：
+
+```toml
+bindings = [
+  { name = "game",    ty = "&mut crate::game::Game<'_>",     value = "&mut *self" },
+  { name = "stack",   ty = "&crate::items::ItemStack",        value = "stack" },
+  { name = "claimed", ty = "&mut bool",                        value = "&mut *claimed" },
+]
+```
+
+helper 只认自己的物品并把使用 claim 掉：
+
+```rust
+fn on_use(game: &mut crate::game::Game<'_>, stack: &crate::items::ItemStack, claimed: &mut bool) {
+    let _ = game;
+    if &*stack.item != "tacz_ak47_pilot:ak47" { return; }
+    *claimed = true;
+    eprintln!("[tacz_ak47_pilot] use_item claimed: {}", stack.item);
+}
+```
+
+测试路径（全部 headless，无窗口）：`horizon-client --headless --control-socket … --dev-mod tacz_ak47_pilot.hmod` → `horizon-ctl give` → `horizon-ctl use-item` ×4。
+
+结果：**4 次点击，4 行 claim**，一次一枪，与文档「Each click reaches it once」一致：
+
+```
+[tacz_ak47_pilot] load probe: first server tick, engine states=18
+[17:30:47] [Server thread/INFO]: Player09064 logged in with entity id 1
+[tacz_ak47_pilot] use_item claimed: tacz_ak47_pilot:ak47   ×4
+```
+
+### 又一条实测约束
+
+`minecraft:custom_data` **不是 26.3 的已知组件类型**。把它写进 item 的 `components` 会让整个内容包拒绝加载：
+
+```
+mod tacz_ak47_pilot content not loaded: tacz_ak47_pilot:ak47: minecraft:custom_data is not a known component type
+```
+
+`build-content-mod` 已改为不写任何 `components`，身份用 `stack.item` 判断；并加 `item_no_unknown_components` 检查。注意：官方 `cargo-horizon-mod check` **当时是 ok 的**——静态校验过不代表游戏内注册成立，这条只有真机能发现。
+
+### 这次没做到的（重要）
+
+- **没有弹药**：`use_item` 只给 `&ItemStack`，写不了组件；要改走可变背包钩子或玩家状态存储。
+- **没有子弹、伤害、音效**：claim 之后什么都没发生，只是把原版弩的行为挡住了。
+- **没有第一人称表现**：headless 无窗口；动画仍 `unbound`。
+- 最终注入块是**就地补丁**写进 `native_hooks.rs` 的：上一次 `apply` 用了过期的 `mods.incoming`（缺 bindings），发现后按 mixins 同形代码替换并重编。**干净的 apply → build 尚未重跑**，这是明确的复现欠账。
+
+## 7. 边界与下一步
+
+- **接线已验证，但只到 claim**：`(game, stack, claimed)` 在真实右键里命中；弹药、子弹、伤害都还没有。
+- **行为只覆盖 C1**：engine 的射速/弹匣/换弹在单测与 trace 里成立，但**没有接进游戏**——游戏内的 `GunState` 还没被任何地方持有。
 - **动画仍 `unbound`**：IR 里的 44 条转移只是状态层，73 个 animation.json 与骨骼插值在 Horizon 侧仍无消费者。
 - **期望值不是 oracle**：来自 TaCZ 的 `ak47_data.json`，不是真机录制；M3b 仍未做。
 
-下一步（M5c）只有一件事：把 `bindings` 从空数组换成真实的 `(Game, Player, ItemStack)` 绑定，在可观测客户端里右键打出第一发，并用命中/弹药变化做断言。那一步完成前，「AK-47 已经搬过来」仍然不成立——现在只能说「它被编进游戏、钩子被调用、逻辑单元对得上」。
+下一步（M5d）三件事，按依赖排序：① 用当前 bundle 重跑一次干净的 `apply → build`，消掉就地补丁欠账；② 把弹药状态放到可变钩子（背包/玩家存储），让每次 claim 扣一发、空仓打不出；③ 用 `horizon-ctl` 的 `state.inventory` 与 `events` 做断言，而不是只看日志。
+
+在那之前，「AK-47 已经搬过来」仍不成立——现在可以说的是：**物品能注册、右键能进我们的代码、逻辑单元对得上；枪还不会打子弹**。

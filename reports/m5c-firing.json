@@ -1,0 +1,50 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5c · 开火路径贯通（真实绑定 + 无头玩家右键）",
+  "verification_level": "fired_in_game",
+  "note": "玩家在真实 Horizon 进程里右键，叫到了 native_use_item，我们的 helper 拿到 (game, stack, claimed) 并把这次使用 claim 掉。弹药与子弹仍未实现。",
+  "item_registration": {
+    "ok": true,
+    "items_after_load": 1659,
+    "content_error": null,
+    "how": "--dev-mod 加载 work/m5/tacz_ak47_pilot.hmod；give 成功，state.held 显示该物品"
+  },
+  "bindings": [
+    "game: &mut crate::game::Game<'_>",
+    "stack: &crate::items::ItemStack",
+    "claimed: &mut bool"
+  ],
+  "evidence": {
+    "log": "work/m5/ctl-home/game3.log",
+    "log_sha256": "4d32271e4c6c7f05fd011e0b1fec50e93b8188d2907cd172fff1a16d024bc9c0",
+    "login_line": "[17:30:47] [Server thread/INFO]: Player09064[/127.0.0.1:0] logged in with entity id 1 at (-5.5, 64.0, 9.5)",
+    "probe_line": "[tacz_ak47_pilot] load probe: first server tick, engine states=18",
+    "claim_lines": [
+      "[tacz_ak47_pilot] use_item claimed: tacz_ak47_pilot:ak47",
+      "[tacz_ak47_pilot] use_item claimed: tacz_ak47_pilot:ak47",
+      "[tacz_ak47_pilot] use_item claimed: tacz_ak47_pilot:ak47",
+      "[tacz_ak47_pilot] use_item claimed: tacz_ak47_pilot:ak47"
+    ],
+    "claims": 4,
+    "clicks": 4,
+    "one_per_click": true
+  },
+  "constraint_found": {
+    "code": "content_not_loaded",
+    "detail": "minecraft:custom_data 不是 26.3 的已知组件类型，写在 item JSON 的 components 里会让整个内容包拒绝加载",
+    "fix": "item 声明不再写 components；身份用 stack.item 字符串判断",
+    "fixed_in": "build-content-mod（item_declaration 去掉 components，并加 item_no_unknown_components 检查）"
+  },
+  "reproducibility_note": {
+    "what": "最终注入块是就地补丁写进 native_hooks.rs 的，不是这次 apply 的产物",
+    "why": "前一次 apply 的 mods.incoming 是过期副本（缺 bindings），导致编译出的 helper 还是无参版本；发现后按 mixins 生成的同形代码就地替换并重编",
+    "impact": "行为与生成器输出一致，但「一次干净的 apply → build」尚未重跑",
+    "follow_up": "用当前 bundle 刷新 mods.incoming 后重跑 apply（约 2.5 min）与 build（约 6 min），再复测 4 次点击"
+  },
+  "not_verified": [
+    "弹药扣减、换弹、射击间隔：use_item 只给 &ItemStack，写不了；需要可变背包钩子或玩家状态存储",
+    "子弹实体、命中判定、伤害：未实现",
+    "音效与第一人称动画：未实现；animation_driver 仍 unbound",
+    "多人同步：未测"
+  ]
+}
