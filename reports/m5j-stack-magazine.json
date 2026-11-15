@@ -1,0 +1,58 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5j · 弹匣落到物品栈（minecraft:custom_data），跨游戏重启仍在",
+  "verification_level": "fired_in_game",
+  "note": "弹药从进程级 GunState 搬到物品栈：inventory_tick 里用 native_carried_stack(slot) 每 tick 镜像。A 轮打 5 发退出存档，B 轮重启后第一发是 ammo=24 —— 说明读到了栈上的 25。",
+  "why_this_hook": {
+    "use_item": "只给 &ItemStack（上游是 held().cloned()），连可变引用都没有，写不回",
+    "inventory_tick": "native_inventory_tick(&mut self, slot: i32, selected: bool) 每 tick 对每个携带槽跑一次；native_carried_stack(slot) -> Option<&mut ItemStack> 是唯一细粒度写回入口",
+    "evidence": "third_party/horizon/crates/horizon-client/src/game/native_hooks.rs:10668、:11952-11974"
+  },
+  "what_changed": {
+    "generator": [
+      "新增 helper on_inventory_tick.rs 与第 4 个注入（hook=inventory_tick，bindings: game/slot/selected）",
+      "runtime 新增 sync_slot(slot, stored) -> u8：换槽时用栈上的 marker 覆盖内存状态，同槽时返回内存状态供写回",
+      "CURRENT_SLOT 记录内存弹匣属于哪个槽；reset() 一并清空"
+    ],
+    "storage": "stack.extra（StackData）里的 minecraft:custom_data.ammo，Int；只在值变化时写，避免每 tick 给客户端发无意义更新",
+    "tests": "engine 17→18/18（新增 each_slot_loads_its_own_magazine：新槽读 marker、同槽以内存为准、无 marker 保持现值）"
+  },
+  "stages": {
+    "generate": "states=18 / engine tests 18/18 / hooks=4",
+    "plan": {"status": "ok", "seconds": 54.25, "injections": 4, "crates": 1, "data": 1},
+    "apply": {"status": "ok", "seconds": 89.8, "stage": "work/m5/stage-l"},
+    "build": {"status": "ok", "seconds": 319, "note": "首次 10 分钟超时被中断，续编 5m19s"}
+  },
+  "assertions": {
+    "run_A_fire_and_save": {
+      "shots": 5,
+      "ammo_after": 25,
+      "log": "work/m5/ctl-home/_run20.log",
+      "lines": ["shot, ammo=29", "…", "shot, ammo=25"]
+    },
+    "run_B_after_restart": {
+      "load_probe": "[tacz_ak47_pilot] load probe: first server tick, engine states=18 ammo=30 state=main.idle",
+      "first_click": "shot, ammo=24",
+      "meaning": "探针在 inventory_tick 同步之前跑，所以先看到 30；第一次 inventory_tick 从栈上读到 25，点击后 24 —— 弹匣确实来自物品栈，不是进程内存",
+      "log": "work/m5/ctl-home/_run21.log",
+      "log_bytes": 928,
+      "log_sha256": "3b0fa828e0d0154267716b2999cf241697e61d3a455e8be82d4640c36e49d04d"
+    },
+    "per_slot_magazines": "单测覆盖两个槽各自读自己的 marker；同槽（内存更权威）不覆盖"
+  },
+  "lag": {
+    "what": "开火到写回最多差 1 tick",
+    "why": "use_item 在 tick 内先跑，inventory_tick 随后才写；这 1 tick 内给客户端看的是旧值，但内存状态已经扣了"
+  },
+  "known_limits": [
+    "同槽换枪无法区分：把枪丢出再捡起另一把 AK 到同一槽，内存弹匣仍是旧的（槽号没变）",
+    "只对 selected 的槽同步；非选中槽的枪保持上次写回的值（正确，但意味着切枪时以 marker 为准，可能覆盖未写回的 1 tick 差异）",
+    "custom_data 只在运行时写入；内容包的 item JSON 仍不能声明 minecraft:custom_data（M5c 的坑）",
+    "换弹、子弹、命中仍未接"
+  ],
+  "next": [
+    "换弹键（服务端读不到输入，需要客户端 hook + native_net_from_client，见 docs/10）",
+    "自写 DDA 射线 + native_hurt_entity 做命中",
+    "用槽位 + 物品实体 ID 之外的稳定标识来区分同槽换枪"
+  ]
+}

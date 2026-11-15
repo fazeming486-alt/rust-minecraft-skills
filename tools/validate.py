@@ -895,6 +895,20 @@ def main() -> int:
           and "8.8" in m5i["assertions_after_revert"]["hold_rate"]
           and "cooldown=2" in m5i["assertions_after_revert"]["blocked_line_seen"])
 
+    # 34. v0.10 · M5j 弹匣落到物品栈
+    m5j = load("reports/m5j-stack-magazine.json")
+    check("M5j: 4 注入（含 inventory_tick）且 engine 18/18",
+          m5j["stages"]["plan"]["injections"] == 4
+          and "18/18" in m5j["stages"]["generate"]
+          and "native_carried_stack" in m5j["why_this_hook"]["inventory_tick"])
+    check("M5j: 存档后重启，第一发来自栈上的 25（ammo=24）",
+          m5j["assertions"]["run_A_fire_and_save"]["ammo_after"] == 25
+          and m5j["assertions"]["run_B_after_restart"]["first_click"] == "shot, ammo=24"
+          and "物品栈" in m5j["assertions"]["run_B_after_restart"]["meaning"])
+    check("M5j: 记录 1 tick 写回延迟与同槽换枪的限制",
+          "1 tick" in m5j["lag"]["what"]
+          and any("同槽" in item for item in m5j["known_limits"]))
+
 
     print("=" * 68)
     for name in PASSED:

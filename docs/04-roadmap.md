@@ -144,7 +144,8 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | M5h | **已完成（有偏差）**：`use_item` 只扣扳机、`player_tick` 开火；单击 1 发无残余、按住 20 tick 24 发、40 tick 打空 30 发（M5g 版本同样按住只有 11 发）；速率约为标称 2 倍，疑 `player_tick` 每 tick 两次，未实测（reports/m5h-fullauto.json） |
 | M5i | **已完成**：实测 `player_tick` = 0.976 次/tick；M5h 的「2 倍速率」是我把 cooldown 写成 `interval-1`，已回滚；回滚后单击 1 发、按住 ≈8.8/s（reports/m5i-hook-rate.json） |
 | 研究线 | `docs/09`（世界/生物）、`docs/10`（战斗/物品）由两个并行子 agent 产出，带 `路径:行号` 与置信度分级；关键结论：弹药可用 `native_carried_stack` 写回、无自定义弹射物 API、服务端读不到扳机 |
-| 下一步 | ① 弹药写回物品栈；② 自写 DDA 射线 + `native_hurt_entity` 做命中；③ 换弹键需先解决服务端输入；④ 每玩家 `GunState` |
+| M5j | **已完成**：第 4 个注入 `inventory_tick` + `native_carried_stack` 把弹药写进 `custom_data.ammo`；A 打 5 发存档、B 重启后首发 `ammo=24`（从栈上 25 起算）；engine 18/18（reports/m5j-stack-magazine.json） |
+| 下一步 | ① 换弹（需客户端 hook + `native_net_from_client`）；② 命中（DDA 射线 + `native_hurt_entity`）；③ 同槽换枪身份；④ 音效与第一人称 |
 
 ## 4. 度量（每次里程碑后记录）
 
@@ -162,7 +163,7 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 格式等价转换 | **5 个转换器 / 3683 源文件 / roundtrip 全闭合 / 1 partial + 2 unbound + 2 bound** | 内容级转换需在可运行环境验证 |
 | 目标侧源码探针 | **3 路 / 25 文件 / 424 声明 / missing_files 全空** | 随 Horizon 快照重跑比对 |
 | M3 harness 对接 | **离线闭环完成（23 契约 / PASS 68 项 / FAIL 抓 3 类失配）** | M3b 真机录制 |
-| `validate.py` 检查数 | **146** | 随里程碑递增，始终全绿 |
+| `validate.py` 检查数 | **149** | 随里程碑递增，始终全绿 |
 | **M5 内容包** | **官方 check ok=true / 6227 B / 两次打包同 SHA-256** | 游戏内注册与显示 |
 | **M5 状态机 IR** | **18 状态 / 44 转移 / 22 输入 / 26 unresolved 带原因** | 与运行时转移序列对齐（需 oracle） |
 | **M5 原生模块** | **cargo test 13/13 / 状态集合与 IR 相等 / bindings 已绑定并在游戏内命中** | 可变状态钩子 |
@@ -172,7 +173,8 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | **M5e 干净 apply** | **19 s / 1 injection / 与就地补丁逐 token 一致** | 一次 apply 出全量钩子（crate + 3 hooks） |
 | **M5f 单二进制** | **plan 8.9 s / apply 20 s / build 7m46s；同进程 `states=18` + 30 发** | 状态机驱动射速/连发/换弹 |
 | **M5g 状态机接管弹匣** | **engine 14/14；探针 ammo=30；23 击 30→7；射速门控未观测** | 可压到 1 tick 的点击通道 |
-| **M5h 全自动** | **engine 17/17；单击 1 发；按住连发（M5i 后 ≈8.8/s）** | 对表 600 RPM |
+| **M5h 全自动** | **engine 18/18；单击 1 发；按住连发（≈8.8/s）** | 对表 600 RPM |
+| **M5j 弹匣持久化** | **4 注入；custom_data.ammo；重启后首发 24（栈上 25）** | 换弹与命中 |
 | **M5 差分** | **23/23 事件、drift 0、负例失败** | 覆盖后坐/散布/命中/同步 |
 | **M5 子 agent** | **5 任务 / 3 wave / 5 COMPLETE / 0 越界** | 与 M2 的 17 任务对比并行收益 |
 

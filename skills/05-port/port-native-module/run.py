@@ -281,6 +281,18 @@ $compatibility
     bindings = []
 
     [[injection]]
+    id = "ak47-inventory-tick"
+    hook = "inventory_tick"
+    hook_version = 1
+    kind = "HEAD"
+    helper = "on_inventory_tick.rs"
+    bindings = [
+        { name = "game", ty = "&mut crate::game::Game<'_>", value = "&mut *self" },
+        { name = "slot", ty = "i32", value = "slot" },
+        { name = "selected", ty = "bool", value = "selected" },
+    ]
+
+    [[injection]]
     id = "ak47-load-probe"
     hook = "server_tick"
     hook_version = 1
@@ -312,7 +324,7 @@ RUNTIME_RS = """\
 // Single-player semantics: one state for the process. Per-player scoping needs a
 // player-aware mutable hook; this snapshot's hooks carry no player.
 
-use std::sync::atomic::{AtomicBool, AtomicU16, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU16, Ordering};
 use std::sync::Mutex;
 
 use crate::{Event, GunState};
@@ -327,6 +339,8 @@ pub const HOLD_TIMEOUT_TICKS: u16 = 6;
 
 static TICKS_SINCE_USE: AtomicU16 = AtomicU16::new(u16::MAX);
 static HELD: AtomicBool = AtomicBool::new(false);
+/// The slot the shared magazine belongs to; `i32::MIN` before the first sync.
+static CURRENT_SLOT: AtomicI32 = AtomicI32::new(i32::MIN);
 
 /// What one press of the trigger did.
 #[derive(Clone, Copy, Debug)]
@@ -393,6 +407,33 @@ pub fn tick_once() -> Vec<Event> {
     with_gun(|gun| gun.tick(None))
 }
 
+/// Mirror the magazine onto the stack that holds the gun (M5j).
+///
+/// `use_item` cannot write the stack, but `inventory_tick` hands out
+/// `&mut ItemStack` through `native_carried_stack`, once per tick per carried
+/// slot. The gun therefore keeps its magazine on the stack's
+/// `minecraft:custom_data`, and this call is the only writer: `stored` is what
+/// the stack said, the return value is what it must say now.
+///
+/// A different slot means a different stack: its marker wins, so two AKs carry
+/// two magazines. The same slot keeps the living state, which is what gets
+/// written back.
+pub fn sync_slot(slot: i32, stored: Option<u8>) -> u8 {
+    with_gun(|gun| {
+        if CURRENT_SLOT.load(Ordering::Relaxed) != slot {
+            CURRENT_SLOT.store(slot, Ordering::Relaxed);
+            if let Some(ammo) = stored {
+                gun.ammo = ammo.min(crate::consts::MAG_CAPACITY);
+                gun.cooldown_ticks = 0;
+                gun.reload = None;
+                gun.trigger_held = false;
+                gun.state = crate::states::IDLE;
+            }
+        }
+        gun.ammo
+    })
+}
+
 /// Drop the shared state, so a test starts from a fresh magazine.
 #[cfg(test)]
 pub fn reset() {
@@ -400,6 +441,7 @@ pub fn reset() {
     *slot = None;
     TICKS_SINCE_USE.store(u16::MAX, Ordering::Relaxed);
     HELD.store(false, Ordering::Relaxed);
+    CURRENT_SLOT.store(i32::MIN, Ordering::Relaxed);
 }
 
 #[cfg(test)]
@@ -472,6 +514,23 @@ mod tests {
         assert_eq!(after, 0, "a released hold kept firing");
         reset();
     }
+
+    /// Two AKs in two slots carry two magazines: a new slot takes the stack's
+    /// marker, the same slot writes the living state over it.
+    #[test]
+    fn each_slot_loads_its_own_magazine() {
+        reset();
+        assert_eq!(sync_slot(3, Some(12)), 12);
+        assert_eq!(with_gun(|gun| gun.ammo), 12);
+        // Same slot: the runtime wins, the marker is about to be overwritten.
+        with_gun(|gun| gun.ammo = 4);
+        assert_eq!(sync_slot(3, Some(12)), 4);
+        // Another slot: its own marker.
+        assert_eq!(sync_slot(5, Some(7)), 7);
+        // A slot with no marker keeps the living magazine.
+        assert_eq!(sync_slot(6, None), 7);
+        reset();
+    }
 }
 """
 
@@ -535,6 +594,47 @@ fn on_use(game: &mut crate::game::Game<'_>, stack: &crate::items::ItemStack, cla
             );
         }
     }
+}
+"""
+
+ON_INVENTORY_TICK_RS = """\
+// AK-47 inventory_tick helper — the magazine lives on the stack (M5j).
+//
+// Bound to `native_inventory_tick(&mut self, slot: i32, selected: bool)`, which
+// the inventory runs once per carried slot per tick. `use_item` cannot write the
+// stack (it only gets `&ItemStack`), but here `native_carried_stack(slot)` hands
+// out `&mut ItemStack`, so this is where the magazine is stored:
+// `minecraft:custom_data.ammo`.
+//
+// Written only when it changes: every write reaches the player's client, and a
+// per-tick no-op update on every held gun is not free.
+
+fn on_inventory_tick(game: &mut crate::game::Game<'_>, slot: i32, selected: bool) {
+    use horizon_world::nbt::{Compound, JavaString, Tag};
+    const AMMO: &str = "ammo";
+    let Some(stack) = game.native_carried_stack(slot) else {
+        return;
+    };
+    if &*stack.item != "tacz_ak47_pilot:ak47" || !selected {
+        return;
+    }
+    let stored = stack
+        .custom_data()
+        .and_then(|data| data.get(&JavaString::from(AMMO)))
+        .and_then(|tag| match tag {
+            Tag::Int(value) => u8::try_from(*value).ok(),
+            _ => None,
+        });
+    let ammo = ak47_engine::runtime::sync_slot(slot, stored);
+    if stored == Some(ammo) {
+        return;
+    }
+    let mut data = Compound::new();
+    data.insert(JavaString::from(AMMO), Tag::Int(i32::from(ammo)));
+    let extra = stack
+        .extra
+        .get_or_insert_with(|| Box::new(horizon_items::item_data::StackData::default()));
+    extra.set_other("minecraft:custom_data", Some(Tag::Compound(data)));
 }
 """
 
@@ -1490,7 +1590,7 @@ def build_bundle(args) -> int:
     if out_dir.exists():
         # 只清理由本生成器拥有的文件，避免误删外部文件。
         for relative in (
-            "horizon-mixin.toml", "on_use.rs", "on_tick.rs",
+            "horizon-mixin.toml", "on_use.rs", "on_tick.rs", "on_inventory_tick.rs",
             "data/ak47.json", "engine/data/ak47.json",
             "engine/Cargo.toml", "engine/src/lib.rs", "engine/src/consts.rs",
             "engine/src/states.rs", "engine/src/runtime.rs", "engine/src/bin/trace.rs",
@@ -1527,7 +1627,7 @@ def build_bundle(args) -> int:
     write_text(out_dir / "on_use.rs", ON_USE_RS)
     write_text(out_dir / "on_tick.rs", ON_TICK_RS)
     write_text(out_dir / "on_load.rs", ON_LOAD_RS)
-    write_text(out_dir / "on_load.rs", ON_LOAD_RS)
+    write_text(out_dir / "on_inventory_tick.rs", ON_INVENTORY_TICK_RS)
 
     # --- data：bundle 根与 crate 内各一份（内容相同；crate 打包时只带自己的目录）---
     data = {
@@ -1603,7 +1703,12 @@ def build_bundle(args) -> int:
         tick 174
     """))
 
-    hooks = [("use_item", 1), ("player_tick", 1), ("server_tick", 1)]
+    hooks = [
+        ("use_item", 1),
+        ("player_tick", 1),
+        ("server_tick", 1),
+        ("inventory_tick", 1),
+    ]
     catalog_info = check_catalog(catalog_path, hooks) if catalog_path else {"checked": False}
 
     cargo_info = {"status": "not_run", "passed": 0, "failed": 0, "suites": []}

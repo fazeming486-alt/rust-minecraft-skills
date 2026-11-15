@@ -365,15 +365,34 @@ M5g 卡在「输入侧最密 4 tick 一次，压不到 2 tick 冷却」。换思
 
 **顺带更正 M5g 的日志缺陷**：那时自动射击根本没打印，日志只有 7 行 `shot`，而弹匣从 30 掉到 3。现在 `on_tick` 打印 `auto, ammo=N`，发数与弹匣变化对得上。
 
-## 12. 边界与下一步
+## 12. M5j：弹匣落到物品栈（跨重启仍在）
 
-- **接线已验证，弹药与全自动都已进状态机，但仍不是「真的枪」**：单击一发、按住连发、空仓拒绝都在真实右键里成立；子弹实体、命中、伤害、音效、换弹全都没有。
-- **速率还没对上标称**：engine 的 2-tick 间隔有单测，但游戏内观测到约 1 发/tick，疑似 `player_tick` 每 tick 被调用两次。
+研究结论（`docs/10`）指出唯一细粒度写回入口是 `inventory_tick` 里的 `native_carried_stack(slot) -> Option<&mut ItemStack>`。这一节把弹药搬过去：
+
+- 第 4 个注入：`hook = "inventory_tick"`，bindings 为 `game / slot: i32 / selected: bool`（源码：`native_hooks.rs:10668`、`:11952-11974`）。
+- 存储：`stack.extra`（`StackData`）里的 `minecraft:custom_data.ammo`，Int；**只在值变化时写**，否则每 tick 都会给客户端推一次无意义更新。
+- `runtime::sync_slot(slot, stored)`：换槽 → 栈上的 marker 覆盖内存状态；同槽 → 内存状态为准并返回给 helper 写回。这样两把 AK 各带各的弹匣。
+
+验证是两步（这是关键，单次运行证明不了持久化）：
+
+| 轮 | 动作 | 结果 |
+|---|---|---|
+| A | 打 5 发 → `save` → `quit` | 30 → **25**（`_run20.log`） |
+| B | 重启同一世界 → 打 1 发 | 探针先打 `ammo=30`（同步前），第一发是 **`shot, ammo=24`** —— 它从栈上读到了 25（`_run21.log`，sha256 `3b0fa82…`） |
+
+engine 单测 17 → **18/18**（新增 `each_slot_loads_its_own_magazine`）。
+
+**已知限制**：开火到写回最多差 1 tick（`use_item` 先跑、`inventory_tick` 后写）；同槽换枪无法区分（丢枪再捡另一把到同一槽，内存弹匣仍是旧的）；非选中槽以 marker 为准，可能覆盖未写回的 1 tick 差异。
+
+## 13. 边界与下一步
+
+- **接线、全自动、弹匣持久化都已成立，但仍不是「真的枪」**：单击一发、按住连发、空仓拒绝、弹匣跟着物品栈跨重启都在真实右键里成立；子弹实体、命中、伤害、音效、换弹全都没有。
+- **速率**：`player_tick` 实测 0.976 次/tick，2-tick 间隔在游戏内约 8.8 发/秒（标称 10），差在测量窗口。
 - **弹药是进程级共享量**：不是物品 NBT，也不 per-player；多人会串。
 - **动画仍 `unbound`**：IR 里的 44 条转移只是状态层，73 个 animation.json 与骨骼插值在 Horizon 侧仍无消费者。
 - **期望值不是 oracle**：来自 TaCZ 的 `ak47_data.json`，不是真机录制；M3b 仍未做。
 
-下一步，按依赖排序：① 给 `on_tick` 加调用计数探针，确认 calls/tick 后把冷却折算对；② 接换弹输入（52 tick 空仓 / 40 tick 战术），验状态转移；③ `player_tick` 补玩家绑定做每玩家 `GunState`；④ 弹药落物品栈；⑤ 子弹 + 命中 + 伤害。
+下一步，按依赖排序：① 换弹——服务端读不到扳机/换弹键，必须客户端 hook + `native_net_from_client` 上行（`docs/10`）；② 命中——自写 DDA 射线（`native_block_at`）+ `native_hurt_entity`，或 `native_summon` 雪球模板；③ 同槽换枪的身份问题；④ 音效与第一人称。
 
 在那之前，「AK-47 已经搬过来」仍不成立——现在可以说的是：**物品能注册、右键能进我们的代码、单击一发、按住全自动、弹药与节奏都由 18 状态的状态机持有；枪还不会打子弹**。
 
