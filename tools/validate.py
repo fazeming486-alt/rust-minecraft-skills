@@ -847,6 +847,24 @@ def main() -> int:
           "15" in m5f["correction"]["now"] and "不能再用 swings" in m5f["correction"]["consequence"]
           and any(c["code"] == "stage_drops_local" for c in m5f["constraints_found"]))
 
+    # 31. v0.10 · M5g 状态机接管弹匣
+    m5g = load("reports/m5g-engine-driven-ammo.json")
+    check("M5g: engine 14/14 且 helper 不再持有弹药常量",
+          "14/14" in m5g["stages"]["generate"]
+          and any("runtime.rs" in item for item in m5g["what_changed"]["engine"])
+          and m5g["assertions"]["engine_owns_ammo"].startswith("探针"))
+    check("M5g: 游戏内 ammo 由 engine 递减（30→7，23 发）",
+          "ammo=30" in m5g["stages"]["run"]["probe"]
+          and m5g["assertions"]["clicks_that_reached_the_game"] == 23
+          and "30→7" in m5g["assertions"]["decrement_through_engine"])
+    check("M5g: 未观测项给出可复核的原因（ctl 161 ms vs 100 ms 冷却）",
+          "161" in m5g["why_not_observed"]["cooldown"]
+          and "2" in m5g["why_not_observed"]["cooldown"]
+          and any("射速" in item for item in m5g["not_verified"]))
+    check("M5g: 记录 ctl 点击下限与并发丢点击两条约束",
+          {c["code"] for c in m5g["constraints_found"]} >=
+          {"ctl_click_floor", "ctl_concurrent_loss"})
+
 
     print("=" * 68)
     for name in PASSED:

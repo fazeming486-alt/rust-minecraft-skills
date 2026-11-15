@@ -293,12 +293,61 @@ $compatibility
     path = "engine"
 """))
 
+RUNTIME_RS = """\
+// Process-wide gun state shared by the bundle's helpers (M5g).
+//
+// `use_item` (one click) and `player_tick` (one tick) are separate injected
+// functions. A `static` inside either helper would be a *different* copy per
+// helper, so the state they must share cannot live there. It lives here, in the
+// engine crate both helpers already depend on.
+//
+// Single-player semantics: one state for the process. Per-player scoping needs a
+// player-aware mutable hook; this snapshot's `use_item` carries no player.
+
+use std::sync::Mutex;
+
+use crate::GunState;
+
+static GUN: Mutex<Option<GunState>> = Mutex::new(None);
+
+/// Run `f` with the process-wide gun state, creating it on first use.
+pub fn with_gun<R>(f: impl FnOnce(&mut GunState) -> R) -> R {
+    let mut slot = GUN.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    let gun = slot.get_or_insert_with(GunState::new);
+    f(gun)
+}
+
+/// Drop the shared state, so a test starts from a fresh magazine.
+#[cfg(test)]
+pub fn reset() {
+    let mut slot = GUN.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+    *slot = None;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The helpers are separate functions; this is the property they rely on:
+    /// two calls see the same state, and a reset puts the magazine back.
+    #[test]
+    fn one_state_across_calls() {
+        reset();
+        with_gun(|gun| gun.ammo = 7);
+        assert_eq!(with_gun(|gun| gun.ammo), 7);
+        reset();
+        assert_eq!(with_gun(|gun| gun.ammo), crate::consts::MAG_CAPACITY);
+        reset();
+    }
+}
+"""
+
 ON_LOAD_RS = """\
 // AK-47 load probe — runs on the first server tick.
 //
 // It exists so a headless (`--dedicated --nogui`) run can prove three things
 // without a player: the bundle compiled into the game, the hook point is live,
-// and the engine crate is linked. It prints once, then does nothing.
+// and the engine crate is linked with its runtime slot readable. It prints once.
 //
 // This is not gameplay. Firing still needs verified bindings for use_item.
 
@@ -306,58 +355,82 @@ fn on_load() {
     use std::sync::atomic::{AtomicBool, Ordering};
     static SEEN: AtomicBool = AtomicBool::new(false);
     if !SEEN.swap(true, Ordering::Relaxed) {
+        let (ammo, state) = ak47_engine::runtime::with_gun(|gun| (gun.ammo, gun.state));
         eprintln!(
-            "[tacz_ak47_pilot] load probe: first server tick, engine states={}",
-            ak47_engine::states::STATES.len()
+            "[tacz_ak47_pilot] load probe: first server tick, engine states={} ammo={} state={}",
+            ak47_engine::states::STATES.len(),
+            ammo,
+            state
         );
     }
 }
 """
 
 ON_USE_RS = """\
-// AK-47 use_item helper — real bindings + a magazine (M5d).
+// AK-47 use_item helper — one click is one engine tick with `Shoot` (M5g).
 //
-// Bound to `native_use_item(&mut self, stack: &ItemStack, claimed: &mut bool)`:
-// `game` is the Game, `stack` the held stack, `claimed` the flag that takes the
-// use. It claims only our own item, one round per right click, and refuses when
-// the magazine is empty.
+// Bound to `native_use_item(&mut self, stack: &ItemStack, claimed: &mut bool)`.
+// Magazine, fire rate, fire mode and reload timers all live in
+// `ak47_engine::GunState` (shared through `ak47_engine::runtime`); this helper
+// only translates a right click into `Input::Shoot`, claims the use when the
+// engine answered `Shot`, and reports why it did not.
 //
-// The magazine is a process-wide static: the hook carries no player, so this is
-// single-player semantics. Per-player ammo needs a player-aware mutable hook.
+// A click carries no release event, so the trigger is released right after the
+// shot; `player_tick` (`on_tick.rs`) is what advances the cooldown between
+// clicks. Fire rate is therefore the engine's `FIRE_INTERVAL_TICKS`, not the
+// click rate.
 
 fn on_use(game: &mut crate::game::Game<'_>, stack: &crate::items::ItemStack, claimed: &mut bool) {
-    use std::sync::atomic::{AtomicU32, Ordering};
-    static AMMO: AtomicU32 = AtomicU32::new(30);
     let _ = game;
     if &*stack.item != "tacz_ak47_pilot:ak47" {
         return;
     }
-    let left = AMMO.load(Ordering::Relaxed);
-    if left == 0 {
-        eprintln!("[tacz_ak47_pilot] trigger on empty magazine");
-        return;
+    let mut shot = None;
+    let mut dry = false;
+    let mut blocked = None;
+    ak47_engine::runtime::with_gun(|gun| {
+        let before = gun.state;
+        for event in gun.tick(Some(ak47_engine::Input::Shoot)) {
+            match event {
+                ak47_engine::Event::Shot { ammo_after } => shot = Some(ammo_after),
+                ak47_engine::Event::DryFire => dry = true,
+                _ => {}
+            }
+        }
+        if shot.is_none() && !dry {
+            blocked = Some((before, gun.state, gun.cooldown_ticks, gun.reload.is_some()));
+        }
+        gun.release();
+    });
+    if let Some(ammo) = shot {
+        *claimed = true;
+        eprintln!("[tacz_ak47_pilot] shot, ammo={ammo}");
+    } else if dry {
+        eprintln!("[tacz_ak47_pilot] dry fire: magazine empty");
+    } else if let Some((before, after, cooldown, reloading)) = blocked {
+        eprintln!(
+            "[tacz_ak47_pilot] blocked: {before}->{after} cooldown={cooldown} reloading={reloading}"
+        );
     }
-    AMMO.store(left - 1, Ordering::Relaxed);
-    *claimed = true;
-    eprintln!("[tacz_ak47_pilot] shot, ammo={}", left - 1);
 }
 """
 
 ON_TICK_RS = """\
-// AK-47 per-player tick helper — placeholder wiring.
+// AK-47 tick helper — advances the engine's cooldown and reload timers (M5g).
 //
-// Same contract as `on_use.rs`: `bindings = []` means no player or level is in
-// scope, so cooldown/reload advancement cannot be pushed into the game yet.
-// `ak47_engine::GunState::tick` is the pure-logic implementation the wiring
-// will call once bindings are verified against a real Horizon build.
+// `bindings = []`: no player is in scope, so this advances the process-wide
+// state in `ak47_engine::runtime` instead of one player's. It is the only place
+// `FIRE_INTERVAL_TICKS` counts down, so without it only the first click of a
+// session could ever fire.
 
 fn on_tick() {
-    // Same seam as `on_use.rs`: the engine crate is reachable from helpers, but
-    // `bindings = []` gives no player/level to persist `GunState`. This call only
-    // proves linkage; a real tick would hold the state per player and pass the
-    // pending input instead of `None`.
-    let mut gun = ak47_engine::GunState::new();
-    let _events = gun.tick(None);
+    ak47_engine::runtime::with_gun(|gun| {
+        for event in gun.tick(None) {
+            if let ak47_engine::Event::ReloadEnd { ammo } = event {
+                eprintln!("[tacz_ak47_pilot] reload finished, ammo={ammo}");
+            }
+        }
+    });
 }
 """
 
@@ -463,6 +536,7 @@ LIB_RS = """\
 // reduced runtime alphabet, documented in the report's `input_alignment`.
 
 pub mod consts;
+pub mod runtime;
 pub mod states;
 
 use consts::*;
@@ -589,10 +663,7 @@ impl GunState {
                     self.fire(&mut out);
                 }
             }
-            Some(Input::ReleaseTrigger) => {
-                self.trigger_held = false;
-                self.semi_latch = false;
-            }
+            Some(Input::ReleaseTrigger) => self.release(),
             Some(Input::Reload) => self.start_reload(&mut out),
             Some(Input::Inspect) => {
                 self.state = states::INSPECT;
@@ -629,6 +700,18 @@ impl GunState {
             }
         }
         out
+    }
+
+    /// Let go of the trigger without spending a tick.
+    ///
+    /// `Input::ReleaseTrigger` does the same thing through `tick`, but a click
+    /// helper has no release event of its own: it must clear the hold right
+    /// after the shot, or the next `tick(None)` would keep auto-firing. Going
+    /// through `tick` would also decrement the cooldown a second time per
+    /// click, which would fake a faster fire rate than `FIRE_INTERVAL_TICKS`.
+    pub fn release(&mut self) {
+        self.trigger_held = false;
+        self.semi_latch = false;
     }
 
     fn fire(&mut self, out: &mut Vec<Event>) {
@@ -1216,7 +1299,7 @@ def build_bundle(args) -> int:
             "horizon-mixin.toml", "on_use.rs", "on_tick.rs",
             "data/ak47.json", "engine/data/ak47.json",
             "engine/Cargo.toml", "engine/src/lib.rs", "engine/src/consts.rs",
-            "engine/src/states.rs", "engine/src/bin/trace.rs",
+            "engine/src/states.rs", "engine/src/runtime.rs", "engine/src/bin/trace.rs",
             "engine/tests/ak47.rs",
         ):
             path = out_dir / relative
@@ -1307,6 +1390,7 @@ def build_bundle(args) -> int:
     assert_state_alignment(ir_states, states_text)
     assert_input_alignment(ir_inputs, states_text)
     write_text(engine_dir / "src" / "states.rs", states_text)
+    write_text(engine_dir / "src" / "runtime.rs", RUNTIME_RS)
     write_text(engine_dir / "src" / "lib.rs", LIB_RS)
     write_text(engine_dir / "src" / "bin" / "trace.rs", TRACE_RS.substitute())
     write_text(engine_dir / "tests" / "ak47.rs", INTEGRATION_TEST_RS)

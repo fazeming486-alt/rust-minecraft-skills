@@ -314,15 +314,43 @@ M5b 的 engine 链接、M5c/M5e 的扣弹，此前分属两个二进制。这一
 
 同一份二进制里 31 次**快速**点击 → shot 30、`swings` 15；M5e 那次 30 次**慢速**点击 → shot 30、`swings` 30。`swings` 会合并/衰减，不能当判据。「空仓不 claim」现在只写成源码级事实（`left == 0` 直接 `return`，早于 `*claimed = true`），不再拿运行期计数冒充。
 
-## 10. 边界与下一步
+## 10. M5g：状态机接管弹匣（观测到一半）
 
-- **接线已验证，弹药已验证，但都不是「真的枪」**：claim 与扣弹都在真实右键里成立；子弹实体、命中、伤害、音效、换弹全都没有。
-- **状态机只被链接与打印**：`states=18` 证明 crate 在、`on_load` 被调用；18 个状态**没有驱动行为**——射速、连发、换弹转移还没接 `AMMO`。
-- **弹药是进程级静态量**：不是物品 NBT，也不 per-player；多人会串。
+M5f 的弹匣还是 helper 里的 `static AtomicU32`，18 个状态只被打印。这一节把弹药搬进 engine：
+
+- `engine/src/runtime.rs`：`Mutex<Option<GunState>>` 进程级共享槽 + `with_gun()`。**必须放在 engine 里**——`on_use` 与 `on_tick` 是两个注入函数，各自写 `static` 会是两份状态。
+- `GunState::release()`：点击后清锁存但不走 `tick`，否则一次点击要多吃一个 tick 的冷却，射速会被算快。
+- `on_use`：一次右键 = `tick(Some(Shoot))` + `release()`；按 `Event::Shot` 决定 claim，`DryFire` 报干火，其余报 `blocked` 并带前后状态/冷却/是否换弹。
+- `on_tick`：每 tick `tick(None)` 推进冷却与换弹计时。
+
+```
+[tacz_ak47_pilot] load probe: first server tick, engine states=18 ammo=30 state=main.idle
+…
+[tacz_ak47_pilot] shot, ammo=7
+```
+
+23 次成功点击把 ammo 从 30 打到 7，数字来自 `GunState`，不再是 helper 的常量。engine 单测 13 → **14/14**（新增 `one_state_across_calls`）。
+
+### 没观测到的，以及为什么
+
+| 项 | 状态 | 原因 |
+|---|---|---|
+| 射速门控（`FIRE_INTERVAL_TICKS=2`，100 ms） | `not_observed` | `horizon-ctl` 一次 `use-item` 往返实测 **161 ms**（10 次 1611 ms），串行点击永远跨过 3 个 tick，冷却必已归零 |
+| 并发压点击 | `not_observed` | 18 个并发 `use-item` 只有 3 次真正到达游戏，其余在 socket 竞争里丢了 |
+| `--hold 0.5` | `not_observed` | 只产生 3 次 use 调用，不是每 tick 调用 |
+| 干火 | `not_observed` | 打到 ammo=7 时无头客户端进程消失（无 crash report），没打空 |
+
+结论：**代码与单测在，游戏内证据只到「ammo 由状态机持有并递减」**。要验射速，得换驱动方式（批量/脚本通道，或一个 hold 期间每 tick 重放 use 的测试钩子），这是 M5h 的前置。
+
+## 11. 边界与下一步
+
+- **接线已验证，弹药已进状态机，但都不是「真的枪」**：claim 与扣弹都在真实右键里成立；子弹实体、命中、伤害、音效、换弹全都没有。
+- **状态机只接管了弹匣**：射速/连发/换弹的转移在 engine 里成立且有单测，游戏内因控制通道精度未观测。
+- **弹药是进程级共享量**：不是物品 NBT，也不 per-player；多人会串。
 - **动画仍 `unbound`**：IR 里的 44 条转移只是状态层，73 个 animation.json 与骨骼插值在 Horizon 侧仍无消费者。
 - **期望值不是 oracle**：来自 TaCZ 的 `ak47_data.json`，不是真机录制；M3b 仍未做。
 
-下一步，按依赖排序：① 把 `AMMO` 换成 engine 的 `GunState`，让射速/连发/换弹真的由状态机驱动；② 弹药落到可变钩子（背包/玩家存储），而不是 `static`；③ 子弹实体 + 射线命中 + 伤害最小闭环；④ 用 `events` / `inventory` 做断言，而不只看日志。
+下一步，按依赖排序：① 把点击驱动换成能压到 1 tick 的通道（批量命令或测试钩子），验射速/连发；② `player_tick` 补玩家绑定，做每玩家 `GunState`；③ 弹药落到可变钩子（背包/物品栈）；④ 子弹实体 + 射线命中 + 伤害。
 
-在那之前，「AK-47 已经搬过来」仍不成立——现在可以说的是：**物品能注册、右键能进我们的代码并扣弹、空仓会拒绝、状态机能链接；枪还不会打子弹**。
+在那之前，「AK-47 已经搬过来」仍不成立——现在可以说的是：**物品能注册、右键能进我们的代码、弹药由 18 状态的状态机持有并递减；枪还不会打子弹**。
 

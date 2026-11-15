@@ -1,0 +1,72 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5g · 状态机接管弹匣：engine 成为唯一弹药真相源，但射速门控在本机控制通道下观测不到",
+  "verification_level": "partial_in_game",
+  "note": "弹匣从 helper 的 static AtomicU32 换成 ak47_engine::GunState（进程级共享槽）。游戏内确认 ammo 由 engine 持有并递减；射速/干火/换弹这几条虽已实现，但受 ctl 点击精度限制未能在游戏内观测。",
+  "what_changed": {
+    "engine": [
+      "新增 src/runtime.rs：Mutex<Option<GunState>> 进程级共享槽 + with_gun()（两个 helper 各自 static 会是两份状态，必须放在共同依赖的 crate 里）",
+      "新增 GunState::release()：点击后清触发锁存，不走 tick，避免每次点击多吃一个 tick 的冷却",
+      "Input::ReleaseTrigger 改为调用 release()",
+      "新增单测 one_state_across_calls（跨调用共享 + reset 回满）"
+    ],
+    "helpers": [
+      "on_use.rs：一次右键 = tick(Some(Shoot)) + release()；按 Event::Shot 决定 claim，Event::DryFire 报干火，其余报 blocked 并带前后状态/冷却/是否换弹",
+      "on_tick.rs：每 tick tick(None) 推进冷却与换弹计时（bindings 仍为空，推进的是进程级状态）",
+      "on_load.rs：探针多打印 ammo 与 state，证明共享槽可读"
+    ]
+  },
+  "stages": {
+    "generate": "states=18 / engine tests 14/14 / hooks=3",
+    "apply": {"status": "ok", "seconds": 68.86, "stage": "work/m5/stage-g", "injections": 3, "crates": 1},
+    "build": {"status": "ok", "seconds": 451, "profile": "fast", "incremental": "CARGO_INCREMENTAL=0"},
+    "run": {
+      "log": "work/m5/ctl-home/_run9.log",
+      "log_bytes": 1634,
+      "log_sha256": "f3c7aba3260fc7c5e026e87a6470c4279a0274760f2f063b96da123f07472c16",
+      "probe": "[tacz_ak47_pilot] load probe: first server tick, engine states=18 ammo=30 state=main.idle"
+    }
+  },
+  "assertions": {
+    "engine_owns_ammo": "探针读到的 ammo/state 来自 GunState（helper 里已无 AMMO 常量）",
+    "decrement_through_engine": "23 次成功点击 → ammo 30→7，日志逐发递减",
+    "dry_fire": "未观测（弹匣剩 7 发时进程退出）",
+    "cooldown_blocked": "未观测（0 次 blocked）",
+    "clicks_that_reached_the_game": 23
+  },
+  "why_not_observed": {
+    "cooldown": "FIRE_INTERVAL_TICKS=2（100 ms），而 horizon-ctl 一次 use-item 往返实测 161 ms（10 次 1611 ms）。串行点击永远跨过 3 个 tick，冷却必已归零",
+    "concurrent_clicks": "18 个并发 use-item 只有 3 次真正到达游戏（其余在 socket 竞争里丢了），因此不能靠并发把间隔压到 1 个 tick",
+    "hold": "use-item --hold 0.5 只产生 3 次 use 调用，不是每 tick 调用，压不出高频率",
+    "dry_fire": "测试进行到 ammo=7 时客户端进程退出（无 crash report），没打空"
+  },
+  "correction_to_earlier": {
+    "what": "M5e/M5f 用『每次点击都扣一发』当作射速无关的证据",
+    "now": "那时 helper 里是没有冷却的 static 计数，所以点击率即发数；换成 GunState 后发数由 engine 决定，点击率只是上限"
+  },
+  "constraints_found": [
+    {
+      "code": "ctl_click_floor",
+      "detail": "horizon-ctl 每次 use-item 都要新起进程并握手，往返约 160 ms，是本机可用的最高点击频率",
+      "impact": "任何间隔 < 3 tick 的武器行为（AK 的 100 ms 冷却、连发节奏）都无法用这个通道验证"
+    },
+    {
+      "code": "ctl_concurrent_loss",
+      "detail": "并发 use-item 会丢点击（18 发只到 3 发），不是可靠的压测手段"
+    },
+    {
+      "code": "client_exits_untracked",
+      "detail": "无头客户端在父 shell 结束后不一定存活；两次跑到一半进程消失（无 crash report）"
+    }
+  ],
+  "not_verified": [
+    "射速门控、连发节奏、换弹：代码在、engine 单测在，游戏内未观测",
+    "弹药仍未落到物品栈：GunState 是进程级共享，不是每玩家/每物品",
+    "子弹、命中、伤害、音效：仍未实现"
+  ],
+  "next": [
+    "换驱动方式：写一个 `--hold` 期间每 tick 重放 use 的测试钩子，或用 horizon-ctl 的批量/脚本通道，把点击间隔压到 1 tick 以内",
+    "把 player_tick 的 bindings 补成能拿玩家，做到每玩家 GunState",
+    "再接子弹与命中"
+  ]
+}

@@ -140,7 +140,8 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | M5d 状态 | **已解除**：不是 IO 崩溃，是启动参数错（resources 指向未 prepare 的 `minecraft-26.3/`、`eula.txt` 读进程 cwd）。改正后 `--dedicated` 34.5 s 起服、无头客户端 153 s 进世界 |
 | M5e | **已完成**：31 次 `use-item` → 30 发（ammo 29→0）+ 1 空仓拒绝；异物不触发；干净 apply 19 s 且产物与已验证源码逐 token 一致（reports/m5e-ammo.json、m5e-clean-apply.json） |
 | M5f | **已完成**：完整 bundle（3 注入 + 1 crate）plan 8.9 s / apply 20 s / build 7m46s；一份二进制里同时打出 `engine states=18` 与 30 发弹匣。更正：`swings` 不是 claim 计数（快速 31 击 → 15） |
-| 下一步 | ① 把 `AMMO` 换成 engine 的 `GunState`，让射速/连发/换弹由 18 状态驱动；② 弹药落可变钩子（现在是 `static AtomicU32`）；③ 子弹实体 + 射线命中 + 伤害 |
+| M5g | **部分完成**：`GunState` 接管弹匣（探针 `ammo=30 state=main.idle`，23 击 30→7，engine 14/14）；射速/连发/换弹因 ctl 点击往返 161 ms > 冷却 100 ms **未观测**（reports/m5g-engine-driven-ammo.json） |
+| 下一步 | ① 换能压到 1 tick 的点击通道，验射速/连发；② `player_tick` 补玩家绑定做每玩家 `GunState`；③ 弹药落物品栈；④ 子弹 + 命中 + 伤害 |
 
 ## 4. 度量（每次里程碑后记录）
 
@@ -158,7 +159,7 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 格式等价转换 | **5 个转换器 / 3683 源文件 / roundtrip 全闭合 / 1 partial + 2 unbound + 2 bound** | 内容级转换需在可运行环境验证 |
 | 目标侧源码探针 | **3 路 / 25 文件 / 424 声明 / missing_files 全空** | 随 Horizon 快照重跑比对 |
 | M3 harness 对接 | **离线闭环完成（23 契约 / PASS 68 项 / FAIL 抓 3 类失配）** | M3b 真机录制 |
-| `validate.py` 检查数 | **135** | 随里程碑递增，始终全绿 |
+| `validate.py` 检查数 | **139** | 随里程碑递增，始终全绿 |
 | **M5 内容包** | **官方 check ok=true / 6227 B / 两次打包同 SHA-256** | 游戏内注册与显示 |
 | **M5 状态机 IR** | **18 状态 / 44 转移 / 22 输入 / 26 unresolved 带原因** | 与运行时转移序列对齐（需 oracle） |
 | **M5 原生模块** | **cargo test 13/13 / 状态集合与 IR 相等 / bindings 已绑定并在游戏内命中** | 可变状态钩子 |
@@ -167,6 +168,7 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | **M5e 弹匣语义** | **31 点击 = 30 发（29→0）+ 1 空仓；swings 停在 30；异物不触发** | 每玩家/每物品栈弹药、换弹 |
 | **M5e 干净 apply** | **19 s / 1 injection / 与就地补丁逐 token 一致** | 一次 apply 出全量钩子（crate + 3 hooks） |
 | **M5f 单二进制** | **plan 8.9 s / apply 20 s / build 7m46s；同进程 `states=18` + 30 发** | 状态机驱动射速/连发/换弹 |
+| **M5g 状态机接管弹匣** | **engine 14/14；探针 ammo=30；23 击 30→7；射速门控未观测** | 可压到 1 tick 的点击通道 |
 | **M5 差分** | **23/23 事件、drift 0、负例失败** | 覆盖后坐/散布/命中/同步 |
 | **M5 子 agent** | **5 任务 / 3 wave / 5 COMPLETE / 0 越界** | 与 M2 的 17 任务对比并行收益 |
 

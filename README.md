@@ -187,18 +187,22 @@ M5c 只做到「右键进了我们的代码」。M5e 把**扣弹与空仓拒绝*
 
 **一处自我更正**：M5e 首版拿 `state.swings` 当 claim 计数器（30 次慢速点击恰好 30）。M5f 里同一份二进制快速连点 31 次，发数仍是 30 而 `swings` 只有 15——它是会合并/衰减的挥手计数，不能作判据。「空仓不 claim」现在只写成源码级事实（`left == 0` 直接 `return`，早于 `*claimed = true`）。
 
-**仍然是进程级静态量**：`AMMO` 是 `static AtomicU32`，不是物品 NBT、不是每玩家；换弹、子弹、命中、伤害、音效全没有。状态机只被链接与打印，**18 个状态还没有驱动行为**。
+**状态机接管了弹匣（M5g）**：`engine/src/runtime.rs` 提供进程级共享槽（`on_use` 与 `on_tick` 是两个注入函数，各自 `static` 会是两份状态），一次右键 = `tick(Some(Shoot))` + `release()`，每 tick 由 `on_tick` 推进冷却。探针打出 `states=18 ammo=30 state=main.idle`，23 次点击把 ammo 从 30 打到 7——数字来自 `GunState`，不再是 helper 的常量；engine 单测 13 → **14/14**。
 
-详见 [08 · M5 执行报告](docs/08-m5-execution.md) 的 §8–10、`reports/m5e-ammo.json`、`reports/m5e-clean-apply.json`、`reports/m5f-combined-binary.json`。
+**但射速门控没能观测**：`FIRE_INTERVAL_TICKS=2`（100 ms）比 `horizon-ctl` 单次 `use-item` 往返（实测 161 ms）还短，串行点击永远跨过 3 个 tick；18 个并发点击只有 3 次真正到达游戏。所以「代码与单测在，游戏内证据只到 ammo 由状态机持有并递减」。要验射速必须换驱动通道——这是下一步的前置。
+
+**仍然不是真枪**：`GunState` 是进程级共享量，不是物品 NBT、不是每玩家；换弹、子弹、命中、伤害、音效全没有。
+
+详见 [08 · M5 执行报告](docs/08-m5-execution.md) 的 §8–11、`reports/m5e-ammo.json`、`reports/m5e-clean-apply.json`、`reports/m5f-combined-binary.json`、`reports/m5g-engine-driven-ammo.json`。
 
 ## 状态与下一步
 
-**v0.10 — M5e/M5f 弹药闭环 + 单二进制**：28 个 skill、**135 项自检全绿**（本地提交，推送待恢复）。
+**v0.10 — M5e/M5f/M5g 弹药闭环 + 单二进制 + 状态机接管弹匣**：28 个 skill、**139 项自检全绿**（本地提交，推送待恢复）。
 
 按 `docs/04-roadmap.md` 推进：
 
-- **M5g**：把 `AMMO` 换成 engine 的 `GunState`，让射速/连发/换弹真的由 18 个状态驱动。
-- **M5h**：弹药落到可变钩子（背包/玩家存储），再做子弹实体 + 射线命中 + 伤害。
+- **M5h**：把点击驱动换成能压到 1 tick 的通道（批量命令或测试钩子），验射速/连发/换弹。
+- **M5i**：`player_tick` 补玩家绑定做每玩家 `GunState`；弹药落到可变钩子；再做子弹 + 命中 + 伤害。
 - **M3b**：搭最小可运行 Java oracle，把 23 个契约的 `oracle.status` 从 `pending` 推到 `recorded → replayed → verified`。
 - **M4b**：换跨 MC 版本或混淆样本检验规则泛化，必要时新增 version profile。
 

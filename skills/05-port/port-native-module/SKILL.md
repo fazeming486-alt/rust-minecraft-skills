@@ -38,6 +38,7 @@ tacz_ak47_pilot/
     Cargo.toml            # 仅 std，无依赖；[lib] ak47_engine + [[bin]] trace
     data/ak47.json        # 与根 data 字节一致，供 include_str!("../data/ak47.json")
     src/lib.rs            # GunState / Input / Event / 状态机
+    src/runtime.rs        # 进程级共享槽（两个 helper 共用同一份 GunState）
     src/consts.rs         # 手写常量（数字出自 slice，逐条给出来源）
     src/states.rs         # 由 IR 生成：STATES + 角色常量 + fallback 列表
     src/bin/trace.rs      # 文本剧本 → JSONL
@@ -122,7 +123,9 @@ cargo run --offline --bin trace -- --script tests/fixtures/burst.trace
 
 > **M5b 更新**：`native-build` 那一行已经不再是 `not_run`。bundle 经 `horizon-mixins 0.6.0` 的 `plan` / `apply` 真跑后编进了 `horizon-client`，无头服务端首 tick 打出了 `load probe … engine states=18`——证明「编进去 + 钩子被调用 + engine 链接」。仍然**没有开火**：`bindings = []` 拿不到物品栈。
 >
-> **M5c/M5e 更新**：`bindings` 换成 `(game, stack, claimed)` 后，无头客户端里真实右键 4/4 命中；再把 helper 换成 30 发弹匣后，**31 次点击 = 30 行 `shot, ammo=29…0` + 1 行 `trigger on empty magazine`**，空仓那次不 claim（`state.swings` 停在 30）。注意弹药是 helper 内的 `static AtomicU32`，**进程级**，不是物品数据；`use_item` 只给不可变 `&ItemStack`，写不回栈。每玩家弹药要等可变钩子。详见 `reports/m5e-ammo.json`。
+> **M5c/M5e 更新**：`bindings` 换成 `(game, stack, claimed)` 后，无头客户端里真实右键 4/4 命中；再把 helper 换成 30 发弹匣后，**31 次点击 = 30 行 `shot, ammo=29…0` + 1 行 `trigger on empty magazine`**，空仓那次不 claim（源码级：`left == 0` 直接 `return`，早于 `*claimed = true`；`state.swings` 会合并/衰减，不能作判据）。注意 M5e 当时弹药是 helper 内的 `static AtomicU32`（**进程级**，不是物品数据；M5g 已搬进 engine）；`use_item` 只给不可变 `&ItemStack`，写不回栈。每玩家弹药要等可变钩子。详见 `reports/m5e-ammo.json`。
+>
+> **M5g 更新**：弹药已搬进 engine——`engine/src/runtime.rs` 是进程级共享槽（两个注入函数各写 `static` 会是两份状态），`GunState::release()` 让「点击后松扳机」不吃 tick。探针现在打印 `states=18 ammo=30 state=main.idle`，游戏内 23 击把 ammo 从 30 打到 7。**射速门控未观测**：`horizon-ctl` 单次 `use-item` 往返 161 ms > `FIRE_INTERVAL_TICKS=2`（100 ms），并发点击还会丢（18→3）。详见 `reports/m5g-engine-driven-ammo.json`。
 
 ### horizon-mixins 0.6.0 的四条硬约束（M5b 实测，已写进生成器）
 
