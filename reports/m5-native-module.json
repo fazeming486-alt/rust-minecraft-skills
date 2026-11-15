@@ -1,0 +1,391 @@
+{
+  "blocked_by": [
+    {
+      "id": "native-build",
+      "reason": "需要完整游戏构建与可观测客户端；本机 headless，无法验证游戏内行为",
+      "status": "not_run",
+      "what": "horizon-launcher native-build 把 bundle 编进 horizon-client"
+    }
+  ],
+  "bundle": {
+    "files": 12,
+    "mod_id": "tacz_ak47_pilot",
+    "path": "work/m5/native/tacz_ak47_pilot",
+    "version": "0.1.0"
+  },
+  "catalog": {
+    "catalog": "third_party/horizon/native-hooks.json",
+    "catalog_api": 1,
+    "checked": true,
+    "hooks_in_catalog": 434
+  },
+  "engine": {
+    "cargo_test": {
+      "command": "cargo test --offline",
+      "failed": 0,
+      "passed": 13,
+      "status": "passed",
+      "suites": [
+        {
+          "failed": 0,
+          "passed": 8,
+          "result": "ok"
+        },
+        {
+          "failed": 0,
+          "passed": 0,
+          "result": "ok"
+        },
+        {
+          "failed": 0,
+          "passed": 5,
+          "result": "ok"
+        },
+        {
+          "failed": 0,
+          "passed": 0,
+          "result": "ok"
+        }
+      ]
+    },
+    "crate": "ak47_engine",
+    "dependencies": [],
+    "package": "ak47_engine",
+    "tests": 13
+  },
+  "honesty": {
+    "bindings": "unverified",
+    "game_behavior": "not_observed",
+    "helper_signature": "unverified",
+    "native_build": "not_run",
+    "notes": [
+      "bindings = []：注入函数拿不到 Game/玩家/物品栈，不会真正开火。",
+      "helper 的函数签名未与 horizon-mixins 生成的 Host API 对过，无法离线验证。",
+      "engine 只证明纯逻辑（弹药/冷却/换弹/模式）在 Rust 单测里成立。",
+      "游戏内第一人称表现、网络同步、伤害结算均未观测。"
+    ],
+    "wiring": "placeholder"
+  },
+  "hooks": [
+    {
+      "name": "use_item",
+      "source": "third_party/horizon/native-hooks.json",
+      "version": 1
+    },
+    {
+      "name": "player_tick",
+      "source": "third_party/horizon/native-hooks.json",
+      "version": 1
+    }
+  ],
+  "input_alignment": {
+    "engine_inputs": [
+      "Shoot",
+      "ReleaseTrigger",
+      "Reload",
+      "Inspect",
+      "PutAway",
+      "FireSelect"
+    ],
+    "ir_input_count": 22,
+    "ir_inputs": [
+      "INPUT_AIM",
+      "INPUT_AIM_RETREAT",
+      "INPUT_BAYONET_MUZZLE",
+      "INPUT_BAYONET_PUSH",
+      "INPUT_BAYONET_STOCK",
+      "INPUT_BOLT",
+      "INPUT_BOLT_CAUGHT",
+      "INPUT_BOLT_NORMAL",
+      "INPUT_DRAW",
+      "INPUT_FIRE_SELECT",
+      "INPUT_IDLE",
+      "INPUT_INSPECT",
+      "INPUT_INSPECT_BREAK_OUT",
+      "INPUT_INSPECT_RETREAT",
+      "INPUT_MODE_AUTO",
+      "INPUT_MODE_DRAW",
+      "INPUT_MODE_SEMI",
+      "INPUT_PUT_AWAY",
+      "INPUT_RELOAD",
+      "INPUT_RUN",
+      "INPUT_SHOOT",
+      "INPUT_WALK"
+    ],
+    "ir_inputs_copied": true,
+    "ir_inputs_equal": true,
+    "mapped": {
+      "FireSelect": [
+        "INPUT_FIRE_SELECT"
+      ],
+      "Inspect": [
+        "INPUT_INSPECT"
+      ],
+      "PutAway": [
+        "INPUT_PUT_AWAY"
+      ],
+      "ReleaseTrigger": [],
+      "Reload": [
+        "INPUT_RELOAD"
+      ],
+      "Shoot": [
+        "INPUT_SHOOT"
+      ]
+    },
+    "modeled_count": 6,
+    "note": "引擎只建模 6 个运行时输入（MODELED_INPUTS）；IR 的全部输入名原样复制到 IR_INPUTS 供追溯，但未逐一实现 handler，不声称运行时等价。",
+    "unmodeled_ir_inputs": [
+      "INPUT_AIM",
+      "INPUT_AIM_RETREAT",
+      "INPUT_BAYONET_MUZZLE",
+      "INPUT_BAYONET_PUSH",
+      "INPUT_BAYONET_STOCK",
+      "INPUT_BOLT",
+      "INPUT_BOLT_CAUGHT",
+      "INPUT_BOLT_NORMAL",
+      "INPUT_DRAW",
+      "INPUT_IDLE",
+      "INPUT_INSPECT_BREAK_OUT",
+      "INPUT_INSPECT_RETREAT",
+      "INPUT_MODE_AUTO",
+      "INPUT_MODE_DRAW",
+      "INPUT_MODE_SEMI",
+      "INPUT_RUN",
+      "INPUT_WALK"
+    ]
+  },
+  "inputs": [
+    {
+      "bytes": 5755,
+      "path": "orchestration/m5-slice.json",
+      "sha256": "0d7c021ca968e8be662c6900eaf9e45f98d76f0747c0c5a4ca9217359090555c"
+    },
+    {
+      "bytes": 20674,
+      "path": "work/m5/state-ir/ak47.json",
+      "sha256": "19d32a592173f46f9c8cd9fe20e24b099416a7202620eeb384317a848aec47b3"
+    },
+    {
+      "bytes": 153257,
+      "path": "third_party/horizon/native-hooks.json",
+      "sha256": "d709ee26dc8281fcdbe8922561649b0dce0ca84260aefb3d1a41777f8e659c5a"
+    }
+  ],
+  "outputs": [
+    {
+      "bytes": 1340,
+      "path": "data/ak47.json",
+      "sha256": "0081333a2d503a5c15fa8a13a2da5e4bf4d57acb32ad7133326aa0f4d49ace38"
+    },
+    {
+      "bytes": 332,
+      "path": "engine/Cargo.toml",
+      "sha256": "cebce5b5cdc5ae603f581e7a5f458c7ec83b4cc2be154a6f1594d0817faf2378"
+    },
+    {
+      "bytes": 1340,
+      "path": "engine/data/ak47.json",
+      "sha256": "0081333a2d503a5c15fa8a13a2da5e4bf4d57acb32ad7133326aa0f4d49ace38"
+    },
+    {
+      "bytes": 5860,
+      "path": "engine/src/bin/trace.rs",
+      "sha256": "b77ddcdbb93c84ff6604ae9b6c00f51d71687295c23d6030b8549247dde04f54"
+    },
+    {
+      "bytes": 1153,
+      "path": "engine/src/consts.rs",
+      "sha256": "bddb7d101c7c12a24bd9b938e023d3e85e7b2c695a4f57d608f50bc5da72db21"
+    },
+    {
+      "bytes": 10234,
+      "path": "engine/src/lib.rs",
+      "sha256": "9f59c4178b9151c835ce4a6a72b8c547666e3b663500ebab9648441fd1372a62"
+    },
+    {
+      "bytes": 2177,
+      "path": "engine/src/states.rs",
+      "sha256": "2e64a2a3aea1d2c96fbe2a355d13220bf5d7843b8c8d1da555ad5c0f0d5cb1ce"
+    },
+    {
+      "bytes": 2309,
+      "path": "engine/tests/ak47.rs",
+      "sha256": "9b20668de765d026000e1b1e6168e5cb10856460eb8f20f1c22e41c14ef6af56"
+    },
+    {
+      "bytes": 107,
+      "path": "engine/tests/fixtures/burst.trace",
+      "sha256": "07efd15dcb2f5e53c2c298b218693641b450b95fea5040bed65628cc59ef3c6a"
+    },
+    {
+      "bytes": 720,
+      "path": "horizon-mixin.toml",
+      "sha256": "974ca0c6e896a9b3332964cd3393c2937366dd7e4f09edba861800f99f0826a9"
+    },
+    {
+      "bytes": 777,
+      "path": "on_tick.rs",
+      "sha256": "e5e2587220dc0c5ff68282960b7ec0dba6e6e36875f16118026d4702fd2a2ff2"
+    },
+    {
+      "bytes": 946,
+      "path": "on_use.rs",
+      "sha256": "9d51f81cab1236773e100b181d99f1e4bf3a34e00a4c7e3c37f5288c5656a382"
+    }
+  ],
+  "params": [
+    {
+      "name": "ammo_amount",
+      "source": "orchestration/m5-slice.json#/params/ammo_amount",
+      "unit": "rounds",
+      "value": 30
+    },
+    {
+      "name": "rpm",
+      "source": "orchestration/m5-slice.json#/params/rpm",
+      "unit": "rounds/min",
+      "value": 600
+    },
+    {
+      "name": "fire_interval_ticks",
+      "source": "derived: 20 tps * 60 / rpm",
+      "unit": "ticks",
+      "value": 2
+    },
+    {
+      "name": "reload_empty_feed",
+      "source": "orchestration/m5-slice.json#/params/reload/feed/empty",
+      "unit": "s",
+      "value": 2.25
+    },
+    {
+      "name": "reload_empty_cooldown",
+      "source": "orchestration/m5-slice.json#/params/reload/cooldown/empty",
+      "unit": "s",
+      "value": 2.6
+    },
+    {
+      "name": "reload_tactical_feed",
+      "source": "orchestration/m5-slice.json#/params/reload/feed/tactical",
+      "unit": "s",
+      "value": 1.55
+    },
+    {
+      "name": "reload_tactical_cooldown",
+      "source": "orchestration/m5-slice.json#/params/reload/cooldown/tactical",
+      "unit": "s",
+      "value": 2.0
+    },
+    {
+      "name": "draw_time",
+      "source": "orchestration/m5-slice.json#/params/draw_time",
+      "unit": "s",
+      "value": 0.35
+    },
+    {
+      "name": "put_away_time",
+      "source": "orchestration/m5-slice.json#/params/put_away_time",
+      "unit": "s",
+      "value": 0.57
+    },
+    {
+      "name": "damage",
+      "source": "orchestration/m5-slice.json#/params/bullet/damage",
+      "unit": "hp",
+      "value": 9
+    },
+    {
+      "name": "head_shot_multiplier",
+      "source": "orchestration/m5-slice.json#/params/bullet/head_shot_multiplier",
+      "unit": "x",
+      "value": 1.5
+    },
+    {
+      "name": "armor_ignore",
+      "source": "orchestration/m5-slice.json#/params/bullet/armor_ignore",
+      "unit": "ratio",
+      "value": 0.25
+    }
+  ],
+  "revision": {
+    "note": "本机 third_party/horizon 不是 git checkout（无 .git），因此用 native-hooks.json 内容指纹代替 commit；它只能证明“同一份快照”，报告不声称等于上游 HEAD。",
+    "source": "snapshot-catalog-sha256",
+    "value": "snapshot:d709ee26dc82",
+    "verified_by_git": false
+  },
+  "schema_version": "0.1.0",
+  "state_alignment": {
+    "count": 18,
+    "engine_states": [
+      "ads.aiming",
+      "ads.normal",
+      "base_track",
+      "bolt.bolt_caught",
+      "bolt.normal",
+      "final",
+      "fire_mode.auto",
+      "fire_mode.draw",
+      "fire_mode.semi",
+      "gun_kick",
+      "main.idle",
+      "main.inspect",
+      "main.start",
+      "movement.idle",
+      "movement.run",
+      "movement.walk",
+      "slide.normal",
+      "slide.slide"
+    ],
+    "equal": true,
+    "ir_states": [
+      "ads.aiming",
+      "ads.normal",
+      "base_track",
+      "bolt.bolt_caught",
+      "bolt.normal",
+      "final",
+      "fire_mode.auto",
+      "fire_mode.draw",
+      "fire_mode.semi",
+      "gun_kick",
+      "main.idle",
+      "main.inspect",
+      "main.start",
+      "movement.idle",
+      "movement.run",
+      "movement.walk",
+      "slide.normal",
+      "slide.slide"
+    ],
+    "role_fallbacks": [
+      "reload_empty->main.idle",
+      "reload_tactical->main.idle"
+    ],
+    "roles": {
+      "draw": "fire_mode.draw",
+      "fire_auto": "fire_mode.auto",
+      "fire_semi": "fire_mode.semi",
+      "idle": "main.idle",
+      "inspect": "main.inspect",
+      "put_away": "final",
+      "reload_empty": "main.idle",
+      "reload_tactical": "main.idle",
+      "start": "main.start"
+    },
+    "unmapped_states": [
+      "ads.aiming",
+      "ads.normal",
+      "base_track",
+      "bolt.bolt_caught",
+      "bolt.normal",
+      "gun_kick",
+      "movement.idle",
+      "movement.run",
+      "movement.walk",
+      "slide.normal",
+      "slide.slide"
+    ]
+  },
+  "status": "ok",
+  "task": "m5-03-native-module"
+}

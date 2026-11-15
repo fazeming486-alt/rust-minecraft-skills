@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rustmc-skills/schemas/state-machine-ir.schema.json",
+  "title": "TaCZ Lua 状态机的平台无关中间表示",
+  "description": "由 translate-lua-statemachine 从 TaCZ 的 *.lua 状态机（含 require 继承链）提取。只描述状态、输入、守卫与动画调用，不出现 Java / Lua / Horizon 的运行时类型（ADR 0001）。",
+  "type": "object",
+  "required": ["schema_version", "gun", "source_files", "inheritance", "tracks", "inputs", "guards", "states", "counts", "unresolved"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "gun": {"type": "string", "description": "枪械 id，如 ak47"},
+    "source_files": {
+      "type": "array",
+      "description": "参与提取的 Lua 文件（相对 scripts 根目录），按字典序",
+      "items": {"type": "string"}
+    },
+    "inheritance": {
+      "type": "array",
+      "description": "require 链，从被依赖到依赖方",
+      "items": {"type": "string"}
+    },
+    "tracks": {
+      "type": "array",
+      "description": "动画轨道名，如 main / static_track_top",
+      "items": {"type": "string"}
+    },
+    "inputs": {
+      "type": "array",
+      "description": "状态机输入常量名，如 INPUT_SHOOT / INPUT_RELOAD",
+      "items": {"type": "string"}
+    },
+    "guards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "expr", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string"},
+          "expr": {"type": "string", "description": "归一化后的条件表达式，如 'ammo == 0 && barrel == 0'"},
+          "kind": {"enum": ["ammo", "fire_mode", "attachment", "state", "other"]},
+          "source": {"type": "string"}
+        }
+      }
+    },
+    "states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "origin", "entry", "transitions"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "description": "稳定状态 id，如 main.idle / main.inspect / fire_mode.semi"},
+          "origin": {"enum": ["base", "gun", "inherited"]},
+          "source": {"type": "string"},
+          "entry": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["animation"],
+              "additionalProperties": false,
+              "properties": {
+                "animation": {"type": "string"},
+                "track": {"type": "string"},
+                "loop": {"type": "boolean"},
+                "fade": {"type": ["number", "null"]}
+              }
+            }
+          },
+          "transitions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["on", "guard", "target", "animations"],
+              "additionalProperties": false,
+              "properties": {
+                "on": {"type": "string", "description": "输入名或内部触发名；'*' 表示每 tick 由 guard 条件驱动（此时 guard 不得为空）"},
+                "guard": {"type": ["string", "null"], "description": "守卫 id，null 表示无条件"},
+                "target": {"type": "string", "description": "目标状态 id 或 'self'"},
+                "animations": {"type": "array", "items": {"type": "string"}},
+                "stop_animations": {"type": "array", "items": {"type": "string"}}
+              }
+            }
+          }
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "required": ["states", "transitions", "inputs", "guards"],
+      "additionalProperties": false,
+      "properties": {
+        "states": {"type": "integer", "minimum": 0},
+        "transitions": {"type": "integer", "minimum": 0},
+        "inputs": {"type": "integer", "minimum": 0},
+        "guards": {"type": "integer", "minimum": 0}
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "description": "无法静态解析的符号；不得为空时声称 closed",
+      "items": {
+        "type": "object",
+        "required": ["file", "symbol", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "file": {"type": "string"},
+          "symbol": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    }
+  }
+}

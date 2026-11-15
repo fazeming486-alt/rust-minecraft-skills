@@ -126,6 +126,18 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 过程发现 | 修掉 3 个真实问题：① 单段许可证只判一个 scope（门禁广播修复，TaCZ 基线零变化）；② 泛型签名被误当类引用（TaCZ 1390 / Create 4829 个假包前缀，四样本归零）；③ `CreateMixinPlugin` 新盲区 → 新增 R021 + golden 用例，规则 20 → 21 条 |
 | 局限 | 四样本同为 1.20.1 且带调试信息，**跨版本与混淆样本未验证**；ARR 样本触发 `review_required`，结果仅作本地统计比较 |
 
+### M5 · 单枪竖切（AK-47，v0.9 完成）
+
+> 详见 `docs/08-m5-execution.md` 与 ADR 0011。
+
+| 项 | 内容 |
+|---|---|
+| 交付 | 5 个 skill（`translate-lua-statemachine` / `build-content-mod` / `port-native-module` / `verify-hook-catalog` / `playable-diff-harness`）、新 stage `05-port`、`schemas/state-machine-ir.schema.json`、`orchestration/m5-slice.json`、`task-templates/m5.json`、5 份报告 |
+| 验收 | IR 18 状态 / 44 转移且幂等；`.hmod` 过官方 `check`（`ok:true`）且两次打包同 SHA；engine `cargo test` 13/13 且状态集合与 IR 相等；注入点预检 0 错误、负例 `E_HOOK_UNKNOWN`；差分 23/23、drift 0、负例失败 |
+| 关键事实 | 内容与逻辑必须分离：`.hmod` 只装 data/assets（官方拒绝 `Cargo.toml`），行为只能进 `.hnmod` bundle；crate 不允许依赖 `horizon-client`，反而给出可离线 `cargo test` 的纯逻辑单元 |
+| 风险 / 未决 | `bindings = []`，`native-build` 未跑，游戏内一次都没开过火；动画仍 `unbound`；差分期望值来自数据文件而非 oracle；快照无 `.git`，`horizon_revision` 用目录指纹替代 |
+| 下一步 | M5b：`horizon-launcher native-build` + 可运行实例观测第一发 |
+
 ## 4. 度量（每次里程碑后记录）
 
 | 指标 | 当前值（v0.8） | 目标 |
@@ -142,7 +154,12 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 格式等价转换 | **5 个转换器 / 3683 源文件 / roundtrip 全闭合 / 1 partial + 2 unbound + 2 bound** | 内容级转换需在可运行环境验证 |
 | 目标侧源码探针 | **3 路 / 25 文件 / 424 声明 / missing_files 全空** | 随 Horizon 快照重跑比对 |
 | M3 harness 对接 | **离线闭环完成（23 契约 / PASS 68 项 / FAIL 抓 3 类失配）** | M3b 真机录制 |
-| `validate.py` 检查数 | **90** | 随里程碑递增，始终全绿 |
+| `validate.py` 检查数 | **112** | 随里程碑递增，始终全绿 |
+| **M5 内容包** | **官方 check ok=true / 6227 B / 两次打包同 SHA-256** | 游戏内注册与显示 |
+| **M5 状态机 IR** | **18 状态 / 44 转移 / 22 输入 / 26 unresolved 带原因** | 与运行时转移序列对齐（需 oracle） |
+| **M5 原生模块** | **cargo test 13/13 / 状态集合与 IR 相等 / bindings 未验证** | M5b native-build + 第一人称观测 |
+| **M5 差分** | **23/23 事件、drift 0、负例失败** | 覆盖后坐/散布/命中/同步 |
+| **M5 子 agent** | **5 任务 / 3 wave / 5 COMPLETE / 0 越界** | 与 M2 的 17 任务对比并行收益 |
 
 **合规成本实测（M0，TaCZ 799 单元，同一套 20 条规则）**：
 
@@ -175,3 +192,4 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 0008 | **合规模型三维度：技术性转换可做、分发受限（v0.6）** |
 | 0009 | **跨层特性切片、目标侧源码研读三路探针、真实格式等价转换与政策断点修复（v0.7）** |
 | 0010 | **M3 harness 对接分层、M4 第二样本泛化、单段许可证广播与独立子 agent 闭环实证（v0.8）** |
+| 0011 | **单枪竖切优先、内容包与原生模块分离、状态机 IR 为跨层契约（v0.9）** |

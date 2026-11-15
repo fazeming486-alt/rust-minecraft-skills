@@ -151,14 +151,31 @@ python tools/experiment.py --profile profiles/forge/1.20.1.json \
 
 详见 [执行报告](docs/07-m3-m4-execution.md)、[ADR 0010](docs/adr/0010-m3-harness-bridge-and-m4-generalization.md)、`mappings/harness-contract.json`、`reports/m4-generalization.json`。
 
+## v0.9 · M5 单枪竖切：第一次产出目标侧能接受的东西（ADR 0011）
+
+M0–M4 证明了「判断得对」，M5 证明「交得出去」。选 AK-47 一把枪做端到端竖切，五步全部有确定性产物：
+
+| 步 | skill | 实测 |
+|---|---|---|
+| 状态机 IR | `translate-lua-statemachine` | 18 状态 / 44 转移 / 22 输入 / 8 守卫；53 个 Lua 全部语法解析，2 个完整展开，26 条 unresolved 带原因 |
+| 内容包 | `build-content-mod` | `tacz_ak47_pilot.hmod`（6227 B）过官方 `cargo-horizon-mod check` → `ok:true`；两次打包 SHA-256 一致 |
+| 原生模块 | `port-native-module` | 纯 std engine，`cargo test --offline` 13/13；18 个状态 id 与 IR 集合相等 |
+| 注入点预检 | `verify-hook-catalog` | 2 注入点 / 1 crate 全部命中 434 个 hook；负例报 `E_HOOK_UNKNOWN` 并列候选 |
+| 行为差分 | `playable-diff-harness` | 200 tick 剧本 23/23 事件、drift 0；弹匣改成 29 的负例在首个 `Shot` 被抓 |
+
+三处实测纠正：① `minecraft:max_stack_size` 不能放 `components`，官方要求顶层字段；② `transitions[].on` 起初全是 `*`，输入藏在 guard 里，引擎无法消费，改为输入名（只保留 2 条 guard 非空的每 tick 条件驱动）；③ 本机 Horizon 快照没有 `.git`，`horizon_revision` 改用目录指纹并显式标注不等于上游 HEAD。
+
+**四条边界**：`.hmod` 只证明内容被加载器接受，不证明物品行为；`bindings = []`、`native-build` 未跑，游戏内还没开过火；动画仍 `unbound`；差分的期望值来自数据文件，不是真机录制。详见 [08 · M5 执行报告](docs/08-m5-execution.md) 与 [ADR 0011](docs/adr/0011-vertical-slice-and-native-module.md)。
+
 ## 状态与下一步
 
-**v0.8 — M3 离线闭环 + M4 泛化验证完成**：23 个 skill、**90 项自检全绿**、SSH 持续推送。
+**v0.9 — M5 单枪竖切完成**：28 个 skill、**112 项自检全绿**、5 个任务包 5/5 COMPLETE、SSH 持续推送。
 
 按 `docs/04-roadmap.md` 推进：
 
+- **M5b**：`horizon-launcher native-build` 把 bundle 编进游戏，在可运行实例里用 `use_item` 打出第一发；这一步才能把 `source_only` 升到 `verified_in_game`。
 - **M3b**：搭最小可运行 Java oracle，把 23 个契约的 `oracle.status` 从 `pending` 推到 `recorded → replayed → verified`。
 - **M4b**：换跨 MC 版本或混淆样本检验规则泛化，必要时新增 version profile。
 - 用实际耗时校准复杂度模型九信号权重（ADR 0007 复核条件）。
 
-四条边界保持诚实：C6 = 0 只是「四个 mod / 同一版本 / 带调试信息」的样本结论；`animation_driver` 仍 **unbound**；`geometry_ir` / `bone_tracks` 只是可逆的中间表示，目标侧没有消费者；**离线 fixture 不等于真机录制**。不用 workaround 冒充已解决。
+五条边界保持诚实：C6 = 0 只是「四个 mod / 同一版本 / 带调试信息」的样本结论；`animation_driver` 仍 **unbound**；`geometry_ir` / `bone_tracks` 只是可逆的中间表示，目标侧没有消费者；**离线 fixture 不等于真机录制**；**官方内容包校验通过不等于游戏里能用**。不用 workaround 冒充已解决。

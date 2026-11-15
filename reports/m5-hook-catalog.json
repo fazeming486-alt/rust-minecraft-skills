@@ -1,0 +1,87 @@
+{
+  "bundle": "work/m5/native/tacz_ak47_pilot",
+  "catalog": {
+    "catalog_api": 1,
+    "hooks": 434,
+    "path": "third_party/horizon/native-hooks.json",
+    "sha256": "d709ee26dc8281fcdbe8922561649b0dce0ca84260aefb3d1a41777f8e659c5a"
+  },
+  "checked": {
+    "crates": 1,
+    "helpers": 2,
+    "hooks_in_catalog": 434,
+    "injections": 2
+  },
+  "crates": [
+    {
+      "dependencies": [],
+      "id": "engine",
+      "path": "engine",
+      "status": "ok"
+    }
+  ],
+  "errors": [],
+  "exit_code": 0,
+  "horizon_root": "third_party/horizon",
+  "injections": [
+    {
+      "bindings": [],
+      "bindings_count": 0,
+      "helper": "on_use.rs",
+      "hook": "use_item",
+      "hook_version": 1,
+      "id": "ak47-on-use",
+      "kind": "HEAD",
+      "status": "ok"
+    },
+    {
+      "bindings": [],
+      "bindings_count": 0,
+      "helper": "on_tick.rs",
+      "hook": "player_tick",
+      "hook_version": 1,
+      "id": "ak47-on-tick",
+      "kind": "HEAD",
+      "status": "ok"
+    }
+  ],
+  "negative_control": {
+    "codes": [
+      "E_HOOK_UNKNOWN"
+    ],
+    "errors": [
+      {
+        "code": "E_HOOK_UNKNOWN",
+        "detail": "hook 'use_itme' 不在 catalog；最接近的候选：['use_item', 'use_item_on', 'use_animation']",
+        "file": "work/m5/native/_negative/tacz_ak47_pilot/horizon-mixin.toml",
+        "line": null
+      }
+    ],
+    "exit_code": 1,
+    "mutation": "hook \"use_item\" -> \"use_itme\"",
+    "ok": true,
+    "path": "work/m5/native/_negative/tacz_ak47_pilot"
+  },
+  "notes": [
+    "只做静态预检：不运行 horizon-mixins，不编译 helper，不验证 helper 签名。",
+    "crate 的 registry 依赖未与 Horizon Cargo.lock 逐版本比对（W_CRATE_DEPS_UNVERIFIED）。",
+    "horizon_revision 在非 git 快照上用 native-hooks.json 指纹代替 commit，见 W_REVISION_NOT_GIT。"
+  ],
+  "revision": {
+    "declared": "snapshot:d709ee26dc82",
+    "resolved": "snapshot:d709ee26dc82",
+    "source": "snapshot-catalog-sha256",
+    "verified": false
+  },
+  "schema_version": "0.1.0",
+  "status": "ok",
+  "task": "m5-04-hook-catalog",
+  "warnings": [
+    {
+      "code": "W_REVISION_NOT_GIT",
+      "detail": "horizon_root 不是 git checkout（无 .git），用 native-hooks.json 内容指纹 snapshot:d709ee26dc82 代替 commit；无法证明等于上游 HEAD",
+      "file": "work/m5/native/tacz_ak47_pilot/horizon-mixin.toml",
+      "line": null
+    }
+  ]
+}

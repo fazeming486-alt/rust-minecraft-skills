@@ -1,0 +1,102 @@
+{
+  "schema_version": "0.1.0",
+  "template_id": "m5",
+  "version": "0.1.0",
+  "milestone": "M5 · 单枪竖切（AK-47）",
+  "note": "把一个真实枪械走完「状态机 IR → 内容包 → 原生模块 → hook 预检 → 差分」五步，每一步都有确定性产物与可复核验收。产物全部留在 work/；仓库只提交 skill、schema、模板与报告。",
+  "compliance": {
+    "inspection": "full-inspection",
+    "transformation": "port",
+    "distribution": "local-only",
+    "forbidden_actions": ["creative_adaptation", "publish_adapted_material", "commercial_use"],
+    "note": "代码侧 GPL-3.0 可读可重写；资产侧只做格式等价转换且不发布；Lua 状态机派生的 Rust 代码属改编实现，只留 work/。"
+  },
+  "tasks": [
+    {
+      "id": "m5-01-state-ir",
+      "role": "state-machine-translator",
+      "goal": "把 ak47_state_machine.lua 与其 require 基类解析成平台无关状态机 IR，覆盖状态、输入、守卫、动画调用",
+      "inputs": ["orchestration/m5-slice.json", "schemas/state-machine-ir.schema.json"],
+      "policy_mode": "full-inspection",
+      "output_contract": "report:m5-state-ir",
+      "acceptance": [
+        "IR 通过 schemas/state-machine-ir.schema.json",
+        "继承链解析：origin=base 的状态出现",
+        "states>=6 且 transitions>=8",
+        "unresolved 每条都有 file/symbol/reason",
+        "重复运行字节一致"
+      ],
+      "depends_on": [],
+      "priority": 10,
+      "command": "python skills/05-port/translate-lua-statemachine/run.py --slice orchestration/m5-slice.json --out work/m5/state-ir/ak47.json --report reports/m5-state-ir.json"
+    },
+    {
+      "id": "m5-02-content-mod",
+      "role": "content-mod-packager",
+      "goal": "生成 AK-47 的 Horizon 内容包目录并用官方 cargo-horizon-mod 打包与校验",
+      "inputs": ["orchestration/m5-slice.json", "schemas/state-machine-ir.schema.json"],
+      "policy_mode": "full-inspection",
+      "output_contract": "report:m5-content-mod",
+      "acceptance": [
+        "horizon-mod.toml 合法（id/api/side/capabilities）",
+        "官方 build 产出 .hmod，官方 check --kind mod 返回 ok=true",
+        "item JSON 与 model/texture 引用闭合",
+        "打包可复现：同一输入 SHA-256 一致"
+      ],
+      "depends_on": [],
+      "priority": 20,
+      "command": "python skills/05-port/build-content-mod/run.py --slice orchestration/m5-slice.json --official-tool third_party/horizon/target/debug/cargo-horizon-mod.exe --report reports/m5-content-mod.json"
+    },
+    {
+      "id": "m5-03-native-module",
+      "role": "native-port-engineer",
+      "goal": "由状态机 IR 生成 Horizon 原生 mod bundle：horizon-mixin.toml + 注入 helper + 纯 Rust engine crate（含开火/换弹/弹药状态机）",
+      "inputs": ["orchestration/m5-slice.json", "work/m5/state-ir/ak47.json", "schemas/state-machine-ir.schema.json"],
+      "policy_mode": "full-inspection",
+      "output_contract": "report:m5-native-module",
+      "acceptance": [
+        "engine 为纯 Rust（仅 std），cargo test 全绿",
+        "状态 id 与输入名与 IR 集合相等",
+        "bundle 内 hook 名全部来自 native-hooks.json",
+        "生成器幂等"
+      ],
+      "depends_on": ["m5-01-state-ir"],
+      "priority": 30,
+      "command": "python skills/05-port/port-native-module/run.py --slice orchestration/m5-slice.json --ir work/m5/state-ir/ak47.json --out work/m5/native/tacz_ak47_pilot --report reports/m5-native-module.json"
+    },
+    {
+      "id": "m5-04-hook-catalog",
+      "role": "hook-catalog-verifier",
+      "goal": "在编译前把 bundle 的每个 hook/hook_version/helper/crate 与 Horizon 快照目录对齐，替代构建期 E_HOOK_UNKNOWN",
+      "inputs": ["work/m5/native/tacz_ak47_pilot/horizon-mixin.toml", "third_party/horizon/native-hooks.json"],
+      "policy_mode": "full-inspection",
+      "output_contract": "report:m5-hook-catalog",
+      "acceptance": [
+        "全部 hook 名存在于目录且版本一致",
+        "helper/crate 引用可解析",
+        "horizon_revision 与快照 HEAD 一致",
+        "负例（错误 hook 名）必须判失败"
+      ],
+      "depends_on": ["m5-03-native-module"],
+      "priority": 40,
+      "command": "python skills/05-port/verify-hook-catalog/run.py --bundle work/m5/native/tacz_ak47_pilot --catalog third_party/horizon/native-hooks.json --horizon-root third_party/horizon --report reports/m5-hook-catalog.json"
+    },
+    {
+      "id": "m5-05-diff-harness",
+      "role": "slice-harness-runner",
+      "goal": "用纯逻辑 trace 跑 200 tick 剧本（连发/换弹/切模式），与 IR 推得的期望时间线逐 tick 比对并产出官方形状 result.json",
+      "inputs": ["reports/m5-state-ir.json", "work/m5/native/tacz_ak47_pilot/engine"],
+      "policy_mode": "full-inspection",
+      "output_contract": "report:m5-diff",
+      "acceptance": [
+        "PASS 用例全绿",
+        "弹匣容量改成 29 的负例必须 FAIL 并定位 tick",
+        "输出同时包含 report 与官方 result.json 形状",
+        "不依赖游戏进程"
+      ],
+      "depends_on": ["m5-01-state-ir", "m5-03-native-module"],
+      "priority": 50,
+      "command": "python skills/09-verify/playable-diff-harness/run.py --slice orchestration/m5-slice.json --ir work/m5/state-ir/ak47.json --engine work/m5/native/tacz_ak47_pilot/engine --report reports/m5-diff.json"
+    }
+  ]
+}

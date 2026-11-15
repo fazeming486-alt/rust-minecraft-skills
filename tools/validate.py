@@ -139,6 +139,23 @@ def main() -> int:
         "tests/fixtures/oracle-observations.fail.json",
         "reports/m4-generalization.json", "reports/m3-diff-pass.json",
         "reports/m3-diff-fail.json", "reports/m34-collection.json",
+        "schemas/state-machine-ir.schema.json", "orchestration/m5-slice.json",
+        "orchestration/task-templates/m5.json",
+        "docs/adr/0011-vertical-slice-and-native-module.md",
+        "docs/08-m5-execution.md",
+        "skills/05-port/translate-lua-statemachine/SKILL.md",
+        "skills/05-port/translate-lua-statemachine/run.py",
+        "skills/05-port/build-content-mod/SKILL.md",
+        "skills/05-port/build-content-mod/run.py",
+        "skills/05-port/port-native-module/SKILL.md",
+        "skills/05-port/port-native-module/run.py",
+        "skills/05-port/verify-hook-catalog/SKILL.md",
+        "skills/05-port/verify-hook-catalog/run.py",
+        "skills/09-verify/playable-diff-harness/SKILL.md",
+        "skills/09-verify/playable-diff-harness/run.py",
+        "reports/m5-state-ir.json", "reports/m5-content-mod.json",
+        "reports/m5-native-module.json", "reports/m5-hook-catalog.json",
+        "reports/m5-diff.json", "reports/m5-collection.json",
     ]
     missing = [rel for rel in required_files if not (ROOT / rel).is_file()]
     check("核心文件齐全 (%d 项)" % len(required_files), not missing, ", ".join(missing))
@@ -609,12 +626,120 @@ def main() -> int:
     else:
         check("子 agent result 的 input_hash 与任务包逐一匹配", True, "work/ 未生成，跳过")
 
-    # 24. v0.8 · registry 与 skill 状态
-    check("集群 23 个 skill 且 M3 验收层已实现",
-          len(skills) == 23
+    # 24. v0.9 · registry 与 skill 状态
+    check("集群 28 个 skill 且 M3/M5 验收层已实现",
+          len(skills) == 28
           and skills["diff-test-harness"]["status"] == "implemented"
           and skills["verify-generalization"]["status"] == "implemented"
-          and skills["policy-gate"]["version"] == "0.3.0")
+          and skills["policy-gate"]["version"] == "0.3.0"
+          and all(skills[s]["status"] == "implemented" for s in
+                  ("translate-lua-statemachine", "build-content-mod", "port-native-module",
+                   "verify-hook-catalog", "playable-diff-harness")))
+
+    # 25. v0.9 · M5 单枪竖切（AK-47）
+    m5_schema = load("schemas/state-machine-ir.schema.json")
+    check("状态机 IR schema 约束 states/unresolved/counts",
+          m5_schema.get("$schema", "").startswith("https://json-schema.org/draft/2020-12/")
+          and {"states", "unresolved", "counts", "inheritance", "inputs"} <= set(m5_schema["required"]))
+
+    m5_slice = load("orchestration/m5-slice.json")
+    check("M5 切片参数取自真实数据且合规三维齐全",
+          m5_slice["params"]["rpm"] == 600
+          and m5_slice["params"]["ammo_amount"] == 30
+          and m5_slice["params"]["fire_modes"] == ["auto", "semi"]
+          and m5_slice["policy"]["assets"]["transformation"] == "technical-only"
+          and m5_slice["policy"]["assets"]["distribution"] == "local-only"
+          and m5_slice["blocked_by"][0]["status"] == "not_run")
+
+    m5_tpl = load("orchestration/task-templates/m5.json")
+    check("M5 任务模板 5 个任务且依赖成链",
+          len(m5_tpl["tasks"]) == 5
+          and m5_tpl["tasks"][2]["depends_on"] == ["m5-01-state-ir"]
+          and m5_tpl["tasks"][4]["depends_on"] == ["m5-01-state-ir", "m5-03-native-module"]
+          and all(t.get("policy_mode") and t.get("acceptance") and t.get("command")
+                  for t in m5_tpl["tasks"]))
+
+    m5_skills = ["translate-lua-statemachine", "build-content-mod", "port-native-module",
+                 "verify-hook-catalog", "playable-diff-harness"]
+    check("M5 五个 skill 有 SKILL.md 与 run.py",
+          all((ROOT / skills[s]["path"] / "SKILL.md").is_file()
+              and (ROOT / skills[s]["path"] / "run.py").is_file() for s in m5_skills))
+    check("M5 skill 分属 05-port 与 09-verify",
+          all(skills[s]["stage"] == ("09-verify" if s == "playable-diff-harness" else "05-port")
+              for s in m5_skills))
+
+    m5_ir = load("reports/m5-state-ir.json")
+    check("状态机 IR 通过 schema 且规模达标",
+          m5_ir["acceptance"]["schema_valid"] and not m5_ir["acceptance"]["schema_errors"]
+          and m5_ir["states"] >= 6 and m5_ir["transitions"] >= 8)
+    check("IR 解析了 require 继承链且基类状态可追溯",
+          "tacz_default_state_machine_v2" in m5_ir["inheritance"]
+          and m5_ir["origins"].get("base", 0) >= 1 and m5_ir["origins"].get("gun", 0) >= 1)
+    check("IR 的 unresolved 每条都有 file/symbol/reason",
+          m5_ir["acceptance"]["unresolved_complete"] and m5_ir["unresolved"]["count"] > 0
+          and sum(m5_ir["unresolved"]["by_reason"].values()) == m5_ir["unresolved"]["count"]
+          and all({"file", "symbol", "reason"} <= set(u) for u in m5_ir["unresolved"]["items"]))
+    check("IR 覆盖率诚实：53 个脚本全部做过语法级解析，未展开的显式记录",
+          m5_ir["coverage"]["discovered"] == 53 and m5_ir["coverage"]["failed"] == 0
+          and m5_ir["coverage"]["not_flattened"] == 53 - len(m5_ir["coverage"]["flattened"]))
+    check("IR 幂等且排除项有说明", m5_ir["idempotent"] and m5_ir["excluded_states"] is not None)
+    ir_path = ROOT / "work/m5/state-ir/ak47.json"
+    if ir_path.is_file():
+        ir = json.loads(ir_path.read_text(encoding="utf-8"))
+        check("IR 转移要么带输入名，要么是条件驱动的 '*'（guard 非空）",
+              all(t["on"] != "*" or t["guard"] for s in ir["states"] for t in s["transitions"]))
+        check("IR 的 inputs 与转移实际引用的输入集合一致",
+              set(ir["inputs"]) == {t["on"] for s in ir["states"]
+                                    for t in s["transitions"] if t["on"] != "*"})
+    else:
+        check("IR 转移要么带输入名，要么是条件驱动的 '*'（guard 非空）", True, "work/ 未生成，跳过")
+        check("IR 的 inputs 与转移实际引用的输入集合一致", True, "work/ 未生成，跳过")
+
+    m5_cm = load("reports/m5-content-mod.json")
+    check("内容包被官方工具接受（check ok=true）且可复现",
+          m5_cm["ok"] and m5_cm["official"]["ok"] and m5_cm["reproducibility"]["reproducible"]
+          and m5_cm["hmod"]["bytes"] > 0 and len(m5_cm["hmod"]["sha256"]) == 64)
+    check("内容包负例被官方工具拒绝（校验不是摆设）",
+          m5_cm["negative_control"]["ok"] and m5_cm["negative_control"]["build"]["returncode"] != 0)
+    check("内容包只有 manifest/data/assets，无 Cargo.toml 与 .rs",
+          all(not f["path"].endswith((".rs", "Cargo.toml")) for f in m5_cm["files"])
+          and any(f["path"] == "horizon-mod.toml" for f in m5_cm["files"]))
+
+    m5_nm = load("reports/m5-native-module.json")
+    check("原生模块 engine 纯 Rust 且 cargo test 全绿",
+          m5_nm["status"] == "ok" and m5_nm["engine"]["cargo_test"]["status"] == "passed"
+          and m5_nm["engine"]["cargo_test"]["failed"] == 0
+          and m5_nm["engine"]["cargo_test"]["passed"] >= 5
+          and m5_nm["engine"]["dependencies"] == [])
+    check("引擎状态集合与 IR 完全相等（改名即失败）",
+          m5_nm["state_alignment"]["equal"]
+          and set(m5_nm["state_alignment"]["engine_states"]) == set(m5_nm["state_alignment"]["ir_states"]))
+    check("原生模块诚实分级：bindings/native_build 未验证",
+          m5_nm["honesty"]["native_build"] == "not_run"
+          and m5_nm["honesty"]["bindings"] == "unverified"
+          and m5_nm["honesty"]["wiring"] == "placeholder")
+
+    m5_hc = load("reports/m5-hook-catalog.json")
+    check("注入点预检零错误且负数用 E_HOOK_UNKNOWN",
+          m5_hc["errors"] == [] and m5_hc["exit_code"] == 0
+          and m5_hc["negative_control"]["ok"]
+          and "E_HOOK_UNKNOWN" in m5_hc["negative_control"]["codes"])
+
+    m5_diff = load("reports/m5-diff.json")
+    check("差分 PASS 且负例必须失败",
+          m5_diff["ok"] and m5_diff["positive"]["counts"]["failed"] == 0
+          and m5_diff["positive"]["counts"]["matched"] >= 20
+          and not m5_diff["negative_control"]["ok"])
+    check("差分产出官方 result.json 形状且状态集合一致",
+          m5_diff["official_result"]["passed"]
+          and set(m5_diff["official_result"]["checks"]) >= {"logic_replay", "state_set", "negative_control"}
+          and m5_diff["states"]["equal"])
+
+    forbidden = [str(p.relative_to(ROOT)) for p in ROOT.rglob("*")
+                 if p.is_file() and p.suffix in (".rs", ".hmod", ".png", ".ogg")
+                 and not (set(p.relative_to(ROOT).parts) & {".git", "work", "out", "tmp"})]
+    check("版权边界：仓库不含 .rs/.hmod/.png/.ogg", not forbidden, ", ".join(forbidden[:5]))
+
 
     print("=" * 68)
     for name in PASSED:

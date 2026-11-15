@@ -1,0 +1,389 @@
+{
+  "acceptance": {
+    "inheritance_has_base": true,
+    "inputs_equal_referenced": true,
+    "no_unconditional_wildcard": true,
+    "schema_errors": [],
+    "schema_valid": true,
+    "states_ge_6": true,
+    "transitions_ge_8": true,
+    "unresolved_complete": true
+  },
+  "condition_driven": 2,
+  "coverage": {
+    "discovered": 53,
+    "failed": 0,
+    "failed_files": [],
+    "flattened": [
+      "ak47_state_machine.lua",
+      "default_state_machine_v2.lua"
+    ],
+    "not_flattened": 51,
+    "not_flattened_files": [
+      "ai_awp_state_machine.lua",
+      "ak12_state_machine.lua",
+      "b93r_state_machine.lua",
+      "db_short_state_machine.lua",
+      "deagle_state_machine.lua",
+      "default_state_machine.lua",
+      "devotion_lmg_state_machine.lua",
+      "fn_evolys_state_machine.lua",
+      "fn_fal_state_machine.lua",
+      "g36k_state_machine.lua",
+      "glock_17_state_machine.lua",
+      "hcar_state_machine.lua",
+      "hk416d_state_machine.lua",
+      "hk_g3_state_machine.lua",
+      "hk_mk23_state_machine.lua",
+      "hk_mp5a5_state_machine.lua",
+      "hk_mp7a1_state_machine.lua",
+      "hm50b_state_machine.lua",
+      "kar98_state_machine.lua",
+      "m1014_state_machine.lua",
+      "m107_state_machine.lua",
+      "m16a4_state_machine.lua",
+      "m1866_state_machine.lua",
+      "m1897_state_machine.lua",
+      "m249_state_machine.lua",
+      "m4a1_state_machine.lua",
+      "m870_state_machine.lua",
+      "m870_unload_state_machine.lua",
+      "m95_state_machine.lua",
+      "manual_action_state_machine.lua",
+      "mcx_spear_lt_state_machine.lua",
+      "minigun_state_machine.lua",
+      "mk14_state_machine.lua",
+      "mk18_state_machine.lua",
+      "mrad_state_machine.lua",
+      "pkm_state_machine.lua",
+      "qbz_191_state_machine.lua",
+      "qr_24_state_machine.lua",
+      "rpk_state_machine.lua",
+      "scar_h_state_machine.lua",
+      "scar_l_state_machine.lua",
+      "scar_mk20_state_machine.lua",
+      "sks_tactical_state_machine.lua",
+      "spas_12_state_machine.lua",
+      "spr15hb_state_machine.lua",
+      "svd_state_machine.lua",
+      "taurus500_state_machine.lua",
+      "taurus943_state_machine.lua",
+      "tec_9_state_machine.lua",
+      "timeless50_state_machine.lua",
+      "vector45_state_machine.lua"
+    ],
+    "note": "parsed 仅表示语法级解析通过；只有 flattened 里的文件做了完整状态/转移展开，其余文件未展开、未验证语义",
+    "parsed": 53,
+    "parsed_files": [
+      "ai_awp_state_machine.lua",
+      "ak12_state_machine.lua",
+      "ak47_state_machine.lua",
+      "b93r_state_machine.lua",
+      "db_short_state_machine.lua",
+      "deagle_state_machine.lua",
+      "default_state_machine.lua",
+      "default_state_machine_v2.lua",
+      "devotion_lmg_state_machine.lua",
+      "fn_evolys_state_machine.lua",
+      "fn_fal_state_machine.lua",
+      "g36k_state_machine.lua",
+      "glock_17_state_machine.lua",
+      "hcar_state_machine.lua",
+      "hk416d_state_machine.lua",
+      "hk_g3_state_machine.lua",
+      "hk_mk23_state_machine.lua",
+      "hk_mp5a5_state_machine.lua",
+      "hk_mp7a1_state_machine.lua",
+      "hm50b_state_machine.lua",
+      "kar98_state_machine.lua",
+      "m1014_state_machine.lua",
+      "m107_state_machine.lua",
+      "m16a4_state_machine.lua",
+      "m1866_state_machine.lua",
+      "m1897_state_machine.lua",
+      "m249_state_machine.lua",
+      "m4a1_state_machine.lua",
+      "m870_state_machine.lua",
+      "m870_unload_state_machine.lua",
+      "m95_state_machine.lua",
+      "manual_action_state_machine.lua",
+      "mcx_spear_lt_state_machine.lua",
+      "minigun_state_machine.lua",
+      "mk14_state_machine.lua",
+      "mk18_state_machine.lua",
+      "mrad_state_machine.lua",
+      "pkm_state_machine.lua",
+      "qbz_191_state_machine.lua",
+      "qr_24_state_machine.lua",
+      "rpk_state_machine.lua",
+      "scar_h_state_machine.lua",
+      "scar_l_state_machine.lua",
+      "scar_mk20_state_machine.lua",
+      "sks_tactical_state_machine.lua",
+      "spas_12_state_machine.lua",
+      "spr15hb_state_machine.lua",
+      "svd_state_machine.lua",
+      "taurus500_state_machine.lua",
+      "taurus943_state_machine.lua",
+      "tec_9_state_machine.lua",
+      "timeless50_state_machine.lua",
+      "vector45_state_machine.lua"
+    ]
+  },
+  "dangling_targets": [],
+  "declared_inputs_not_referenced": [
+    "INPUT_CHARING",
+    "INPUT_CHARING_EXIT",
+    "INPUT_COOLING_HEAT",
+    "INPUT_OVER_HEAT"
+  ],
+  "delegated_fallbacks": 7,
+  "delegated_fallbacks_note": "委托展开后被子状态机同名输入遮蔽、运行时不可达而丢弃的基类转移条数",
+  "excluded_note": "这些表存在于模块树中但不在 states() 种子的可达闭包里，未进入 IR（如未启用的过热轨道、只存数值的 charge 表）",
+  "excluded_states": [
+    "heat.normal",
+    "heat.over_heat",
+    "main.charge",
+    "movement.sprint"
+  ],
+  "guard_kinds": {
+    "fire_mode": 2,
+    "state": 6
+  },
+  "guards": 8,
+  "gun": "ak47",
+  "idempotent": true,
+  "inheritance": [
+    "tacz_default_state_machine_v2",
+    "ak47_state_machine"
+  ],
+  "inputs": 22,
+  "inputs_list": [
+    "INPUT_AIM",
+    "INPUT_AIM_RETREAT",
+    "INPUT_BAYONET_MUZZLE",
+    "INPUT_BAYONET_PUSH",
+    "INPUT_BAYONET_STOCK",
+    "INPUT_BOLT",
+    "INPUT_BOLT_CAUGHT",
+    "INPUT_BOLT_NORMAL",
+    "INPUT_DRAW",
+    "INPUT_FIRE_SELECT",
+    "INPUT_IDLE",
+    "INPUT_INSPECT",
+    "INPUT_INSPECT_BREAK_OUT",
+    "INPUT_INSPECT_RETREAT",
+    "INPUT_MODE_AUTO",
+    "INPUT_MODE_DRAW",
+    "INPUT_MODE_SEMI",
+    "INPUT_PUT_AWAY",
+    "INPUT_RELOAD",
+    "INPUT_RUN",
+    "INPUT_SHOOT",
+    "INPUT_WALK"
+  ],
+  "limitations": [
+    "只做静态解析：未运行 Lua，未验证真实运行时的状态转移序列",
+    "requires 只展开到 scripts 目录内可解析的文件，语法级解析不计入语义展开",
+    "entry 把 entry() 与 update() 里的 runAnimation 都算候选，未判断分支可达性",
+    "elseif 分支只保留自身条件，不叠加前序条件取反（上游若写出可同时成立的分支，IR 不补互斥性）",
+    "loop 由 (第三个参数为 true) 或 (第四个参数为 LOOP) 推出，不模拟挂起/播放模式",
+    "fade 只取字面数值，表达式（如 put_away_time * 0.75）记为 null",
+    "stop_animations 记录的是轨道符号（TaCZ 以轨道句柄停止动画），不是动画名",
+    "runtime 注入的 INPUT_* / PLAY_ONCE_* 常量值未知，只保留符号名"
+  ],
+  "on_distribution": {
+    "*": 2,
+    "INPUT_AIM": 1,
+    "INPUT_AIM_RETREAT": 1,
+    "INPUT_BAYONET_MUZZLE": 2,
+    "INPUT_BAYONET_PUSH": 2,
+    "INPUT_BAYONET_STOCK": 2,
+    "INPUT_BOLT": 2,
+    "INPUT_BOLT_CAUGHT": 1,
+    "INPUT_BOLT_NORMAL": 1,
+    "INPUT_DRAW": 1,
+    "INPUT_FIRE_SELECT": 1,
+    "INPUT_IDLE": 2,
+    "INPUT_INSPECT": 4,
+    "INPUT_INSPECT_BREAK_OUT": 1,
+    "INPUT_INSPECT_RETREAT": 1,
+    "INPUT_MODE_AUTO": 1,
+    "INPUT_MODE_DRAW": 2,
+    "INPUT_MODE_SEMI": 1,
+    "INPUT_PUT_AWAY": 2,
+    "INPUT_RELOAD": 4,
+    "INPUT_RUN": 3,
+    "INPUT_SHOOT": 5,
+    "INPUT_WALK": 2
+  },
+  "origins": {
+    "base": 13,
+    "gun": 5
+  },
+  "schema_version": "0.1.0",
+  "scripts_dir": "work/TACZ-1.20.1/src/main/resources/assets/tacz/custom/tacz_default_gun/assets/tacz/scripts",
+  "slice_id": "m5-ak47",
+  "slice_version": "0.1.0",
+  "source_files": [
+    "ak47_state_machine.lua",
+    "default_state_machine_v2.lua"
+  ],
+  "state_ir": "work/m5/state-ir/ak47.json",
+  "state_ir_bytes": 20674,
+  "state_ir_sha256": "19d32a592173f46f9c8cd9fe20e24b099416a7202620eeb384317a848aec47b3",
+  "states": 18,
+  "task": "m5-state-ir",
+  "tracks": [
+    "ADS_TRACK",
+    "BASE_TRACK",
+    "BOLT_CAUGHT_TRACK",
+    "FIRE_MODE_TRACK",
+    "GUN_KICK_TRACK_LINE",
+    "MAIN_TRACK",
+    "MOVEMENT_TRACK",
+    "SLIDE_TRACK",
+    "SWITCH_MODE_TRACK"
+  ],
+  "transitions": 44,
+  "unresolved": {
+    "by_reason": {
+      "R1 runtime-global": 24,
+      "R2 dynamic-animation": 1,
+      "R7 local-helper-side-effect": 1
+    },
+    "count": 26,
+    "items": [
+      {
+        "file": "ak47_state_machine.lua",
+        "reason": "R1 runtime-global: TaCZ runtime enum constant; numeric value unknown statically",
+        "symbol": "AUTO"
+      },
+      {
+        "file": "ak47_state_machine.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_FIRE_SELECT"
+      },
+      {
+        "file": "ak47_state_machine.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_INSPECT"
+      },
+      {
+        "file": "ak47_state_machine.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_PUT_AWAY"
+      },
+      {
+        "file": "ak47_state_machine.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_RELOAD"
+      },
+      {
+        "file": "ak47_state_machine.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_SHOOT"
+      },
+      {
+        "file": "ak47_state_machine.lua",
+        "reason": "R1 runtime-global: TaCZ runtime enum constant; numeric value unknown statically",
+        "symbol": "PLAY_ONCE_HOLD"
+      },
+      {
+        "file": "ak47_state_machine.lua",
+        "reason": "R1 runtime-global: TaCZ runtime enum constant; numeric value unknown statically",
+        "symbol": "PLAY_ONCE_STOP"
+      },
+      {
+        "file": "ak47_state_machine.lua",
+        "reason": "R1 runtime-global: TaCZ runtime enum constant; numeric value unknown statically",
+        "symbol": "SEMI"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_BAYONET_MUZZLE"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_BAYONET_PUSH"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_BAYONET_STOCK"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_BOLT"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_DRAW"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_IDLE"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_INSPECT"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_PUT_AWAY"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_RELOAD"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_RUN"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_SHOOT"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime input constant; symbolic name kept verbatim",
+        "symbol": "INPUT_WALK"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime enum constant; numeric value unknown statically",
+        "symbol": "LOOP"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime enum constant; numeric value unknown statically",
+        "symbol": "PLAY_ONCE_HOLD"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R1 runtime-global: TaCZ runtime enum constant; numeric value unknown statically",
+        "symbol": "PLAY_ONCE_STOP"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R2 dynamic-animation: animation name is not a string literal",
+        "symbol": "animationName"
+      },
+      {
+        "file": "default_state_machine_v2.lua",
+        "reason": "R7 local-helper-side-effect: local helper mutates machine state; mutation not modeled in IR",
+        "symbol": "updateRunOverlay"
+      }
+    ]
+  }
+}

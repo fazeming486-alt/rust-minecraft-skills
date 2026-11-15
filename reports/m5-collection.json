@@ -1,0 +1,60 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5 · 单枪竖切（AK-47）",
+  "total": 5,
+  "completed": 5,
+  "missing": 0,
+  "violations": [],
+  "human_gate": true,
+  "waves": [
+    [
+      "m5-01-state-ir",
+      "m5-02-content-mod"
+    ],
+    [
+      "m5-03-native-module"
+    ],
+    [
+      "m5-04-hook-catalog",
+      "m5-05-diff-harness"
+    ]
+  ],
+  "items": [
+    {
+      "task_id": "m5-01-state-ir",
+      "role": "state-machine-translator",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-1",
+      "status": "COMPLETE"
+    },
+    {
+      "task_id": "m5-02-content-mod",
+      "role": "content-mod-packager",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-2",
+      "status": "COMPLETE"
+    },
+    {
+      "task_id": "m5-03-native-module",
+      "role": "native-port-engineer",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-1",
+      "status": "COMPLETE"
+    },
+    {
+      "task_id": "m5-04-hook-catalog",
+      "role": "hook-catalog-verifier",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "worker-2",
+      "status": "COMPLETE"
+    },
+    {
+      "task_id": "m5-05-diff-harness",
+      "role": "slice-harness-runner",
+      "policy_mode": "full-inspection",
+      "assigned_worker": "main-agent",
+      "status": "COMPLETE"
+    }
+  ],
+  "verdict": "COMPLETE"
+}

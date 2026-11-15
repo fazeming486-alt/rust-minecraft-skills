@@ -17,7 +17,9 @@
     "review": "人工复核清单",
     "facts": "目标侧源码取证报告（路径、行号、短签名，不含源码正文）",
     "slice": "跨层特性切片，符合 schemas/feature-slice.schema.json",
-    "conversion": "格式等价转换产物清单与 roundtrip 证明"
+    "conversion": "格式等价转换产物清单与 roundtrip 证明",
+    "source": "生成的源码树（Rust bundle / engine crate），只写 work/",
+    "package": "可被目标侧加载的打包产物（.hmod）与其校验结果"
   },
   "roles": [
     {
@@ -229,6 +231,56 @@
       "output_kind": "review",
       "can_parallel": true,
       "acceptance": ["MIT / ARR 单段串两个 scope 判定一致", "TaCZ 多段串不触发广播且判定零变化", "广播一律 review_required"]
+    },
+    {
+      "id": "state-machine-translator",
+      "summary": "把 TaCZ 的 Lua 动画状态机解析成平台无关 IR，处理 require 继承与守卫归一化",
+      "allowed_skills": ["translate-lua-statemachine"],
+      "allowed_actions": ["read_own_data_files", "read_asset_data_file", "technical_format_conversion", "write_work_only"],
+      "input_globs": ["work/TACZ-1.20.1/**/scripts/*.lua", "schemas/state-machine-ir.schema.json"],
+      "output_kind": "report",
+      "can_parallel": true,
+      "acceptance": ["IR 通过 schema", "继承链被解析且 origin 可追溯", "unresolved 不静默", "重复运行字节一致"]
+    },
+    {
+      "id": "content-mod-packager",
+      "summary": "生成并打包 Horizon .hmod 内容包，用官方工具校验，不改游戏源码",
+      "allowed_skills": ["build-content-mod"],
+      "allowed_actions": ["read_own_data_files", "read_asset_data_file", "technical_format_conversion", "write_work_only", "run_official_mod_tool"],
+      "input_globs": ["orchestration/m5-slice.json", "work/TACZ-1.20.1/**"],
+      "output_kind": "package",
+      "can_parallel": true,
+      "acceptance": ["官方 check 返回 ok", "引用闭合", "SHA-256 可复现", "产物只留 work/"]
+    },
+    {
+      "id": "native-port-engineer",
+      "summary": "由 IR 生成 Horizon 原生 bundle 与纯 Rust engine，注入点必须来自 hook 目录",
+      "allowed_skills": ["port-native-module"],
+      "allowed_actions": ["read_own_data_files", "read_horizon_source", "technical_format_conversion", "write_work_only", "compile_rust"],
+      "input_globs": ["work/m5/state-ir/*.json", "orchestration/m5-slice.json", "third_party/horizon/native-hooks.json"],
+      "output_kind": "source",
+      "can_parallel": true,
+      "acceptance": ["engine 纯 Rust 且 cargo test 全绿", "状态与输入集合与 IR 相等", "hook 名全部可解析", "生成器幂等"]
+    },
+    {
+      "id": "hook-catalog-verifier",
+      "summary": "编译前把 bundle 的注入点与 native-hooks.json 对齐，替代构建期 E_HOOK_UNKNOWN",
+      "allowed_skills": ["verify-hook-catalog"],
+      "allowed_actions": ["read_own_data_files", "read_horizon_source", "list_resource_entries"],
+      "input_globs": ["work/m5/native/**/horizon-mixin.toml", "third_party/horizon/native-hooks.json"],
+      "output_kind": "report",
+      "can_parallel": true,
+      "acceptance": ["hook 名与版本全部命中", "负例必须判失败", "报告含 fast-fail 原因"]
+    },
+    {
+      "id": "slice-harness-runner",
+      "summary": "跑纯逻辑 trace 剧本，逐 tick 比对期望时间线并产出官方 result.json 形状",
+      "allowed_skills": ["playable-diff-harness"],
+      "allowed_actions": ["read_own_data_files", "compile_rust", "write_work_only"],
+      "input_globs": ["work/m5/native/**/engine", "reports/m5-state-ir.json"],
+      "output_kind": "report",
+      "can_parallel": false,
+      "acceptance": ["PASS 全绿且负例失败", "差异定位到 tick", "不依赖游戏进程"]
     },
     {
       "id": "verification",

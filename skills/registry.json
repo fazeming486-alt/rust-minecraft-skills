@@ -12,6 +12,7 @@
     {"id": "02-contract", "summary": "行为契约抽取"},
     {"id": "03-map", "summary": "能力映射与目标绑定"},
     {"id": "04-art", "summary": "美术资产分类与转换"},
+    {"id": "05-port", "summary": "落地为可加载产物：内容包、原生模块、状态机翻译与注入点预检"},
     {"id": "06-target-study", "summary": "Horizon 目标侧 Rust 源码取证（渲染 / 资产 / mod API）"},
     {"id": "09-verify", "summary": "验收与回归"},
     {"id": "98-orchestrate", "summary": "复杂度评估、子 agent 任务派发与结果汇总"}
@@ -345,6 +346,152 @@
       "depends_on": ["policy-gate", "build-feature-slices", "study-horizon-asset-schema"],
       "acceptance": ["政策三维必须为 full-inspection / technical-only / local-only，否则拒绝运行", "产物目录必须在 work/ 下", "每个转换器 roundtrip_closed 为 true，整体 closed 为 true", "目标侧无消费者的转换必须标 unbound，不得声称已转换完成", "仓库内只放脱敏统计报告"],
       "summary": "语义不变的格式等价转换，每个转换器都用 roundtrip 证明可逆"
+    },
+    {
+      "id": "translate-lua-statemachine",
+      "version": "0.1.0",
+      "stage": "05-port",
+      "path": "skills/05-port/translate-lua-statemachine",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [
+        "orchestration/m5-slice.json",
+        "lua:**/assets/tacz/scripts/*state_machine*.lua",
+        "schemas/state-machine-ir.schema.json"
+      ],
+      "writes": [
+        "work/m5/state-ir/<gun>.json",
+        "reports/m5-state-ir.json"
+      ],
+      "depends_on": [],
+      "acceptance": [
+        "IR 通过 schemas/state-machine-ir.schema.json（required/类型/枚举/附加属性逐条校验）",
+        "state 的 id 集合与 transitions 的 target 集合闭合，不出现未声明的 id",
+        "每条 transition 的 guard 都能在 guards[] 里查到，unconditional 的 guard 为 null",
+        "unresolved 每条都有 file/symbol/reason，且没有任何符号被静默丢弃",
+        "同一输入连续两次运行输出逐字节一致（sha256 相同）",
+        "scripts/ 下全部 *state_machine*.lua 都有语法级解析结论（parsed 或 failed+原因）",
+        "coverage.flattened 之外的文件不得被描述为已展开"
+      ],
+      "summary": "把 TaCZ 的 Lua 动画状态机（含 require 基类）解析成平台无关 IR，解析不了显式记 unresolved"
+    },
+    {
+      "id": "build-content-mod",
+      "version": "0.1.0",
+      "stage": "05-port",
+      "path": "skills/05-port/build-content-mod",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [
+        "orchestration/m5-slice.json",
+        "slice.source.texture_slot (PNG)",
+        "third_party/horizon/target/debug/cargo-horizon-mod.exe"
+      ],
+      "writes": [
+        "work/m5/content-mod/<mod_id>/**",
+        "work/m5/<mod_id>.hmod",
+        "reports/m5-content-mod.json"
+      ],
+      "depends_on": [],
+      "acceptance": [
+        "目录符合 docs/modpacks.md 的 .hmod 布局（horizon-mod.toml + data/ + assets/，无代码）",
+        "官方 cargo-horizon-mod build 打包后，check --kind mod --json 返回 ok=true",
+        "item 声明 template 等于 slice，max_stack_size 在顶层且为 1，components 含 custom_data",
+        "26.3 的 items/models/item/lang 引用闭合，贴图字节与源文件逐字节一致",
+        "同一输入连续两次打包的 .hmod SHA-256 一致",
+        "负例（删掉 item 的 template）被官方工具拒绝"
+      ],
+      "summary": "把切片打成 Horizon .hmod，用官方工具打包校验，负例必须被拒"
+    },
+    {
+      "id": "port-native-module",
+      "version": "0.1.0",
+      "stage": "05-port",
+      "path": "skills/05-port/port-native-module",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [
+        "orchestration/m5-slice.json",
+        "work/m5/state-ir/ak47.json",
+        "schemas/state-machine-ir.schema.json",
+        "third_party/horizon/native-hooks.json",
+        "third_party/horizon/docs/native-mods.md"
+      ],
+      "writes": [
+        "work/m5/native/tacz_ak47_pilot/**",
+        "reports/m5-native-module.json"
+      ],
+      "depends_on": [
+        "translate-lua-statemachine"
+      ],
+      "acceptance": [
+        "engine 仅依赖 std，cargo test --offline 全绿",
+        "engine 的 STATES 与 IR 的 states[].id 集合相等，不等则非零退出",
+        "horizon-mixin.toml 的 hook 名与 hook_version 在 native-hooks.json 中存在",
+        "重复运行输出字节一致",
+        "bindings 为空的接线缺口在报告中标注为 unverified，不声称游戏内可开火"
+      ],
+      "summary": "由 IR 生成 horizon-mixins bundle 与纯 std engine，cargo test 真跑"
+    },
+    {
+      "id": "verify-hook-catalog",
+      "version": "0.1.0",
+      "stage": "05-port",
+      "path": "skills/05-port/verify-hook-catalog",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [
+        "work/m5/native/tacz_ak47_pilot/horizon-mixin.toml",
+        "third_party/horizon/native-hooks.json",
+        "third_party/horizon/docs/native-mods.md",
+        "work/m5/native/tacz_ak47_pilot/engine/Cargo.toml"
+      ],
+      "writes": [
+        "reports/m5-hook-catalog.json",
+        "work/m5/native/_negative/*"
+      ],
+      "depends_on": [
+        "port-native-module"
+      ],
+      "acceptance": [
+        "所有 [[injection]] 的 hook 名存在于 native-hooks.json",
+        "hook_version 等于目录里的 version",
+        "helper 文件与 [[crate]] 目录/Cargo.toml 可解析且无 path/git 依赖",
+        "horizon_revision 与快照一致（git 或明确标注的指纹回退）",
+        "故意写错一个 hook 名必须返回非零并给出 E_HOOK_UNKNOWN"
+      ],
+      "summary": "编译前把注入点 hook/version/helper/crate 与 native-hooks.json 对齐"
+    },
+    {
+      "id": "playable-diff-harness",
+      "version": "0.1.0",
+      "stage": "09-verify",
+      "path": "skills/09-verify/playable-diff-harness",
+      "execution": "deterministic",
+      "status": "implemented",
+      "reads": [
+        "orchestration/m5-slice.json",
+        "work/m5/state-ir/ak47.json",
+        "work/m5/native/tacz_ak47_pilot/engine"
+      ],
+      "writes": [
+        "work/m5/diff/script.txt",
+        "work/m5/diff/trace.jsonl",
+        "work/m5/harness/result.json",
+        "reports/m5-diff.json"
+      ],
+      "depends_on": [
+        "translate-lua-statemachine",
+        "port-native-module"
+      ],
+      "acceptance": [
+        "同一 trace 重复运行结果一致",
+        "PASS 用例全绿且负例必须失败",
+        "差异定位到 tick",
+        "不依赖游戏进程",
+        "产出官方 result.json 形状"
+      ],
+      "summary": "跑纯逻辑 trace，逐 tick 比对开火/换弹/切模式并产出官方 result.json"
     }
   ]
 }

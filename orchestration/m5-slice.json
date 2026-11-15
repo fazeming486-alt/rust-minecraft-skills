@@ -1,0 +1,127 @@
+{
+  "schema_version": "0.1.0",
+  "slice_id": "m5-ak47",
+  "version": "0.1.0",
+  "note": "M5 单枪竖切：AK-47 从 TaCZ 1.20.1 资产/状态机到 Horizon .hmod + .hnmod 源码的最短闭环。数值全部来自 TaCZ 的 ak47_data.json，不手填猜测值。",
+  "policy": {
+    "code": {"inspection": "full-inspection", "transformation": "port", "distribution": "local-only"},
+    "assets": {"inspection": "full-inspection", "transformation": "technical-only", "distribution": "local-only"},
+    "hard_rules": [
+      "产物只写 work/，仓库不提交任何 TaCZ 资产或由 Lua 派生的代码",
+      "不发布、不商用、不做创造性改编（重绘贴图 / 改写动画表现）",
+      "报告只含统计、哈希与路径，不含资产内容"
+    ]
+  },
+  "source": {
+    "workspace_root": "D:/RUST重写mc项目",
+    "mod_root": "rustmc-skills/work/TACZ-1.20.1/src/main/resources/assets/tacz/custom/tacz_default_gun",
+    "index": "data/tacz/index/guns/ak47.json",
+    "data": "data/tacz/data/guns/ak47_data.json",
+    "lua": "assets/tacz/scripts/ak47_state_machine.lua",
+    "base_lua": "assets/tacz/scripts/tacz_default_state_machine_v2.lua",
+    "display": "assets/tacz/display/guns/ak47_display.json",
+    "animation": "assets/tacz/animations/ak47.animation.json",
+    "geometry": "assets/tacz/geo_models/gun/ak47_geo.json",
+    "geometry_lod": "assets/tacz/geo_models/gun/lod/ak47.json",
+    "texture_uv": "assets/tacz/textures/gun/uv/ak47.png",
+    "texture_slot": "assets/tacz/textures/gun/slot/ak47.png",
+    "texture_hud": "assets/tacz/textures/gun/hud/ak47.png",
+    "sounds_dir": "assets/tacz/tacz_sounds/ak47"
+  },
+  "target": {
+    "game": "Horizon",
+    "minecraft": "26.3",
+    "mod_id": "tacz_ak47_pilot",
+    "mod_name": "AK-47 Pilot",
+    "display_name": "AK-47",
+    "item_id": "tacz_ak47_pilot:ak47",
+    "template_item": "minecraft:crossbow",
+    "hmod_api": "0.2",
+    "native_bundle_id": "tacz_ak47_pilot"
+  },
+  "params": {
+    "ammo_item": "tacz:762x39",
+    "ammo_amount": 30,
+    "extended_mag_ammo_amount": [34, 37, 40],
+    "rpm": 600,
+    "fire_modes": ["auto", "semi"],
+    "reload": {
+      "type": "magazine",
+      "feed": {"empty": 2.25, "tactical": 1.55},
+      "cooldown": {"empty": 2.6, "tactical": 2.0}
+    },
+    "draw_time": 0.35,
+    "put_away_time": 0.57,
+    "aim_time": 0.22,
+    "sprint_time": 0.2,
+    "weight": 3.5,
+    "bullet": {
+      "damage": 9,
+      "head_shot_multiplier": 1.5,
+      "armor_ignore": 0.25,
+      "speed": 250,
+      "life": 0.8,
+      "gravity": 0.15
+    },
+    "inaccuracy": {"stand": 4.5, "move": 5, "sneak": 2.5, "lie": 1.5, "aim": 0.15}
+  },
+  "outputs": {
+    "state_ir": "work/m5/state-ir/ak47.json",
+    "content_mod_dir": "work/m5/content-mod/tacz_ak47_pilot",
+    "hmod": "work/m5/tacz_ak47_pilot.hmod",
+    "native_bundle": "work/m5/native/tacz_ak47_pilot",
+    "engine_crate": "work/m5/native/tacz_ak47_pilot/engine",
+    "reports": {
+      "state_ir": "reports/m5-state-ir.json",
+      "content_mod": "reports/m5-content-mod.json",
+      "native_module": "reports/m5-native-module.json",
+      "hook_catalog": "reports/m5-hook-catalog.json",
+      "diff": "reports/m5-diff.json",
+      "collection": "reports/m5-collection.json"
+    }
+  },
+  "acceptance": {
+    "state_ir": [
+      "ak47 的 IR 通过 schemas/state-machine-ir.schema.json",
+      "继承链 tacz_default_state_machine_v2 被解析，origin=base 的状态出现在结果里",
+      "states >= 6 且 transitions >= 8",
+      "unresolved 中每一条都有 file + symbol + reason，不得静默丢弃",
+      "同一输入重复运行输出字节一致（幂等）"
+    ],
+    "content_mod": [
+      "目录结构符合 docs/modpacks.md 的 .hmod 布局（horizon-mod.toml + data/ + assets/）",
+      "由官方 cargo-horizon-mod build 打包，再由 cargo-horizon-mod check --kind mod 返回 ok=true",
+      "item JSON 的 template 为 minecraft:crossbow，components 含 minecraft:max_stack_size=1",
+      "assets/<ns>/items/ak47.json 与 models/item/ak47.json 引用闭合，贴图文件存在",
+      "打包可复现：固定时间戳与条目顺序，同一输入 SHA-256 一致"
+    ],
+    "native_module": [
+      "horizon-mixin.toml 中每个 hook 名与 hook_version 都能在 native-hooks.json 解析",
+      "engine/ 为纯 Rust（无 horizon-client 依赖、无 path/git 依赖），cargo test 全绿",
+      "引擎的状态 id、输入名与 state IR 完全一致（集合相等，不得改名）",
+      "引擎不含 TaCZ 资产内容，只有数值与状态机结构（local-only）",
+      "生成器幂等：重复运行字节一致"
+    ],
+    "hook_catalog": [
+      "所有 [[injection]] 的 hook 名在 native-hooks.json 中存在",
+      "hook_version 等于目录里的 version",
+      "每个 helper 文件存在；每个 [[crate]] 目录含 Cargo.toml 且无 path/git 依赖",
+      "compatibility.horizon_revision 与快照 git HEAD 一致",
+      "故意写错一个 hook 名必须报 E_HOOK_UNKNOWN 等价错误"
+    ],
+    "diff": [
+      "同一份 trace 输入重复运行结果一致",
+      "PASS 用例全绿；把弹匣容量从 30 改成 29 必须 FAIL，且定位到 tick",
+      "判定只依赖纯逻辑 trace，不需要游戏进程"
+    ]
+  },
+  "blocked_by": [
+    {
+      "id": "native-build",
+      "what": "horizon-launcher native-build 把 bundle 编进游戏（重建 horizon-client）",
+      "why_not_run": "需要 horizon-launcher 与一次完整游戏构建（约 12 分钟 / 数 GB），且本机只能 headless，无法观测第一人称表现",
+      "command": "horizon-launcher native-build work/m5/native/tacz_ak47_pilot --instance undeadwar-horizon/instance --trust-native-code",
+      "status": "not_run"
+    }
+  ]
+}

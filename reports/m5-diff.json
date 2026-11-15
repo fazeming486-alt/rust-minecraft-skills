@@ -1,0 +1,490 @@
+{
+  "boundary": [
+    "只覆盖 C1 逻辑（开火/换弹/切模式/弹药），不覆盖动画、后坐、散布、命中与同步",
+    "期望值来自 TaCZ 数据文件的数值，不是真机录制；M3b 仍未做",
+    "tick 容差 1 是工程选择，不是等价证明"
+  ],
+  "generated_by": "playable-diff-harness@0.1.0",
+  "inputs": {
+    "ir": {
+      "path": "work/m5/state-ir/ak47.json",
+      "sha256": "19d32a592173f46f9c8cd9fe20e24b099416a7202620eeb384317a848aec47b3"
+    },
+    "script": {
+      "path": "work\\m5\\diff\\script.txt",
+      "sha256": "3ae5f9c6cbbb5409a6adf156959ef05642cdbf0e97a3d5ed6d090942990722f9"
+    },
+    "slice": {
+      "path": "orchestration/m5-slice.json",
+      "sha256": "0d7c021ca968e8be662c6900eaf9e45f98d76f0747c0c5a4ca9217359090555c"
+    },
+    "trace": {
+      "path": "work\\m5\\diff\\trace.jsonl",
+      "sha256": "faa1376ff61c17b8ae8aa2dc8c4de4d704765becb4cb7b0305cba0a31ccd0913"
+    }
+  },
+  "negative_control": {
+    "expected_to_fail": true,
+    "first_mismatch": {
+      "actual": [
+        {
+          "ammo_after": 29,
+          "kind": "Shot",
+          "tick": 0
+        },
+        {
+          "ammo_after": 28,
+          "kind": "Shot",
+          "tick": 2
+        }
+      ],
+      "expected": {
+        "ammo_after": 28,
+        "kind": "Shot",
+        "tick": 0
+      },
+      "kind": "Shot",
+      "tick": 0
+    },
+    "ok": false
+  },
+  "official_result": {
+    "checks": {
+      "logic_replay": {
+        "examples": [],
+        "failed": 0,
+        "passed": 23
+      },
+      "negative_control": {
+        "examples": [
+          {
+            "actual": [
+              {
+                "ammo_after": 29,
+                "kind": "Shot",
+                "tick": 0
+              },
+              {
+                "ammo_after": 28,
+                "kind": "Shot",
+                "tick": 2
+              }
+            ],
+            "expected": {
+              "ammo_after": 28,
+              "kind": "Shot",
+              "tick": 0
+            },
+            "kind": "Shot",
+            "tick": 0
+          }
+        ],
+        "failed": 0,
+        "passed": 1
+      },
+      "state_set": {
+        "examples": [],
+        "failed": 0,
+        "passed": 1
+      }
+    },
+    "mod": "tacz_ak47_pilot",
+    "passed": true
+  },
+  "ok": true,
+  "policy": {
+    "distribution": "local-only",
+    "inspection": "full-inspection",
+    "transformation": "technical-only"
+  },
+  "positive": {
+    "checks": [
+      {
+        "actual": {
+          "ammo_after": 29,
+          "kind": "Shot",
+          "tick": 0
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 29,
+          "kind": "Shot",
+          "tick": 0
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 28,
+          "kind": "Shot",
+          "tick": 2
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 28,
+          "kind": "Shot",
+          "tick": 2
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 27,
+          "kind": "Shot",
+          "tick": 4
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 27,
+          "kind": "Shot",
+          "tick": 4
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 26,
+          "kind": "Shot",
+          "tick": 6
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 26,
+          "kind": "Shot",
+          "tick": 6
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 25,
+          "kind": "Shot",
+          "tick": 8
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 25,
+          "kind": "Shot",
+          "tick": 8
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 24,
+          "kind": "Shot",
+          "tick": 10
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 24,
+          "kind": "Shot",
+          "tick": 10
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 23,
+          "kind": "Shot",
+          "tick": 12
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 23,
+          "kind": "Shot",
+          "tick": 12
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 22,
+          "kind": "Shot",
+          "tick": 14
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 22,
+          "kind": "Shot",
+          "tick": 14
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 21,
+          "kind": "Shot",
+          "tick": 16
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 21,
+          "kind": "Shot",
+          "tick": 16
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 20,
+          "kind": "Shot",
+          "tick": 18
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 20,
+          "kind": "Shot",
+          "tick": 18
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "empty": false,
+          "kind": "ReloadStart",
+          "tick": 22
+        },
+        "drift": 0,
+        "expected": {
+          "empty": false,
+          "kind": "ReloadStart",
+          "tick": 22
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo": 30,
+          "kind": "ReloadEnd",
+          "tick": 62
+        },
+        "drift": 0,
+        "expected": {
+          "ammo": 30,
+          "kind": "ReloadEnd",
+          "tick": 62
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 29,
+          "kind": "Shot",
+          "tick": 64
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 29,
+          "kind": "Shot",
+          "tick": 64
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 28,
+          "kind": "Shot",
+          "tick": 66
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 28,
+          "kind": "Shot",
+          "tick": 66
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 27,
+          "kind": "Shot",
+          "tick": 68
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 27,
+          "kind": "Shot",
+          "tick": 68
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 26,
+          "kind": "Shot",
+          "tick": 70
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 26,
+          "kind": "Shot",
+          "tick": 70
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 25,
+          "kind": "Shot",
+          "tick": 72
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 25,
+          "kind": "Shot",
+          "tick": 72
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "kind": "ModeSwitch",
+          "tick": 76,
+          "to": "semi"
+        },
+        "drift": 0,
+        "expected": {
+          "kind": "ModeSwitch",
+          "tick": 76,
+          "to": "semi"
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 24,
+          "kind": "Shot",
+          "tick": 78
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 24,
+          "kind": "Shot",
+          "tick": 78
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 23,
+          "kind": "Shot",
+          "tick": 80
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 23,
+          "kind": "Shot",
+          "tick": 80
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo_after": 22,
+          "kind": "Shot",
+          "tick": 82
+        },
+        "drift": 0,
+        "expected": {
+          "ammo_after": 22,
+          "kind": "Shot",
+          "tick": 82
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "empty": false,
+          "kind": "ReloadStart",
+          "tick": 100
+        },
+        "drift": 0,
+        "expected": {
+          "empty": false,
+          "kind": "ReloadStart",
+          "tick": 100
+        },
+        "ok": true
+      },
+      {
+        "actual": {
+          "ammo": 30,
+          "kind": "ReloadEnd",
+          "tick": 140
+        },
+        "drift": 0,
+        "expected": {
+          "ammo": 30,
+          "kind": "ReloadEnd",
+          "tick": 140
+        },
+        "ok": true
+      }
+    ],
+    "counts": {
+      "expected": 23,
+      "failed": 0,
+      "matched": 23,
+      "unexpected": 0
+    },
+    "first_mismatch": null,
+    "max_drift": 0,
+    "ok": true,
+    "unexpected": []
+  },
+  "run": {
+    "cargo": "cargo.exe",
+    "command": "cargo run --offline --quiet --bin trace -- --script script.txt --out trace.jsonl",
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  "schema_version": "0.1.0",
+  "slice_id": "m5-ak47",
+  "states": {
+    "engine": [
+      "ads.aiming",
+      "ads.normal",
+      "base_track",
+      "bolt.bolt_caught",
+      "bolt.normal",
+      "final",
+      "fire_mode.auto",
+      "fire_mode.draw",
+      "fire_mode.semi",
+      "gun_kick",
+      "main.idle",
+      "main.inspect",
+      "main.start",
+      "movement.idle",
+      "movement.run",
+      "movement.walk",
+      "slide.normal",
+      "slide.slide"
+    ],
+    "equal": true,
+    "ir": [
+      "ads.aiming",
+      "ads.normal",
+      "base_track",
+      "bolt.bolt_caught",
+      "bolt.normal",
+      "final",
+      "fire_mode.auto",
+      "fire_mode.draw",
+      "fire_mode.semi",
+      "gun_kick",
+      "main.idle",
+      "main.inspect",
+      "main.start",
+      "movement.idle",
+      "movement.run",
+      "movement.walk",
+      "slide.normal",
+      "slide.slide"
+    ],
+    "only_engine": [],
+    "only_ir": []
+  }
+}
