@@ -238,9 +238,9 @@
       "sha256": "c0aa4963594844b9619e825666be6036a1498ffa3a14fe86a7afab872159ad5f"
     },
     {
-      "bytes": 729,
+      "bytes": 1065,
       "path": "on_use.rs",
-      "sha256": "97c27d1400a51ee7e735c60522bb180813fe1232d17cff115c9ae8fa48a328b3"
+      "sha256": "bb56770f6178c4fb620c30eaac2b7f1da5afec107ea0f92397d132ca093c7186"
     }
   ],
   "params": [

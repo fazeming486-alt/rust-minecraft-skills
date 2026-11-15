@@ -23,6 +23,7 @@ from pathlib import Path
 from string import Template
 
 ROOT = Path(__file__).resolve().parents[3]  # rustmc-skills
+DEFAULT_TARGET_DIR = Path("D:/RUST重写mc项目/rustmc-skills/work/m5/target-engine")
 DEFAULT_CARGO = Path("D:/RUST重写mc项目/dev/cargo/bin/cargo.exe")
 DEFAULT_CARGO_HOME = Path("D:/RUST重写mc项目/dev/cargo")
 DEFAULT_RUSTUP_HOME = Path("D:/RUST重写mc项目/dev/rustup")
@@ -314,22 +315,31 @@ fn on_load() {
 """
 
 ON_USE_RS = """\
-// AK-47 use_item helper — real bindings (M5c).
+// AK-47 use_item helper — real bindings + a magazine (M5d).
 //
 // Bound to `native_use_item(&mut self, stack: &ItemStack, claimed: &mut bool)`:
 // `game` is the Game, `stack` the held stack, `claimed` the flag that takes the
-// use. It claims only our own item, so every other item keeps vanilla behaviour.
+// use. It claims only our own item, one round per right click, and refuses when
+// the magazine is empty.
 //
-// Ammo and reload are NOT here yet: this hook hands `&ItemStack`, which cannot be
-// written; the next step moves them to a mutable inventory hook.
+// The magazine is a process-wide static: the hook carries no player, so this is
+// single-player semantics. Per-player ammo needs a player-aware mutable hook.
 
 fn on_use(game: &mut crate::game::Game<'_>, stack: &crate::items::ItemStack, claimed: &mut bool) {
+    use std::sync::atomic::{AtomicU32, Ordering};
+    static AMMO: AtomicU32 = AtomicU32::new(30);
     let _ = game;
     if &*stack.item != "tacz_ak47_pilot:ak47" {
         return;
     }
+    let left = AMMO.load(Ordering::Relaxed);
+    if left == 0 {
+        eprintln!("[tacz_ak47_pilot] trigger on empty magazine");
+        return;
+    }
+    AMMO.store(left - 1, Ordering::Relaxed);
     *claimed = true;
-    eprintln!("[tacz_ak47_pilot] use_item claimed: {}", stack.item);
+    eprintln!("[tacz_ak47_pilot] shot, ammo={}", left - 1);
 }
 """
 
@@ -1131,7 +1141,7 @@ def run_cargo_test(engine_dir: Path, cargo: Path) -> dict:
     env["CARGO_HOME"] = str(DEFAULT_CARGO_HOME)
     env["RUSTUP_HOME"] = str(DEFAULT_RUSTUP_HOME)
     env["CARGO_NET_OFFLINE"] = "true"
-    command = [str(cargo), "test", "--offline", "--target-dir", str(engine_dir / "target")]
+    command = [str(cargo), "test", "--offline", "--target-dir", str(DEFAULT_TARGET_DIR)]
     proc = subprocess.run(
         command,
         cwd=str(engine_dir),
@@ -1163,12 +1173,17 @@ def run_cargo_test(engine_dir: Path, cargo: Path) -> dict:
 
 def cleanup_generated_artifacts(engine_dir: Path) -> None:
     """去掉本地 cargo 运行产物：bundle 里不能有 Cargo.lock / target。"""
-    for name in ("target", "Cargo.lock"):
+    for name in ("Cargo.lock",):
         path = engine_dir / name
-        if path.is_dir():
-            shutil.rmtree(path, ignore_errors=True)
-        elif path.exists():
+        if path.is_file():
             path.unlink()
+    stale_target = engine_dir / "target"
+    if stale_target.is_dir():
+        # 旧版本留下的目录：移到 work/m5/_stale-target，不在仓库里删大批文件
+        trash = DEFAULT_TARGET_DIR.parent / "_stale-target"
+        trash.parent.mkdir(parents=True, exist_ok=True)
+        if not trash.exists():
+            shutil.move(str(stale_target), str(trash))
 
 
 def build_bundle(args) -> int:

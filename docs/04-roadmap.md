@@ -137,7 +137,8 @@ fetch-mod-artifact → policy-gate ─┬─> full-inspection: parse-java-source
 | 关键事实 | 内容与逻辑必须分离：`.hmod` 只装 data/assets（官方拒绝 `Cargo.toml`），行为只能进 `.hnmod` bundle；crate 不允许依赖 `horizon-client`，反而给出可离线 `cargo test` 的纯逻辑单元 |
 | 风险 / 未决 | `bindings = []`，游戏内还没开过火；动画仍 `unbound`；差分期望值来自数据文件而非 oracle；快照无 `.git`，`horizon_revision` 只能留空 |
 | M5b/M5c | **已完成**：`plan/apply` → 编译 7 min → 无头探针命中；真实 `(game, stack, claimed)` 绑定，`horizon-ctl use-item` 4 次点击 4 次 claim。5 条硬约束与 3 条环境修复已回写 |
-| 下一步 | M5d：干净的 apply 重跑 + 弹药状态（可变钩子）+ 用 inventory/events 断言 |
+| M5d 状态 | **被本机 IO 阻塞**：apply 的 scratch 拷贝退化到 2s/文件，build 27 分钟未完成；弹药逻辑已进生成器但未在游戏内观测（reports/m5d-attempt.json） |
+| 下一步 | 清掉 `work/m5/stage.old*` 与旧 lock 目录后重试干净 apply，再验 31 次点击 = 30 发 + 1 空仓 |
 
 ## 4. 度量（每次里程碑后记录）
 

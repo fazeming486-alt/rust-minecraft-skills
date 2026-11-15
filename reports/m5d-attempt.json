@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5d 尝试：干净的 apply→build + 弹匣状态",
+  "status": "blocked_by_environment",
+  "evidence_level": "no_new_claim",
+  "goal": [
+    "消掉 M5c 的就地补丁欠账（用 bundle 重跑 apply→build）",
+    "让每次右键扣一发、空仓打不出"
+  ],
+  "what_changed": [
+    "port-native-module：cargo test 的 target 目录外置到 work/m5/target-engine，bundle 只清 Cargo.lock，避免 target/ 进包",
+    "port-native-module：on_use helper 增加 30 发进程内弹匣（AtomicU32），空仓不 claim 并打印 trigger on empty magazine",
+    "探针 bundle work/m5/probe/ak47_probe：无 [[crate]]，用于绕开 complete() 的全工作区 scratch 拷贝"
+  ],
+  "blocked": {
+    "step": "horizon-mixins apply",
+    "detail": "apply 的 complete() 会把整个工作区复制到 .horizon-mixins-lock-* 再跑 cargo update；本机该步骤退化到约 2 秒/文件（45 个文件用 20 分钟），22 分钟后仍无 stage 输出",
+    "step2": "cargo build",
+    "detail2": "一次因 rlib 被占用报 os error 5，删掉后重建 27 分钟未完成（无新产物、无链接）",
+    "why": "本机 D 盘 IO / 安全扫描退化：同一个 apply 在 16:56 只需 140 秒"
+  },
+  "not_verified": [
+    "弹药扣减、空仓拒绝：逻辑已写进生成器，但没在游戏内观测",
+    "干净的 apply→build：仍未完成（M5c 的就地补丁欠账继续存在）"
+  ],
+  "next": [
+    "清理 work/m5/stage.old*、work/m5/target-engine 与旧的 .horizon-mixins-lock-* 后重试",
+    "或换一台 IO 正常的机器跑 apply（plan 已能通过，说明 bundle 本身合法）",
+    "游戏内断言：31 次 use-item 应为 30 行 shot（ammo 29→0）+ 1 行 empty"
+  ]
+}

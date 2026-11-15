@@ -219,7 +219,17 @@ mod tacz_ak47_pilot content not loaded: tacz_ak47_pilot:ak47: minecraft:custom_d
 - **没有第一人称表现**：headless 无窗口；动画仍 `unbound`。
 - 最终注入块是**就地补丁**写进 `native_hooks.rs` 的：上一次 `apply` 用了过期的 `mods.incoming`（缺 bindings），发现后按 mixins 同形代码替换并重编。**干净的 apply → build 尚未重跑**，这是明确的复现欠账。
 
-## 7. 边界与下一步
+## 7. M5d 尝试：被本机 IO 挡住
+
+目标：① 用当前 bundle 重跑干净的 `apply → build`，消掉 M5c 的就地补丁欠账；② 让每次右键扣一发、空仓打不出。
+
+**做到了**：`port-native-module` 的 `cargo test` 目录外置到 `work/m5/target-engine`（bundle 里不再出现 `target/`）；`on_use` helper 增加 30 发进程内弹匣（空仓不 claim 并打印）；另外准备了一个**无 `[[crate]]`** 的探针 bundle，用来绕开 `complete()`。
+
+**没做到**：`horizon-mixins apply` 的 `complete()` 会把整个工作区复制到 `.horizon-mixins-lock-*` 再跑 `cargo update`；本机这一步退化到约 **2 秒/文件**（45 个文件耗 20 分钟，22 分钟后仍无 stage 输出）。随后的 `cargo build` 又遇到 rlib 被占用（`os error 5`），删掉重编 27 分钟仍未完成。同一条 apply 在 16:56 只要 140 秒——**是这台机器的 IO/安全扫描退化了，不是 bundle 不合法**（`plan` 仍 70 秒通过）。
+
+因此 M5d **没有产生新的验证等级**：弹药逻辑只存在于生成器里，没有在游戏内观测；干净 `apply → build` 仍是欠账。详见 `reports/m5d-attempt.json`。
+
+## 8. 边界与下一步
 
 - **接线已验证，但只到 claim**：`(game, stack, claimed)` 在真实右键里命中；弹药、子弹、伤害都还没有。
 - **行为只覆盖 C1**：engine 的射速/弹匣/换弹在单测与 trace 里成立，但**没有接进游戏**——游戏内的 `GunState` 还没被任何地方持有。

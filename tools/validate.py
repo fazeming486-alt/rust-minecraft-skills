@@ -157,7 +157,7 @@ def main() -> int:
         "reports/m5-native-module.json", "reports/m5-hook-catalog.json",
         "reports/m5-diff.json", "reports/m5-collection.json",
         "reports/m5b-native-build.json",
-        "reports/m5c-firing.json",
+        "reports/m5c-firing.json", "reports/m5d-attempt.json",
     ]
     missing = [rel for rel in required_files if not (ROOT / rel).is_file()]
     check("核心文件齐全 (%d 项)" % len(required_files), not missing, ", ".join(missing))
@@ -783,6 +783,16 @@ def main() -> int:
     check("M5c: 如实记录就地补丁与待重跑的干净 apply",
           "apply" in m5c["reproducibility_note"]["follow_up"]
           and "mods.incoming" in m5c["reproducibility_note"]["why"])
+
+    # 28. v0.9 · M5d 尝试：环境阻塞要说清楚，不能假装完成
+    m5d = load("reports/m5d-attempt.json")
+    check("M5d: 状态为环境阻塞且不产生新断言",
+          m5d["status"] == "blocked_by_environment"
+          and m5d["evidence_level"] == "no_new_claim")
+    check("M5d: 明确写出弹药与干净 apply 都未验证",
+          any("弹药" in item for item in m5d["not_verified"])
+          and any("apply" in item for item in m5d["not_verified"])
+          and len(m5d["what_changed"]) >= 3)
 
 
     print("=" * 68)
