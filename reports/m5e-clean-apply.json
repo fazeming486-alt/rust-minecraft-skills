@@ -57,6 +57,11 @@
     "stage-probe 的 bundle 不含 crate（crates=0），所以它不链接 ak47_engine 的 18 状态机；engine 链接证据仍然只属于 M5b 那个二进制",
     "没有把 on_load/on_tick 探针与 use_item 弹药放进同一个 bundle —— 一次 apply 出全量钩子仍未做"
   ],
+  "resolved_by": {
+    "report": "reports/m5f-combined-binary.json",
+    "what": "完整 bundle（3 注入 + 1 crate）plan 8.9 s / apply 20 s / build 7m46s，一份二进制里同时打出 states=18 与 30 发弹匣",
+    "still_open": "stage-probe 这份中间产物本身没有重编；stage-full 是另外一份，不是同一棵树"
+  },
   "next": [
     "把 probe bundle 扩成 crate + on_load + on_tick + on_use 的完整 bundle，一次 apply → 一次 build → 一份二进制同时验「状态机链接」和「开火弹药」",
     "或直接以 stage-probe 为 workspace 重编，替换 third_party/horizon 的临时补丁树"

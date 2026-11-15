@@ -258,9 +258,10 @@ horizon-client.exe --resources <…>/.local/horizon-client/26.3 \
 | --- | --- |
 | 每次右键恰好一发 | 30 次点击 → 30 行 shot，ammo 29→0 |
 | 空仓拒绝 | 第 31 次打印 empty，不再 shot |
-| 空仓不 claim | `state.swings` 停在 30（claim 才挥手），且没走 vanilla 使用 |
 | 只对自己的物品生效 | 切到 `minecraft:apple` 右键，日志无新增 |
 | 空仓不自愈 | 之后两次点击仍是 empty |
+
+> **`swings` 不能当 claim 计数器**（M5e 首版写错了，M5f 更正）：这一轮是「每次点击起一个 ctl 进程」的慢速点击，`state.swings` 恰好等于 30；M5f 里同一份二进制快速连点 31 次，发数仍是 30，`swings` 只有 15。它是带合并/衰减的挥手计数。**「空仓不 claim」是源码级事实**：helper 在 `left == 0` 时 `return`，早于 `*claimed = true`；对一个没有 vanilla use 的物品，运行期没有可分离的观测点。
 
 **这不是真正的弹药**：`AMMO` 是 helper 里的 `static AtomicU32`，进程级、不是每玩家/每物品栈。`use_item` 只给 `&ItemStack`（不可变），写不回物品数据；换弹、子弹、命中、伤害都还没有。详见 `reports/m5e-ammo.json`。
 
@@ -279,15 +280,49 @@ horizon-mixins apply --workspace work/m5/src --mods work/m5/probe --out work/m5/
 
 **还没做**：没有用 `stage-probe` 重编（`CARGO_INCREMENTAL=0` 全量约 26 分钟），所以「同源同二进制」只有源码级证据；`stage-probe` 的 bundle 是 `crates=0`，**不含 engine 的 18 状态机**——状态机链接的证据仍只属于 M5b 那个二进制。一次 apply 出全量钩子（crate + on_load + on_tick + on_use）还没做。
 
-## 9. 边界与下一步
+## 9. M5f：一份二进制同时含状态机与开火
+
+M5b 的 engine 链接、M5c/M5e 的扣弹，此前分属两个二进制。这一节把它们放进**同一份源码、同一次构建、同一个进程**：
+
+| 步 | 命令 | 结果 |
+|---|---|---|
+| 生成 | `port-native-module/run.py --out work/m5/native-full/tacz_ak47_pilot` | 3 hook（`use_item` / `player_tick` / `server_tick`）+ 1 crate + 1 data；engine 13/13；无 `[compatibility]` |
+| plan | `horizon-mixins plan … --mods work/m5/native-full` | `ok`，**8.95 s**，3 injections / 1 crate / 1 data |
+| apply | `… apply --out work/m5/stage-full` | `ok`，**19.99 s**，`stage_changed` |
+| build | `cargo build --profile fast -p horizon-client --offline`（`CARGO_INCREMENTAL=0`） | `ok`，**7m46s**，`target/fast/horizon-client.exe` 109,300,224 B |
+| run | 无头客户端 + `--dev-mod tacz_ak47_pilot.hmod` | 48 s 进世界；`content from 1 mod(s)`；1659 items |
+
+同一个进程里同时出现：
+
+```
+[tacz_ak47_pilot] load probe: first server tick, engine states=18
+…
+[tacz_ak47_pilot] shot, ammo=29
+…
+[tacz_ak47_pilot] shot, ammo=0
+[tacz_ak47_pilot] trigger on empty magazine
+```
+
+31 次点击仍是 30 发 + 1 空仓；再点两次空仓 → empty 3、shot 仍 30；切苹果右键不触发。证据：`work/m5/ctl-home/_run8.log`，sha256 `a401f912…`。
+
+### 两条新约束
+
+- **stage 里的 `.local/` 是空壳**：apply 不复制 prepare 产物（`stage-full/.local` 0 个文件），`--resources` 指 stage 自己的 `.local` 会报 `prepared game files are missing`。要么指原 `third_party/horizon/.local/...`，要么重新 `horizon-prepare`。
+- **本机后台 shell 会整个起不来**（sandbox 包装层 125：bash.exe / 插件 shim 文件读被拦），只能前台长命令 + 命令内脚本；游戏进程在命令结束后仍存活，可以接着用 `horizon-ctl` 驱动。
+
+### 更正：`swings` 不是 claim 计数
+
+同一份二进制里 31 次**快速**点击 → shot 30、`swings` 15；M5e 那次 30 次**慢速**点击 → shot 30、`swings` 30。`swings` 会合并/衰减，不能当判据。「空仓不 claim」现在只写成源码级事实（`left == 0` 直接 `return`，早于 `*claimed = true`），不再拿运行期计数冒充。
+
+## 10. 边界与下一步
 
 - **接线已验证，弹药已验证，但都不是「真的枪」**：claim 与扣弹都在真实右键里成立；子弹实体、命中、伤害、音效、换弹全都没有。
-- **两套证据分属两个二进制**：M5b 证明 engine 18 状态能链接并首 tick 被调用；M5e 证明扣弹与空仓。**没有一份二进制同时做到两件事**。
+- **状态机只被链接与打印**：`states=18` 证明 crate 在、`on_load` 被调用；18 个状态**没有驱动行为**——射速、连发、换弹转移还没接 `AMMO`。
 - **弹药是进程级静态量**：不是物品 NBT，也不 per-player；多人会串。
 - **动画仍 `unbound`**：IR 里的 44 条转移只是状态层，73 个 animation.json 与骨骼插值在 Horizon 侧仍无消费者。
 - **期望值不是 oracle**：来自 TaCZ 的 `ak47_data.json`，不是真机录制；M3b 仍未做。
 
-下一步，按依赖排序：① 把 probe bundle 扩成 crate + 三个钩子的完整 bundle，一次 apply → 一次 build → 一份二进制同时验状态机与开火；② 弹药落到可变钩子（背包/玩家存储），而不是 `static`；③ 子弹实体 + 射线命中 + 伤害最小闭环；④ 用 `events` / `inventory` 做断言，而不只看日志。
+下一步，按依赖排序：① 把 `AMMO` 换成 engine 的 `GunState`，让射速/连发/换弹真的由状态机驱动；② 弹药落到可变钩子（背包/玩家存储），而不是 `static`；③ 子弹实体 + 射线命中 + 伤害最小闭环；④ 用 `events` / `inventory` 做断言，而不只看日志。
 
-在那之前，「AK-47 已经搬过来」仍不成立——现在可以说的是：**物品能注册、右键能进我们的代码并扣弹、空仓会拒绝；枪还不会打子弹**。
+在那之前，「AK-47 已经搬过来」仍不成立——现在可以说的是：**物品能注册、右键能进我们的代码并扣弹、空仓会拒绝、状态机能链接；枪还不会打子弹**。
 

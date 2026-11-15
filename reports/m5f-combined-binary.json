@@ -1,0 +1,106 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5f · 一份二进制同时含状态机与开火（3 注入 + 1 crate）",
+  "verification_level": "fired_in_game",
+  "note": "M5b 只证明 engine 能链接，M5c/M5e 只证明扣弹；这一版把两者放进同一份源码、同一次构建、同一个进程里同时观测到。",
+  "bundle": {
+    "generator": "skills/05-port/port-native-module/run.py",
+    "out": "work/m5/native-full/tacz_ak47_pilot",
+    "hooks": 3,
+    "hook_names": ["use_item", "player_tick", "server_tick"],
+    "crate": 1,
+    "data": 1,
+    "states": 18,
+    "engine_tests": "13/13",
+    "compatibility": "无 [compatibility]（快照无 .git，不钉 revision）"
+  },
+  "stages": {
+    "plan": {
+      "status": "ok",
+      "seconds": 8.95,
+      "injections": 3,
+      "crates": 1,
+      "data": 1,
+      "plan_json": "work/m5/full.plan.json"
+    },
+    "apply": {
+      "status": "ok",
+      "seconds": 19.99,
+      "stage": "work/m5/stage-full",
+      "stage_changed": true,
+      "wiring": [
+        "Cargo.toml 成员 native-crates/tacz_ak47_pilot/engine",
+        "crates/horizon-client/Cargo.toml: ak47_engine path 依赖",
+        "native_hooks.rs：3 处注入（use_item / player_tick / server_tick）"
+      ]
+    },
+    "build": {
+      "status": "ok",
+      "command": "cargo build --profile fast -p horizon-client --offline",
+      "seconds": 466,
+      "profile": "fast",
+      "incremental": "CARGO_INCREMENTAL=0",
+      "binary": "work/m5/stage-full/target/fast/horizon-client.exe",
+      "binary_bytes": 109300224,
+      "env": [
+        "CARGO_HOME=dev/cargo / RUSTUP_HOME=dev/rustup / PATH 加 dev/cargo/bin",
+        "CFLAGS=/utf-8 CXXFLAGS=/utf-8 + MSYS_NO_PATHCONV=1",
+        "RC_PATH=<SDK 10.0.26100.0>/x64/rc.exe"
+      ]
+    },
+    "run": {
+      "status": "ok",
+      "mode": "client --headless --control-socket --quickPlaySingleplayer ak47probe",
+      "dev_mod": "work/m5/tacz_ak47_pilot.hmod",
+      "content": "content from 1 mod(s)；1659 items",
+      "resources_seconds": 35.3,
+      "ready_seconds": 48,
+      "log": "work/m5/ctl-home/_run8.log",
+      "log_bytes": 1959,
+      "log_sha256": "a401f912983d7cef0f8bdb55e947199257ddf77df3991deb34b96298c95fd760"
+    }
+  },
+  "assertions": {
+    "engine_linked_in_same_binary": "[tacz_ak47_pilot] load probe: first server tick, engine states=18",
+    "clicks": 31,
+    "shot_lines": 30,
+    "first_shot": "ammo=29",
+    "last_shot": "ammo=0",
+    "empty_lines_total": 3,
+    "empty_after_31": 1,
+    "negatives": {
+      "two_more_clicks_when_empty": "empty 从 1 增到 3，shot 仍是 30",
+      "apple_click": "切到 minecraft:apple 右键，日志没有新增"
+    }
+  },
+  "correction": {
+    "what": "上一版把 state.swings 当成 claim 计数器，结论「30 次 claim → swings 30」在慢速点击下偶然成立",
+    "now": "同一份二进制里 31 次快速点击 → shot=30 但 swings=15；swings 是带衰减/合并的挥手计数，不是 claim 次数",
+    "consequence": "「空仓不 claim」不能再用 swings 作证。它是源码级事实：helper 在 left==0 时 return，早于 *claimed = true；对一个没有 vanilla use 的物品，运行期无法把 claim 与不 claim 分开观测",
+    "left_as_is": "m5e-ammo.json 已按此更正；validate 不再用 swings==shot 作判据"
+  },
+  "constraints_found": [
+    {
+      "code": "stage_drops_local",
+      "detail": "apply 的 stage 目录里 .local/ 是空壳（0 个文件），没有 horizon-resources.json；直接用 stage 的 .local 当 --resources 会报 prepared game files are missing",
+      "workaround": "--resources 指 third_party/horizon/.local/horizon-client/26.3（同一份 prepare 产物）"
+    },
+    {
+      "code": "background_shell",
+      "detail": "本轮后台 shell 起不来（sandbox 包装层 125/文件读被拦），改为前台长命令 + 进程内脚本；游戏进程在命令结束后仍存活，可直接用 horizon-ctl 接上"
+    }
+  ],
+  "not_verified": [
+    "子弹、命中、伤害、音效：仍未实现，claim 之后什么都没有",
+    "换弹与弹匣容量：AMMO 是 static，不会复位也不会显示",
+    "每玩家/每物品栈弹药：use_item 只给 &ItemStack（不可变），写不回",
+    "多人同步：未测",
+    "第一人称表现与动画：animation_driver 仍 unbound",
+    "engine 的 18 状态只被链接与打印；游戏内的射速/连发/换弹转移尚未由 AMMO 驱动"
+  ],
+  "next": [
+    "把 AMMO 换成 engine 的 GunState（射速冷却、连发、换弹都由状态机驱动），让 18 状态真的参与行为",
+    "寻找可写背包钩子，把弹药落到物品栈",
+    "子弹实体 + 射线命中 + 伤害最小闭环"
+  ]
+}

@@ -20,9 +20,10 @@
     "last_shot": "ammo=0",
     "empty_lines": 3,
     "swings": 30,
+    "swings_caveat": "swings 不能当 claim 计数器。本次是「每次点击一个独立 ctl 进程」的慢速点击，31 次得到 30；M5f 里同一份二进制快速连点 31 次只得到 15（挥手被合并/衰减）。两次发数都是 30，说明计数不随点击速率走，而 swings 会。",
     "one_round_per_click": true,
     "empty_refused": true,
-    "empty_does_not_claim": "swings 停在 30：空仓那次没有 claim，手没挥，物品也没有走 vanilla 使用",
+    "empty_does_not_claim": "源码级事实：helper 在 left == 0 时直接 return，早于 *claimed = true。对一个没有 vanilla use 的物品，运行期没有可分离的观测点，所以这条只能由代码路径成立，不能由 swings 作证",
     "ak_only": "切到 minecraft:apple 右键一次，日志没有新增 ak47_probe 行 → 守卫按 stack.item 生效",
     "empty_sticky": "空仓后再点两次仍为 empty，没有自动回填"
   },

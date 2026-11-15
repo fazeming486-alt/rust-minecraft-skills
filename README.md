@@ -169,34 +169,36 @@ M0–M4 证明了「判断得对」，M5 证明「交得出去」。选 AK-47 �
 
 **四条边界**：`.hmod` 只证明内容被加载器接受；右键只证明进了我们的代码，**没有弹药、没有子弹**；动画仍 `unbound`；差分的期望值来自数据文件，不是真机录制。详见 [08 · M5 执行报告](docs/08-m5-execution.md) 与 [ADR 0011](docs/adr/0011-vertical-slice-and-native-module.md)。
 
-## v0.10 · M5e 弹匣语义在真实进程里闭环（不是「枪能打」）
+## v0.10 · M5e/M5f 弹匣语义闭环，且与状态机同处一份二进制（不是「枪能打」）
 
-M5c 只做到「右键进了我们的代码」。这一版把**扣弹与空仓拒绝**在真实无头客户端里观测到：
+M5c 只做到「右键进了我们的代码」。M5e 把**扣弹与空仓拒绝**在真实无头客户端里观测到；M5f 又把它和 engine 放进同一份构建：
 
 | 断言 | 观测 |
 | --- | --- |
 | 一次右键一发 | 30 次 `use-item` → 30 行 `shot, ammo=29…0` |
 | 空仓拒绝 | 第 31 次打印 `trigger on empty magazine`，不再 shot |
-| 空仓不 claim | `state.swings` 停在 30，物品也没走 vanilla 使用 |
 | 只对自己的物品生效 | 切到 `minecraft:apple` 右键，日志无新增 |
 | 空仓不自愈 | 之后两次点击仍是 empty |
+| 同一份二进制含状态机 | 同进程打出 `load probe: first server tick, engine states=18` |
 
-顺带把两次「运行期卡死」的错误结论纠正了：真正的原因是 ① `--resources` 必须指向 `.local/horizon-client/26.3`（带 `horizon-resources.json`），`minecraft-26.3/` 只是原版安装；② `eula.txt` / `server.properties` 读的是进程 cwd，`--universe` 不负责这件事。
+顺带把两次「运行期卡死」的错误结论纠正了：真正的原因是 ① `--resources` 必须指向 `.local/horizon-client/26.3`（带 `horizon-resources.json`），`minecraft-26.3/` 只是原版安装；② `eula.txt` / `server.properties` 读的是进程 cwd，`--universe` 不负责这件事。M5f 还补一条：apply 出来的 stage 里 `.local/` 是空壳，不能拿它当 `--resources`。
 
-**干净 apply 的欠账消了（源码层）**：`probe/ak47_probe` 带 `bindings` 从 pristine 重跑 `horizon-mixins apply` → `ok`、1 injection、**19 秒**（M5d 那次 22 分钟无输出）。产物里的注入块与那份就地补丁**逐 token 一致**，差异只有「首行注释被丢」和「不做 rustfmt」。
+**clean room 的欠账消了**：`probe/ak47_probe` 从 pristine 重跑 apply → `ok`、1 injection、**19 秒**，注入块与就地补丁**逐 token 一致**；随后用完整 bundle（3 注入 + 1 crate）跑通 plan **8.9 s** → apply **20 s** → build **7m46s** → 无头客户端 48 s 进世界。
 
-**仍然是进程级静态量**：`AMMO` 是 `static AtomicU32`，不是物品 NBT、不是每玩家；换弹、子弹、命中、伤害、音效全没有。而且 **engine 18 状态机的链接证据仍只属于 M5b 那个二进制**——没有任何一份二进制同时做到「链接状态机」和「扣弹」。
+**一处自我更正**：M5e 首版拿 `state.swings` 当 claim 计数器（30 次慢速点击恰好 30）。M5f 里同一份二进制快速连点 31 次，发数仍是 30 而 `swings` 只有 15——它是会合并/衰减的挥手计数，不能作判据。「空仓不 claim」现在只写成源码级事实（`left == 0` 直接 `return`，早于 `*claimed = true`）。
 
-详见 [08 · M5 执行报告](docs/08-m5-execution.md) 的 §8–9、`reports/m5e-ammo.json`、`reports/m5e-clean-apply.json`。
+**仍然是进程级静态量**：`AMMO` 是 `static AtomicU32`，不是物品 NBT、不是每玩家；换弹、子弹、命中、伤害、音效全没有。状态机只被链接与打印，**18 个状态还没有驱动行为**。
+
+详见 [08 · M5 执行报告](docs/08-m5-execution.md) 的 §8–10、`reports/m5e-ammo.json`、`reports/m5e-clean-apply.json`、`reports/m5f-combined-binary.json`。
 
 ## 状态与下一步
 
-**v0.10 — M5e 弹药语义在游戏内闭环**：28 个 skill、**130 项自检全绿**、SSH 持续推送。
+**v0.10 — M5e/M5f 弹药闭环 + 单二进制**：28 个 skill、**135 项自检全绿**（本地提交，推送待恢复）。
 
 按 `docs/04-roadmap.md` 推进：
 
-- **M5f**：把探针 bundle 扩成 crate + `on_load`/`on_tick`/`on_use` 的完整 bundle，一次 apply → 一次 build → 一份二进制同时验状态机与开火。
-- **M5g**：弹药落到可变钩子（背包/玩家存储），再用子弹实体 + 射线命中 + 伤害做最小闭环。
+- **M5g**：把 `AMMO` 换成 engine 的 `GunState`，让射速/连发/换弹真的由 18 个状态驱动。
+- **M5h**：弹药落到可变钩子（背包/玩家存储），再做子弹实体 + 射线命中 + 伤害。
 - **M3b**：搭最小可运行 Java oracle，把 23 个契约的 `oracle.status` 从 `pending` 推到 `recorded → replayed → verified`。
 - **M4b**：换跨 MC 版本或混淆样本检验规则泛化，必要时新增 version profile。
 

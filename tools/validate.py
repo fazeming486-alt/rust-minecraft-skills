@@ -801,9 +801,9 @@ def main() -> int:
           ea["clicks"] == 31 and ea["shot_lines"] == 30
           and ea["first_shot"].endswith("ammo=29") and ea["last_shot"].endswith("ammo=0")
           and ea["one_round_per_click"] and ea["empty_refused"])
-    check("M5e: 空仓不 claim（swings 等于发数）且异物不触发",
-          ea["swings"] == ea["shot_lines"] and ea["empty_sticky"]
-          and "swings" in ea["empty_does_not_claim"]
+    check("M5e: 空仓不 claim 只能由源码路径作证，swings 不作数",
+          ea["empty_sticky"] and "return" in ea["empty_does_not_claim"]
+          and "swings" in ea["swings_caveat"] and "M5f" in ea["swings_caveat"]
           and "apple" in ea["ak_only"])
     check("M5e: 弹药是进程级静态量，未声称换弹/子弹/多人",
           "AtomicU32" in m5e["how_ammo_is_stored"]["mechanism"]
@@ -817,12 +817,35 @@ def main() -> int:
           and m5ec["apply"]["seconds"] < 300
           and m5ec["comparison"]["result"] == "logic_identical"
           and len(m5ec["comparison"]["differences_only"]) == 2)
-    check("M5e: 明确写出「没有一份二进制同时做到两件事」",
+    check("M5e: 干净 apply 的未竟项已注明由 M5f 补齐",
           any("二进制" in item for item in m5ec["not_done"])
-          and any("engine" in item for item in m5ec["not_done"]))
+          and any("engine" in item for item in m5ec["not_done"])
+          and m5ec["resolved_by"]["report"] == "reports/m5f-combined-binary.json")
     check("M5e: 记录启动参数两条纠正（resources / cwd-eula）",
           {c["code"] for c in m5e["constraints_found"]} >=
           {"resources_prepare", "eula_in_cwd"})
+
+    # 30. v0.10 · M5f 一份二进制同时含状态机与开火
+    m5f = load("reports/m5f-combined-binary.json")
+    st = m5f["stages"]
+    check("M5f: 3 注入 / 1 crate 的 bundle 过了 plan 与 apply",
+          m5f["bundle"]["hooks"] == 3 and m5f["bundle"]["crate"] == 1
+          and st["plan"]["status"] == "ok" and st["plan"]["injections"] == 3
+          and st["plan"]["crates"] == 1 and st["apply"]["status"] == "ok"
+          and st["apply"]["stage_changed"])
+    check("M5f: 构建成功且耗时与 HUD 记录一致",
+          st["build"]["status"] == "ok" and st["build"]["seconds"] < 1200
+          and st["build"]["incremental"] == "CARGO_INCREMENTAL=0")
+    check("M5f: 同一份二进制里同时观测到状态机探针与 30 发弹匣",
+          "states=18" in m5f["assertions"]["engine_linked_in_same_binary"]
+          and m5f["assertions"]["shot_lines"] == 30
+          and m5f["assertions"]["empty_after_31"] == 1)
+    check("M5f: 负例成立（空仓不自愈、异物不触发）",
+          m5f["assertions"]["negatives"]["two_more_clicks_when_empty"].count("30") >= 1
+          and "apple" in m5f["assertions"]["negatives"]["apple_click"])
+    check("M5f: 明确更正 swings 判据并说明运行期不可分",
+          "15" in m5f["correction"]["now"] and "不能再用 swings" in m5f["correction"]["consequence"]
+          and any(c["code"] == "stage_drops_local" for c in m5f["constraints_found"]))
 
 
     print("=" * 68)
