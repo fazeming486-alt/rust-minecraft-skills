@@ -942,6 +942,21 @@ def main() -> int:
           "0xFFFFF826" in m5l["environment_note"]["first_attempt"]
           and any("单机" in item for item in m5l["limitations"]))
 
+    # 37. v0.10 · M5m 命中：胶囊射线 + native_hurt_entity
+    m5m = load("reports/m5m-hitscan.json")
+    hit = m5m["assertions"]["hit"]
+    check("M5m: 游戏内命中并扣血（10 → 1，hurt=true）",
+          "hit minecraft:cow for 9" in hit["line"]
+          and hit["target"]["health_before"] == 10 and hit["target"]["health_after"] == 1)
+    check("M5m: 记录「胶囊 vs 锥角」的第一次失手原因",
+          "胶囊" in m5m["what_changed"]["geometry"]
+          and "15" in m5m["what_changed"]["geometry"])
+    check("M5m: 未命中也有独立日志（打中方块）",
+          "grass_block" in m5m["assertions"]["miss_is_reported"]["line"])
+    check("M5m: 限制写清伤害类型是箭、无爆头/穿透/子弹实体",
+          any("arrow" in item for item in m5m["limitations"])
+          and any("爆头" in item for item in m5m["limitations"]))
+
     print("=" * 68)
     for name in PASSED:
         print("  PASS  %s" % name)

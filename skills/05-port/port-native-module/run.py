@@ -614,7 +614,65 @@ ON_USE_RS = """\
 // fires at the engine's cadence.
 
 fn on_use(game: &mut crate::game::Game<'_>, stack: &crate::items::ItemStack, claimed: &mut bool) {
-    let _ = game;
+    // M5m: hitscan. Horizon has no custom-projectile API for mods, so the shot
+    // is resolved here: the nearest mob inside a narrow cone, no further than
+    // the first block along the view. `native_hurt_entity` then runs the whole
+    // vanilla pipeline (armour, invulnerability frames, knockback, death).
+    fn fire_hit(game: &mut crate::game::Game<'_>) {
+        const RANGE: f32 = 64.0;
+        // A mob is a vertical capsule: centre at feet + half its height, radius
+        // 0.9. Comparing against the feet instead fails whenever the crosshair
+        // sits on the body (`look-at` aims at the eyes), which is most shots.
+        const HALF_HEIGHT: f64 = 0.9;
+        const RADIUS: f64 = 0.9;
+        let Some(eye) = game.eye_position() else {
+            return;
+        };
+        let dir = super::view_vector(game.yaw, game.pitch);
+        let block = game.native_raycast(RANGE).map(|hit| {
+            let d = ((hit.x - eye[0]).powi(2)
+                + (hit.y - eye[1]).powi(2)
+                + (hit.z - eye[2]).powi(2))
+            .sqrt();
+            (d, hit.block)
+        });
+        let limit = block.as_ref().map_or(f64::from(RANGE), |(d, _)| *d);
+        let dimension = game.dim.id().to_owned();
+        let mut best: Option<(f64, u32, String)> = None;
+        for mob in game.native_mobs(&dimension) {
+            let to = [
+                mob.pos[0] - eye[0],
+                (mob.pos[1] + HALF_HEIGHT) - eye[1],
+                mob.pos[2] - eye[2],
+            ];
+            let along = to[0] * dir[0] + to[1] * dir[1] + to[2] * dir[2];
+            if along <= 0.5 || along > limit {
+                continue;
+            }
+            let perp2 = to[0] * to[0] + to[1] * to[1] + to[2] * to[2] - along * along;
+            if perp2 > RADIUS * RADIUS {
+                continue;
+            }
+            let distance = along;
+            if best.as_ref().is_none_or(|(d, _, _)| distance < *d) {
+                best = Some((distance, mob.id, mob.kind.clone()));
+            }
+        }
+        match best {
+            Some((distance, id, kind)) => {
+                let damage = ak47_engine::consts::DAMAGE as f32;
+                let hurt =
+                    game.native_hurt_entity(&dimension, id, damage, "minecraft:arrow", None);
+                eprintln!("[tacz_ak47_pilot] hit {kind} for {damage} at {distance:.1}m -> {hurt}");
+            }
+            None => match block {
+                Some((distance, name)) => {
+                    eprintln!("[tacz_ak47_pilot] miss: block {name} at {distance:.1}m");
+                }
+                None => eprintln!("[tacz_ak47_pilot] miss: nothing within {RANGE:.0}m"),
+            },
+        }
+    }
     if &*stack.item != "tacz_ak47_pilot:ak47" {
         return;
     }
@@ -622,6 +680,7 @@ fn on_use(game: &mut crate::game::Game<'_>, stack: &crate::items::ItemStack, cla
         ak47_engine::runtime::Trigger::Shot { ammo } => {
             *claimed = true;
             eprintln!("[tacz_ak47_pilot] shot, ammo={ammo}");
+            fire_hit(game);
         }
         ak47_engine::runtime::Trigger::Dry { reload_started } => {
             if reload_started {

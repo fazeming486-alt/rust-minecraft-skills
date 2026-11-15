@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5m · 命中：自写胶囊射线 + native_hurt_entity，游戏内把牛从 10 血打到 1 血",
+  "verification_level": "fired_in_game",
+  "note": "Horizon 没有给 mod 的自定义弹射物 API，所以弹道在 use_item 里自解：视线方向对每个 mob 做「竖直胶囊」垂距判定，取最近且在首个方块之前的那个，再调 native_hurt_entity 走完整伤害管线。",
+  "what_changed": {
+    "helper": "on_use.rs 内嵌 fire_hit()：eye_position + super::view_vector + native_raycast + native_mobs + native_hurt_entity",
+    "geometry": "把 mob 当成竖直胶囊（中心 = 脚底 + 0.9，半径 0.9），用射线垂距判定；第一版拿脚底点算锥角，`look-at` 瞄眼睛时偏 15° 必失手",
+    "damage": "ak47_engine::consts::DAMAGE = 9，伤害类型暂用 minecraft:arrow（占位，见限制）",
+    "range": "max 64 m，且不超过视线方向首个方块的距离",
+    "engine": "未改（20/20）"
+  },
+  "stages": {
+    "generate": "states=18 / engine tests 20/20 / hooks=5",
+    "apply": {"status": "ok", "seconds": 152.9, "stage": "work/m5/stage-p"},
+    "build": {"status": "ok", "seconds": 565, "note": "第一次编译 ring 的 C 部分瞬时失败（cl.exe exit 2），重试即过；非代码问题"}
+  },
+  "assertions": {
+    "hit": {
+      "line": "[tacz_ak47_pilot] hit minecraft:cow for 9 at 3.1m -> true",
+      "target": {"type": "minecraft:cow", "id": 132, "health_before": 10, "health_after": 1},
+      "meaning": "射线选中了最近的 mob，native_hurt_entity 返回 true，牛掉 9 血"
+    },
+    "miss_is_reported": {
+      "line": "[tacz_ak47_pilot] miss: block minecraft:grass_block at 5.5m",
+      "meaning": "第二发没打中（牛被击退后视角没跟上），日志区分「打中方块」与「打中实体」"
+    },
+    "block_limits_range": "两发都受首方块距离约束（3.4m / 5.5m 的草地），不会穿墙打中后面的 mob",
+    "log": "work/m5/ctl-home/_run28.log",
+    "log_bytes": 1162,
+    "log_sha256": "e6a3dcf3ee1a74720c2b0e7dd0ae29c8c7e9e2377655271c8edd2e275cbf0a93"
+  },
+  "test_rig": {
+    "target": "ctl `chat /summon minecraft:cow ~ ~ ~3` 生成，`entities` 取 id，`look-at-entity <id>` 对准",
+    "why_two_ctl_calls": "id 要在生成后才能读，单条脚本没法回填；两次 ctl 调用必须在**同一个 bash 命令**里，否则无头客户端会随父 shell 结束而退出"
+  },
+  "limitations": [
+    "伤害类型是 minecraft:arrow 占位：护甲穿透、抗性、死亡消息都按箭算，不是子弹",
+    "没有爆头倍率、没有穿透、没有子弹实体（看不到曳光/飞行时间）",
+    "胶囊高度写死 1.8（中心 +0.9）、半径 0.9，不区分生物体型；打蝙蝠/末影龙会偏",
+    "只对 mob 生效：玩家、掉落物、船/矿车都不在 native_mobs 里",
+    "无击退方向控制（走原版管线），也没有音效与枪口火光",
+    "仍是单机：GunState 进程级"
+  ],
+  "next": [
+    "自定义伤害类型（内容包声明 tacz:bullet），让护甲/抗性按子弹结算",
+    "爆头：按命中点 y 与 mob 高度算倍率",
+    "命中音效与枪口粒子（native_play_sound / particle hook 待查）",
+    "玩家目标与穿透"
+  ]
+}
