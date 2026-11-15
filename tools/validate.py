@@ -909,6 +909,23 @@ def main() -> int:
           "1 tick" in m5j["lag"]["what"]
           and any("同槽" in item for item in m5j["known_limits"]))
 
+    # 35. v0.10 · M5k 空仓自动换弹
+    m5k = load("reports/m5k-reload.json")
+    a = m5k["assertions"]
+    check("M5k: engine 20/20 且空仓干火即启动换弹",
+          "20/20" in m5k["stages"]["generate"]
+          and a["totals"]["dry"] == 1
+          and "reloading" in a["empty_then_reload"])
+    check("M5k: 换弹期间拒绝开火且原因不是射速",
+          a["totals"]["reloading_lines"] == 8
+          and "reloading=true" in a["refused_while_reloading"]
+          and "不是射速" in a["refused_while_reloading"])
+    check("M5k: 换弹完成回满 30 并再次开火",
+          a["totals"]["reload_end"] == 1 and "ammo=30" in a["reload_completed"]
+          and "ammo=29" in a["fires_again"])
+    check("M5k: 如实写明手动换弹需要客户端输入上行",
+          any("native_net_from_client" in item for item in m5k["not_verified"]))
+
 
     print("=" * 68)
     for name in PASSED:

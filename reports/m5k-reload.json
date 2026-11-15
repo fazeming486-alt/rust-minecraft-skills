@@ -1,0 +1,47 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5k · 空仓自动换弹在游戏内闭环（52 tick → 回满 30）",
+  "verification_level": "fired_in_game",
+  "note": "换弹键在服务端读不到（docs/10），所以这一版把「空仓扣扳机」当作换弹入口：干火的同时启动 52 tick 的空仓换弹。手动换弹（战术换弹 40 tick）仍只有单测。",
+  "what_changed": {
+    "engine": [
+      "新增 GunState::begin_reload() -> Vec<Event>：不推进时钟地启动换弹（Input::Reload 走的是 tick，会多吃一 tick）",
+      "新增单测 begin_reload_fills_after_the_empty_cooldown（0 发起手，52 tick 后回满）"
+    ],
+    "runtime": [
+      "Trigger::Dry 改成 Dry { reload_started: bool }",
+      "press() 在干火时调用 begin_reload()，所以空仓一次点击 = 干火 + 开始换弹"
+    ],
+    "helpers": [
+      "on_use 在 reload_started 时打印 `dry fire: magazine empty, reloading`",
+      "on_tick 的 ReloadEnd 打印 `reload finished, ammo=N`（上一版就有）"
+    ]
+  },
+  "stages": {
+    "generate": "states=18 / engine tests 20/20 / hooks=4",
+    "apply": {"status": "ok", "seconds": 143.9, "stage": "work/m5/stage-m"},
+    "build": {"status": "ok", "seconds": 313, "note": "首次超时被中断，续编 5m13s"}
+  },
+  "assertions": {
+    "started_at_24": "上一轮（M5j）存档留下 24 发",
+    "empty_then_reload": "第 25 行是 `dry fire: magazine empty, reloading`，说明干火与换弹同时发生",
+    "refused_while_reloading": "换弹期间 8 次点击全部 `blocked: ... cooldown=0 reloading=true` —— 冷却已归零，拒绝的原因是换弹，不是射速",
+    "reload_completed": "`reload finished, ammo=30`",
+    "fires_again": "回满后下一次点击 `shot, ammo=29`",
+    "totals": {"shots": 25, "dry": 1, "reloading_lines": 8, "reload_end": 1},
+    "log": "work/m5/ctl-home/_run22.log",
+    "log_bytes": 2343,
+    "log_sha256": "9cdf335a2c30c01c10cf59174fad8f3e005dd499e11e94655f372ecf8733f3e2"
+  },
+  "not_verified": [
+    "手动/战术换弹（40 tick）：需要换弹键，服务端读不到输入，必须客户端 hook + native_net_from_client",
+    "换弹动画与音效",
+    "子弹、命中、伤害",
+    "多人：GunState 仍是进程级（按槽同步，不按玩家）"
+  ],
+  "next": [
+    "接客户端输入上行，做手动换弹与切枪（docs/10 的 input_key / mouse_button_pre → native_net_from_client）",
+    "命中：自写 DDA 射线 + native_hurt_entity",
+    "音效与第一人称表现"
+  ]
+}

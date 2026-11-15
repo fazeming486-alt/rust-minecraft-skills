@@ -197,20 +197,22 @@ M5c 只做到「右键进了我们的代码」。M5e 把**扣弹与空仓拒绝*
 
 **弹匣落到物品栈（M5j）**：`inventory_tick` 里用 `native_carried_stack(slot) -> &mut ItemStack` 把弹药写进 `minecraft:custom_data.ammo`（只在变化时写），两把 AK 各带各的弹匣。验证分两轮：A 打 5 发存档退出（30→25）；B 重启同一世界，探针先看到 30，**第一发是 `ammo=24`** —— 弹匣确实从物品栈读出来。engine 18/18。
 
-**仍然不是真枪**：换弹、子弹、命中、伤害、音效都还没有；开火到写回差 1 tick，同槽换枪分不清。仍不是每玩家。
+**空仓自动换弹（M5k）**：服务端读不到换弹键，所以「空仓扣扳机」就是换弹入口——干火同时启动 52 tick 换弹。游戏内从 24 发起手：打空打印 `dry fire: magazine empty, reloading`；换弹中 8 次点击全部 `blocked ... cooldown=0 reloading=true`（冷却已 0，拒绝原因是换弹）；`reload finished, ammo=30`；下一发 `ammo=29`。engine 20/20。
 
-详见 [08 · M5 执行报告](docs/08-m5-execution.md) 的 §8–13、`reports/m5e-ammo.json`、`reports/m5e-clean-apply.json`、`reports/m5f-combined-binary.json`、`reports/m5g-engine-driven-ammo.json`、`reports/m5h-fullauto.json`、`reports/m5i-hook-rate.json`、`reports/m5j-stack-magazine.json`。
+**仍然不是真枪**：手动换弹、切枪、子弹、命中、伤害、音效都还没有；开火到写回差 1 tick，同槽换枪分不清。仍不是每玩家。
+
+详见 [08 · M5 执行报告](docs/08-m5-execution.md) 的 §8–14、`reports/m5e-ammo.json`、`reports/m5e-clean-apply.json`、`reports/m5f-combined-binary.json`、`reports/m5g-engine-driven-ammo.json`、`reports/m5h-fullauto.json`、`reports/m5i-hook-rate.json`、`reports/m5j-stack-magazine.json`、`reports/m5k-reload.json`。
 
 **两条研究线**（并行子 agent，含源码行号与置信度分级）：`docs/09-horizon-vs-java-world.md`（世界/生物）、`docs/10-horizon-vs-java-combat.md`（战斗/物品）。对下一步影响最大的三条：① 弹药能写回物品栈——`inventory_tick` 里的 `native_carried_stack(slot) -> Option<&mut ItemStack>`；② 没有自定义弹射物 API，要么 `native_summon` 一个雪球模板，要么自写 DDA 射线；③ 服务端读不到扳机/换弹键，必须走客户端 hook + `native_net_from_client` 上行。
 
 ## 状态与下一步
 
-**v0.10 — M5e–M5j 弹药闭环 + 单二进制 + 状态机接管弹匣与全自动 + 弹匣持久化**：28 个 skill、**149 项自检全绿**。
+**v0.10 — M5e–M5k 弹药闭环 + 单二进制 + 状态机接管弹匣/全自动/持久化/换弹**：28 个 skill、**153 项自检全绿**。
 
 按 `docs/04-roadmap.md` 推进：
 
-- **M5k**：换弹——服务端读不到输入，必须客户端 hook + `native_net_from_client` 上行。
-- **M5l**：命中——自写 DDA 射线（`native_block_at`）+ `native_hurt_entity`，或 `native_summon` 雪球模板。
+- **M5l**：手动换弹与切枪——客户端 hook + `native_net_from_client` 上行（服务端读不到输入）。
+- **M5m**：命中——自写 DDA 射线（`native_block_at`）+ `native_hurt_entity`，或 `native_summon` 雪球模板。
 - **M3b**：搭最小可运行 Java oracle，把 23 个契约的 `oracle.status` 从 `pending` 推到 `recorded → replayed → verified`。
 - **M4b**：换跨 MC 版本或混淆样本检验规则泛化，必要时新增 version profile。
 

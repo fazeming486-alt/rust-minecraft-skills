@@ -346,7 +346,9 @@ static CURRENT_SLOT: AtomicI32 = AtomicI32::new(i32::MIN);
 #[derive(Clone, Copy, Debug)]
 pub enum Trigger {
     Shot { ammo: u8 },
-    Dry,
+    /// Empty magazine. `reload_started` is false when one was already running
+    /// or the magazine was already full (it cannot be, from a dry fire).
+    Dry { reload_started: bool },
     Blocked {
         from: &'static str,
         to: &'static str,
@@ -373,7 +375,12 @@ pub fn press() -> Trigger {
         gun.trigger_held = true;
         match gun.pull_trigger() {
             crate::Pull::Shot { ammo_after } => Trigger::Shot { ammo: ammo_after },
-            crate::Pull::Dry => Trigger::Dry,
+            crate::Pull::Dry => {
+                let started = !gun.begin_reload().is_empty();
+                Trigger::Dry {
+                    reload_started: started,
+                }
+            }
             crate::Pull::Blocked => Trigger::Blocked {
                 from,
                 to: gun.state,
@@ -515,6 +522,22 @@ mod tests {
         reset();
     }
 
+    /// An empty trigger reloads: the next 52 ticks put the magazine back.
+    #[test]
+    fn a_dry_press_reloads() {
+        reset();
+        with_gun(|gun| gun.ammo = 0);
+        match press() {
+            Trigger::Dry { reload_started } => assert!(reload_started),
+            other => panic!("expected a dry fire, got {other:?}"),
+        }
+        for _ in 0..60 {
+            tick_once();
+        }
+        assert_eq!(with_gun(|gun| gun.ammo), crate::consts::MAG_CAPACITY);
+        reset();
+    }
+
     /// Two AKs in two slots carry two magazines: a new slot takes the stack's
     /// marker, the same slot writes the living state over it.
     #[test]
@@ -580,8 +603,12 @@ fn on_use(game: &mut crate::game::Game<'_>, stack: &crate::items::ItemStack, cla
             *claimed = true;
             eprintln!("[tacz_ak47_pilot] shot, ammo={ammo}");
         }
-        ak47_engine::runtime::Trigger::Dry => {
-            eprintln!("[tacz_ak47_pilot] dry fire: magazine empty");
+        ak47_engine::runtime::Trigger::Dry { reload_started } => {
+            if reload_started {
+                eprintln!("[tacz_ak47_pilot] dry fire: magazine empty, reloading");
+            } else {
+                eprintln!("[tacz_ak47_pilot] dry fire: magazine empty");
+            }
         }
         ak47_engine::runtime::Trigger::Blocked {
             from,
@@ -961,6 +988,18 @@ impl GunState {
         self.semi_latch = false;
     }
 
+    /// Start a reload without spending a tick (M5k).
+    ///
+    /// `Input::Reload` does the same through `tick`, but a press that finds an
+    /// empty magazine should start the reload on the spot. Vanilla needs a key
+    /// for that; a server-side hook cannot see one, so an empty trigger pulls
+    /// it (see `runtime::press`).
+    pub fn begin_reload(&mut self) -> Vec<Event> {
+        let mut out = Vec::new();
+        self.start_reload(&mut out);
+        out
+    }
+
     /// Fire now if the gun is ready — without advancing the clock.
     ///
     /// `use_item` arrives at the game's own rate (a held right click repeats
@@ -1055,6 +1094,19 @@ mod tests {
         assert_eq!(gun.pull_trigger(), Pull::Blocked);
         gun.tick(None);
         assert!(matches!(gun.pull_trigger(), Pull::Shot { .. }));
+    }
+
+    /// An empty trigger starts the 52-tick reload on the spot.
+    #[test]
+    fn begin_reload_fills_after_the_empty_cooldown() {
+        let mut gun = GunState::with_ammo(0);
+        let events = gun.begin_reload();
+        assert!(matches!(events.first(), Some(Event::ReloadStart { empty: true })));
+        for _ in 0..(consts::RELOAD_EMPTY_COOLDOWN_TICKS + 2) {
+            gun.tick(None);
+        }
+        assert_eq!(gun.ammo, consts::MAG_CAPACITY);
+        assert!(gun.reload.is_none());
     }
 
     #[test]

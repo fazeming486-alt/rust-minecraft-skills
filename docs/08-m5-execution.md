@@ -384,7 +384,28 @@ engine 单测 17 → **18/18**（新增 `each_slot_loads_its_own_magazine`）。
 
 **已知限制**：开火到写回最多差 1 tick（`use_item` 先跑、`inventory_tick` 后写）；同槽换枪无法区分（丢枪再捡另一把到同一槽，内存弹匣仍是旧的）；非选中槽以 marker 为准，可能覆盖未写回的 1 tick 差异。
 
-## 13. 边界与下一步
+## 13. M5k：空仓自动换弹（换弹键的替代路径）
+
+`docs/10` 的结论是服务端**读不到扳机/换弹键**（只有 LAN 的 `Punch` 包），所以这一版先把「空仓扣扳机」当换弹入口：
+
+- engine：`GunState::begin_reload()`——不推进时钟地启动换弹；`Input::Reload` 走 `tick` 会多吃一 tick。
+- runtime：`Trigger::Dry` 带 `reload_started`；`press()` 在干火时调 `begin_reload()`，所以空仓一次点击 = 干火 + 开始换弹。
+- 换弹期间 `pull_trigger` 返回 `Blocked`（reloading 优先于冷却），日志能区分「因为换弹」还是「因为射速」。
+
+游戏内（`_run22.log`，sha256 `9cdf335…`），从 M5j 留下的 24 发起手：
+
+| 观测 | 行 |
+|---|---|
+| 打空 | 第 25 行 `dry fire: magazine empty, reloading` |
+| 换弹中拒绝 | 8 次 `blocked: ... cooldown=0 reloading=true` —— 冷却已 0，拒绝原因是换弹 |
+| 回满 | `reload finished, ammo=30` |
+| 再次开火 | `shot, ammo=29` |
+
+engine 单测 18 → **20/20**（新增 `begin_reload_fills_after_the_empty_cooldown`）。
+
+**没做到**：手动/战术换弹（40 tick）需要换弹键，只能走「客户端 hook + `native_net_from_client` 上行」；换弹动画与音效也没有。
+
+## 14. 边界与下一步
 
 - **接线、全自动、弹匣持久化都已成立，但仍不是「真的枪」**：单击一发、按住连发、空仓拒绝、弹匣跟着物品栈跨重启都在真实右键里成立；子弹实体、命中、伤害、音效、换弹全都没有。
 - **速率**：`player_tick` 实测 0.976 次/tick，2-tick 间隔在游戏内约 8.8 发/秒（标称 10），差在测量窗口。
@@ -392,7 +413,7 @@ engine 单测 17 → **18/18**（新增 `each_slot_loads_its_own_magazine`）。
 - **动画仍 `unbound`**：IR 里的 44 条转移只是状态层，73 个 animation.json 与骨骼插值在 Horizon 侧仍无消费者。
 - **期望值不是 oracle**：来自 TaCZ 的 `ak47_data.json`，不是真机录制；M3b 仍未做。
 
-下一步，按依赖排序：① 换弹——服务端读不到扳机/换弹键，必须客户端 hook + `native_net_from_client` 上行（`docs/10`）；② 命中——自写 DDA 射线（`native_block_at`）+ `native_hurt_entity`，或 `native_summon` 雪球模板；③ 同槽换枪的身份问题；④ 音效与第一人称。
+下一步，按依赖排序：① 手动换弹与切枪——客户端 hook（`input_key` / `mouse_button_pre`）+ `native_net_from_client` 上行；② 命中——自写 DDA 射线（`native_block_at`）+ `native_hurt_entity`，或 `native_summon` 雪球模板；③ 同槽换枪的身份问题；④ 音效与第一人称。
 
 在那之前，「AK-47 已经搬过来」仍不成立——现在可以说的是：**物品能注册、右键能进我们的代码、单击一发、按住全自动、弹药与节奏都由 18 状态的状态机持有；枪还不会打子弹**。
 
