@@ -1,0 +1,62 @@
+{
+  "schema_version": "0.1.0",
+  "milestone": "M5h · 全自动由 player_tick 驱动：按住能连发、单击只一发，但游戏内速率约为标称的 2 倍",
+  "verification_level": "fired_in_game",
+  "note": "M5g 的射速门控撞不到，是因为输入侧最密只有 4 tick 一次。这一版改成「use_item 只扣扳机、player_tick 开火」，射速由 engine 决定；同时修掉引擎两处时钟语义问题。",
+  "what_changed": {
+    "engine": [
+      "新增 GunState::pull_trigger() -> Pull：按需开火，不推进冷却（use_item 的到达频率由游戏决定，不能顺带当时钟）",
+      "新增 pub enum Pull { Shot{ammo_after}, Dry, Blocked }",
+      "修正 fire()：cooldown_ticks 存 FIRE_INTERVAL_TICKS-1（原先把 interval 本身存进去，2 tick 的间隔实际 3 tick 才发一发）",
+      "新增单测 pull_trigger_waits_for_the_clock（按压不推进时钟 + 2 tick 真间隔）"
+    ],
+    "runtime": [
+      "HOLD_GAP_TICKS=5：两次 use 相隔 <5 tick 才算「按住」，否则按单击处理",
+      "HOLD_TIMEOUT_TICKS=6：超过 6 tick 没有新的 use 就松扳机（use_item 没有 release 事件，只能靠重复调用来判断）",
+      "press() 走 pull_trigger()，tick_once() 负责全自动与换弹计时"
+    ],
+    "helpers": [
+      "on_use：只扣扳机并 claim；Shot/Dry/Blocked 三种结果分别打印",
+      "on_tick：tick_once()，把自动射击打印为 `auto, ammo=N`（M5g 时这些发数完全没打印，导致日志看起来只有 7 发而弹匣少了 27）"
+    ]
+  },
+  "stages": {
+    "generate": "states=18 / engine tests 17/17 / hooks=3",
+    "apply": {"status": "ok", "seconds": 120.27, "stage": "work/m5/stage-i"},
+    "build": {"status": "ok", "seconds": 751, "note": "一次 10 分钟超时被中断，续编 4m22s 完成"},
+    "run": {
+      "log": "work/m5/ctl-home/_run15.log",
+      "log_bytes": 2031,
+      "log_sha256": "14685cf839bd3ad263a8c53a4c86767e9f5d0ceecf7efa8d148fc5fdd76c5d14"
+    }
+  },
+  "assertions": {
+    "single_click_is_one_round": "单击 + 等 10 tick → 日志恰好 1 条 shot，没有后续 auto（run15）",
+    "hold_fires_full_auto": "按住 20 tick（松开后再等 10 tick）→ 累计 24 发，全部是 `auto, ammo=` 行（run15）",
+    "hold_empties_magazine": "按住 40 tick → 30 发打空（run13：27 auto + 3 press），日志出现 dry fire",
+    "vanilla_repeat_baseline": "同一把枪在 M5g 版本（射速由游戏 4-tick 重复决定）按住 40 tick 只有 11 发（run11）",
+    "rate_is_about_twice_the_nominal": "run15 的窗口是 20+6(tail)=26 tick，打出 24 发 ≈ 1 发/tick ≈ 20/s，是 FIRE_INTERVAL_TICKS=2（10/s）的两倍"
+  },
+  "open_question": {
+    "what": "为什么是 1 发/tick 而不是 1 发/2 tick",
+    "likely": "`player_tick` 在单机里每个游戏 tick 被调用不止一次（客户端线程 + 服务端线程各一次），tick_once 因而每 tick 走两步，把 2-tick 冷却吃掉",
+    "not_confirmed": "没有实测每次游戏 tick 的 on_tick 调用次数；要确认需在 on_tick 里累加计数并按 N 打印",
+    "how_to_settle": "下一次构建加一个「每 100 次调用打印一行」的探针，同时用 `wait 20` 对齐，即可得到 calls/tick"
+  },
+  "correction_to_earlier": {
+    "what": "M5g 的日志把自动射击漏打了：弹匣从 30 掉到 3，但只有 7 行 shot",
+    "now": "on_tick 打印 `auto, ammo=N` 后，发数与弹匣变化对得上（run15：24 行 auto + 1 行 press = 25 行 vs ammo 30→5）"
+  },
+  "not_verified": [
+    "每次游戏 tick 的 on_tick 调用次数（决定速率是否要按 2 折算）",
+    "换弹：没有任何输入能触发 Input::Reload（没有 R 键绑定，也没有把 B/换弹键接进 helper）",
+    "射速是否与 TaCZ 的 600 RPM 一致（当前观测到的是 2 倍）",
+    "弹药仍在进程级 GunState，不是物品栈、不是每玩家",
+    "子弹、命中、伤害、音效、动画：仍未实现"
+  ],
+  "next": [
+    "加 on_tick 调用计数探针，确认 calls/tick，再决定冷却按 tick 还是按调用消耗",
+    "接换弹：把 use_item 之外的输入（潜行/丢弃键或副手）映射成 Reload，验 52 tick 空仓换弹与 40 tick 战术换弹",
+    "再做子弹与命中"
+  ]
+}

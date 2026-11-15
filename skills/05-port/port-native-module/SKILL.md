@@ -125,6 +125,8 @@ cargo run --offline --bin trace -- --script tests/fixtures/burst.trace
 >
 > **M5c/M5e 更新**：`bindings` 换成 `(game, stack, claimed)` 后，无头客户端里真实右键 4/4 命中；再把 helper 换成 30 发弹匣后，**31 次点击 = 30 行 `shot, ammo=29…0` + 1 行 `trigger on empty magazine`**，空仓那次不 claim（源码级：`left == 0` 直接 `return`，早于 `*claimed = true`；`state.swings` 会合并/衰减，不能作判据）。注意 M5e 当时弹药是 helper 内的 `static AtomicU32`（**进程级**，不是物品数据；M5g 已搬进 engine）；`use_item` 只给不可变 `&ItemStack`，写不回栈。每玩家弹药要等可变钩子。详见 `reports/m5e-ammo.json`。
 >
+> **M5h 更新**：全自动交给 `player_tick`——`use_item` 只调 `GunState::pull_trigger()`（**不推进冷却**，因为 use 的到达频率由游戏决定），`on_tick` 调 `tick_once()` 按 `FIRE_INTERVAL_TICKS` 开火；`HOLD_GAP_TICKS=5` / `HOLD_TIMEOUT_TICKS=6` 在没有 release 事件的情况下推断按住。同时修掉引擎 off-by-one（`fire()` 存 `interval-1`，否则 2 tick 实际 3 tick 一发）。游戏内：单击 1 发、按住 20 tick 24 发、40 tick 打空；**速率约为标称 2 倍**，疑 `player_tick` 每 tick 两次（未实测）。engine 17/17。详见 `reports/m5h-fullauto.json`。
+>
 > **M5g 更新**：弹药已搬进 engine——`engine/src/runtime.rs` 是进程级共享槽（两个注入函数各写 `static` 会是两份状态），`GunState::release()` 让「点击后松扳机」不吃 tick。探针现在打印 `states=18 ammo=30 state=main.idle`，游戏内 23 击把 ammo 从 30 打到 7。**射速门控未观测**：`horizon-ctl` 单次 `use-item` 往返 161 ms > `FIRE_INTERVAL_TICKS=2`（100 ms），并发点击还会丢（18→3）。详见 `reports/m5g-engine-driven-ammo.json`。
 
 ### horizon-mixins 0.6.0 的四条硬约束（M5b 实测，已写进生成器）

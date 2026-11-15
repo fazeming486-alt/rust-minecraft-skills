@@ -865,6 +865,22 @@ def main() -> int:
           {c["code"] for c in m5g["constraints_found"]} >=
           {"ctl_click_floor", "ctl_concurrent_loss"})
 
+    # 32. v0.10 · M5h 全自动由 player_tick 驱动
+    m5h = load("reports/m5h-fullauto.json")
+    check("M5h: engine 17/17 且按压不推进时钟、2 tick 为真间隔",
+          "17/17" in m5h["stages"]["generate"]
+          and any("pull_trigger" in item for item in m5h["what_changed"]["engine"])
+          and any("FIRE_INTERVAL_TICKS-1" in item for item in m5h["what_changed"]["engine"]))
+    check("M5h: 游戏内单击一发、按住连发（24 发）",
+          "恰好 1 条" in m5h["assertions"]["single_click_is_one_round"]
+          and "24 发" in m5h["assertions"]["hold_fires_full_auto"])
+    check("M5h: 如实记录速率约为标称 2 倍且原因未确认",
+          "两倍" in m5h["assertions"]["rate_is_about_twice_the_nominal"]
+          and "没有实测" in m5h["open_question"]["not_confirmed"])
+    check("M5h: 更正 M5g 漏打自动射击日志的问题",
+          "漏打" in m5h["correction_to_earlier"]["what"]
+          and any("on_tick" in item for item in m5h["what_changed"]["helpers"]))
+
 
     print("=" * 68)
     for name in PASSED:

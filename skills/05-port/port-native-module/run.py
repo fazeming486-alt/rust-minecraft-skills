@@ -294,21 +294,52 @@ $compatibility
 """))
 
 RUNTIME_RS = """\
-// Process-wide gun state shared by the bundle's helpers (M5g).
+// Process-wide gun state shared by the bundle's helpers (M5g/M5h).
 //
 // `use_item` (one click) and `player_tick` (one tick) are separate injected
 // functions. A `static` inside either helper would be a *different* copy per
-// helper, so the state they must share cannot live there. It lives here, in the
-// engine crate both helpers already depend on.
+// helper, so the state they must share cannot live here… which is exactly why it
+// lives in the engine crate both helpers already depend on.
+//
+// M5h adds full auto: a held right click makes the game repeat `use_item` every
+// 4 ticks (vanilla's right-click delay), which is slower than an AK's 2-tick
+// interval. So `use_item` only *presses* the trigger; `tick_once` on
+// `player_tick` is what fires at `FIRE_INTERVAL_TICKS`. Since `use_item` carries
+// no release event, a press is treated as a hold only when another press
+// arrives within `HOLD_GAP_TICKS`; a lone click fires once and the trigger is
+// released on the next tick.
 //
 // Single-player semantics: one state for the process. Per-player scoping needs a
-// player-aware mutable hook; this snapshot's `use_item` carries no player.
+// player-aware mutable hook; this snapshot's hooks carry no player.
 
+use std::sync::atomic::{AtomicBool, AtomicU16, Ordering};
 use std::sync::Mutex;
 
-use crate::GunState;
+use crate::{Event, GunState};
 
 static GUN: Mutex<Option<GunState>> = Mutex::new(None);
+
+/// Two presses this close are a hold, not two clicks.
+pub const HOLD_GAP_TICKS: u16 = 5;
+/// A hold ends when this many ticks pass with no `use_item` (vanilla repeats
+/// every 4; 6 leaves room for a slow frame without dropping the burst).
+pub const HOLD_TIMEOUT_TICKS: u16 = 6;
+
+static TICKS_SINCE_USE: AtomicU16 = AtomicU16::new(u16::MAX);
+static HELD: AtomicBool = AtomicBool::new(false);
+
+/// What one press of the trigger did.
+#[derive(Clone, Copy, Debug)]
+pub enum Trigger {
+    Shot { ammo: u8 },
+    Dry,
+    Blocked {
+        from: &'static str,
+        to: &'static str,
+        cooldown: u16,
+        reloading: bool,
+    },
+}
 
 /// Run `f` with the process-wide gun state, creating it on first use.
 pub fn with_gun<R>(f: impl FnOnce(&mut GunState) -> R) -> R {
@@ -317,16 +348,70 @@ pub fn with_gun<R>(f: impl FnOnce(&mut GunState) -> R) -> R {
     f(gun)
 }
 
+/// One right click, or one repeat of a held right click.
+pub fn press() -> Trigger {
+    let since = TICKS_SINCE_USE.swap(0, Ordering::Relaxed);
+    HELD.store(since != u16::MAX && since < HOLD_GAP_TICKS, Ordering::Relaxed);
+    with_gun(|gun| {
+        let from = gun.state;
+        // Keep the engine's own trigger flag in step: `tick(None)` auto-fires
+        // only while it is set.
+        gun.trigger_held = true;
+        match gun.pull_trigger() {
+            crate::Pull::Shot { ammo_after } => Trigger::Shot { ammo: ammo_after },
+            crate::Pull::Dry => Trigger::Dry,
+            crate::Pull::Blocked => Trigger::Blocked {
+                from,
+                to: gun.state,
+                cooldown: gun.cooldown_ticks,
+                reloading: gun.reload.is_some(),
+            },
+        }
+    })
+}
+
+/// One game tick: auto fire, reload countdown, and hold timeout.
+pub fn tick_once() -> Vec<Event> {
+    let since = TICKS_SINCE_USE.load(Ordering::Relaxed);
+    if since != u16::MAX {
+        TICKS_SINCE_USE.store(since.saturating_add(1), Ordering::Relaxed);
+    }
+    if !HELD.load(Ordering::Relaxed) {
+        // A click, not a hold: let go so the next idle tick cannot keep firing.
+        return with_gun(|gun| {
+            gun.release();
+            gun.tick(None)
+        });
+    }
+    if since != u16::MAX && since >= HOLD_TIMEOUT_TICKS {
+        HELD.store(false, Ordering::Relaxed);
+        return with_gun(|gun| {
+            gun.release();
+            Vec::new()
+        });
+    }
+    with_gun(|gun| gun.tick(None))
+}
+
 /// Drop the shared state, so a test starts from a fresh magazine.
 #[cfg(test)]
 pub fn reset() {
     let mut slot = GUN.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
     *slot = None;
+    TICKS_SINCE_USE.store(u16::MAX, Ordering::Relaxed);
+    HELD.store(false, Ordering::Relaxed);
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn shots(events: &[Event]) -> usize {
+        events
+            .iter()
+            .filter(|event| matches!(event, Event::Shot { .. }))
+            .count()
+    }
 
     /// The helpers are separate functions; this is the property they rely on:
     /// two calls see the same state, and a reset puts the magazine back.
@@ -337,6 +422,43 @@ mod tests {
         assert_eq!(with_gun(|gun| gun.ammo), 7);
         reset();
         assert_eq!(with_gun(|gun| gun.ammo), crate::consts::MAG_CAPACITY);
+        reset();
+    }
+
+    /// A lone click fires exactly once: the next tick must release the trigger,
+    /// or `tick(None)` would keep auto-firing with nobody holding the button.
+    #[test]
+    fn a_lone_click_is_one_shot() {
+        reset();
+        assert!(matches!(press(), Trigger::Shot { .. }));
+        let mut later = 0;
+        for _ in 0..10 {
+            later += shots(&tick_once());
+        }
+        assert_eq!(later, 0, "a click must not start a burst");
+        reset();
+    }
+
+    /// The game repeats `use_item` every 4 ticks while the button is held; the
+    /// engine, not the repeat rate, must then set the cadence.
+    #[test]
+    fn a_held_trigger_fires_at_the_engine_cadence() {
+        reset();
+        let mut fired = 0;
+        for _ in 0..6 {
+            if let Trigger::Shot { .. } = press() {
+                fired += 1;
+            }
+            for _ in 0..3 {
+                fired += shots(&tick_once());
+            }
+        }
+        // 24 ticks held: vanilla's own repeat would fire ~6 times, the engine's
+        // 2-tick interval should be well past that.
+        assert!(
+            fired >= 10,
+            "24 ticks of a held trigger should fire near 12 rounds, got {fired}"
+        );
         reset();
     }
 }
@@ -367,70 +489,64 @@ fn on_load() {
 """
 
 ON_USE_RS = """\
-// AK-47 use_item helper — one click is one engine tick with `Shoot` (M5g).
+// AK-47 use_item helper — presses the trigger; the engine decides (M5h).
 //
 // Bound to `native_use_item(&mut self, stack: &ItemStack, claimed: &mut bool)`.
 // Magazine, fire rate, fire mode and reload timers all live in
-// `ak47_engine::GunState` (shared through `ak47_engine::runtime`); this helper
-// only translates a right click into `Input::Shoot`, claims the use when the
-// engine answered `Shot`, and reports why it did not.
+// `ak47_engine::GunState` (shared through `ak47_engine::runtime`).
 //
-// A click carries no release event, so the trigger is released right after the
-// shot; `player_tick` (`on_tick.rs`) is what advances the cooldown between
-// clicks. Fire rate is therefore the engine's `FIRE_INTERVAL_TICKS`, not the
-// click rate.
+// M5h: this hook fires once per click and, while the button is held, once every
+// 4 ticks (vanilla's right-click delay) — coarser than the AK's own 2-tick
+// interval. So the press only starts/continues a hold; `on_tick.rs` is what
+// fires at the engine's cadence.
 
 fn on_use(game: &mut crate::game::Game<'_>, stack: &crate::items::ItemStack, claimed: &mut bool) {
     let _ = game;
     if &*stack.item != "tacz_ak47_pilot:ak47" {
         return;
     }
-    let mut shot = None;
-    let mut dry = false;
-    let mut blocked = None;
-    ak47_engine::runtime::with_gun(|gun| {
-        let before = gun.state;
-        for event in gun.tick(Some(ak47_engine::Input::Shoot)) {
-            match event {
-                ak47_engine::Event::Shot { ammo_after } => shot = Some(ammo_after),
-                ak47_engine::Event::DryFire => dry = true,
-                _ => {}
-            }
+    match ak47_engine::runtime::press() {
+        ak47_engine::runtime::Trigger::Shot { ammo } => {
+            *claimed = true;
+            eprintln!("[tacz_ak47_pilot] shot, ammo={ammo}");
         }
-        if shot.is_none() && !dry {
-            blocked = Some((before, gun.state, gun.cooldown_ticks, gun.reload.is_some()));
+        ak47_engine::runtime::Trigger::Dry => {
+            eprintln!("[tacz_ak47_pilot] dry fire: magazine empty");
         }
-        gun.release();
-    });
-    if let Some(ammo) = shot {
-        *claimed = true;
-        eprintln!("[tacz_ak47_pilot] shot, ammo={ammo}");
-    } else if dry {
-        eprintln!("[tacz_ak47_pilot] dry fire: magazine empty");
-    } else if let Some((before, after, cooldown, reloading)) = blocked {
-        eprintln!(
-            "[tacz_ak47_pilot] blocked: {before}->{after} cooldown={cooldown} reloading={reloading}"
-        );
+        ak47_engine::runtime::Trigger::Blocked {
+            from,
+            to,
+            cooldown,
+            reloading,
+        } => {
+            eprintln!(
+                "[tacz_ak47_pilot] blocked: {from}->{to} cooldown={cooldown} reloading={reloading}"
+            );
+        }
     }
 }
 """
 
 ON_TICK_RS = """\
-// AK-47 tick helper — advances the engine's cooldown and reload timers (M5g).
+// AK-47 tick helper — the engine's clock (M5h).
 //
 // `bindings = []`: no player is in scope, so this advances the process-wide
-// state in `ak47_engine::runtime` instead of one player's. It is the only place
-// `FIRE_INTERVAL_TICKS` counts down, so without it only the first click of a
-// session could ever fire.
+// state in `ak47_engine::runtime` instead of one player's. It fires full auto
+// while the trigger is held (`FIRE_INTERVAL_TICKS`), counts the reload down, and
+// ends a hold that stopped repeating. Without it the gun could only shoot once.
 
 fn on_tick() {
-    ak47_engine::runtime::with_gun(|gun| {
-        for event in gun.tick(None) {
-            if let ak47_engine::Event::ReloadEnd { ammo } = event {
+    for event in ak47_engine::runtime::tick_once() {
+        match event {
+            ak47_engine::Event::Shot { ammo_after } => {
+                eprintln!("[tacz_ak47_pilot] auto, ammo={ammo_after}");
+            }
+            ak47_engine::Event::ReloadEnd { ammo } => {
                 eprintln!("[tacz_ak47_pilot] reload finished, ammo={ammo}");
             }
+            _ => {}
         }
-    });
+    }
 }
 """
 
@@ -578,6 +694,14 @@ pub enum Event {
     PutAway,
 }
 
+/// What `pull_trigger` did: the answer to one press, without spending a tick.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Pull {
+    Shot { ammo_after: u8 },
+    Dry,
+    Blocked,
+}
+
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Reload {
     pub remaining: u16,
@@ -714,9 +838,38 @@ impl GunState {
         self.semi_latch = false;
     }
 
+    /// Fire now if the gun is ready — without advancing the clock.
+    ///
+    /// `use_item` arrives at the game's own rate (a held right click repeats
+    /// every 4 ticks), so a press must not also count down `cooldown_ticks`:
+    /// that would tick the clock twice per press and fire faster than
+    /// `FIRE_INTERVAL_TICKS`. `tick` stays the only clock.
+    pub fn pull_trigger(&mut self) -> Pull {
+        if self.reload.is_some() {
+            return Pull::Blocked;
+        }
+        if self.ammo == 0 {
+            return Pull::Dry;
+        }
+        if self.cooldown_ticks > 0 || (self.fire_mode == FireMode::Semi && self.semi_latch) {
+            return Pull::Blocked;
+        }
+        let mut out = Vec::new();
+        self.fire(&mut out);
+        match out.first() {
+            Some(Event::Shot { ammo_after }) => Pull::Shot {
+                ammo_after: *ammo_after,
+            },
+            _ => Pull::Blocked,
+        }
+    }
+
     fn fire(&mut self, out: &mut Vec<Event>) {
         self.ammo -= 1;
-        self.cooldown_ticks = FIRE_INTERVAL_TICKS;
+        // `tick` decrements before it checks, so storing the interval itself
+        // would make a 2-tick interval fire every 3rd tick. Store one less:
+        // FIRE_INTERVAL_TICKS then really is the gap between shots.
+        self.cooldown_ticks = FIRE_INTERVAL_TICKS.saturating_sub(1);
         self.semi_latch = true;
         self.state = match self.fire_mode {
             FireMode::Auto => states::FIRE_AUTO,
@@ -761,6 +914,26 @@ mod tests {
             .iter()
             .filter(|event| matches!(event, Event::Shot { .. }))
             .count()
+    }
+
+    /// A press must not advance the clock: the game repeats `use_item` at its own
+    /// rate, so only `tick` may count the cooldown down.
+    #[test]
+    fn pull_trigger_waits_for_the_clock() {
+        let mut gun = GunState::new();
+        assert!(matches!(gun.pull_trigger(), Pull::Shot { .. }));
+        // Pressing again without a tick must not fire: the press does not
+        // advance the clock, and the interval has not passed.
+        assert_eq!(gun.pull_trigger(), Pull::Blocked);
+        gun.tick(None);
+        assert!(matches!(gun.pull_trigger(), Pull::Shot { .. }));
+        // FIRE_INTERVAL_TICKS = 2 is the real gap: after one shot the gun is
+        // ready again two ticks later, not three.
+        let mut gun = GunState::new();
+        gun.pull_trigger();
+        gun.tick(None);
+        gun.tick(None);
+        assert!(matches!(gun.pull_trigger(), Pull::Shot { .. }));
     }
 
     #[test]
